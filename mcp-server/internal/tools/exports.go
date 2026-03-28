@@ -153,13 +153,40 @@ func makeExportMarkdown() mcp.ToolHandler {
 
 func makeExportCSV() mcp.ToolHandler {
 	return func(ctx context.Context, params json.RawMessage) (*mcp.ToolResult, error) {
+		// Try normal parse first; if it fails, try string-encoded JSON arrays
 		var input struct {
 			Headers  []string   `json:"headers"`
 			Rows     [][]string `json:"rows"`
 			Filename string     `json:"filename"`
 		}
 		if err := json.Unmarshal(params, &input); err != nil {
-			return mcp.ErrorResult("invalid params: " + err.Error()), nil
+			// Claude Code may send arrays as JSON strings — try fallback
+			var raw struct {
+				Headers  json.RawMessage `json:"headers"`
+				Rows     json.RawMessage `json:"rows"`
+				Filename string          `json:"filename"`
+			}
+			if err2 := json.Unmarshal(params, &raw); err2 != nil {
+				return mcp.ErrorResult("invalid params: " + err.Error()), nil
+			}
+			// Try unmarshaling string-encoded arrays
+			h := string(raw.Headers)
+			if len(h) > 0 && h[0] == '"' {
+				var hs string
+				json.Unmarshal(raw.Headers, &hs)
+				json.Unmarshal([]byte(hs), &input.Headers)
+			} else {
+				json.Unmarshal(raw.Headers, &input.Headers)
+			}
+			r := string(raw.Rows)
+			if len(r) > 0 && r[0] == '"' {
+				var rs string
+				json.Unmarshal(raw.Rows, &rs)
+				json.Unmarshal([]byte(rs), &input.Rows)
+			} else {
+				json.Unmarshal(raw.Rows, &input.Rows)
+			}
+			input.Filename = raw.Filename
 		}
 		if len(input.Headers) == 0 {
 			return mcp.ErrorResult("headers is required and must not be empty"), nil

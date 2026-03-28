@@ -63,13 +63,71 @@ func NewBrowserClient(cdpURL string) (*BrowserClient, error) {
 		}, nil
 	}
 
-	// Step 2: Chrome not available with CDP — return clear instructions.
-	// We NEVER launch a new Chrome. The user must restart their existing Chrome
-	// with --remote-debugging-port to preserve their cookies, sessions, and tabs.
+	// Step 2: Chrome not available with CDP — try to relaunch user's Chrome with CDP flag.
+	// On macOS we can quit Chrome and reopen it with --remote-debugging-port.
+	// This preserves the user's profile, cookies, tabs — just adds the debug port.
+	if runtime.GOOS == "darwin" {
+		slog.Info("Chrome CDP not available — attempting to relaunch with CDP", "url", cdpURL)
+
+		port := "9222"
+		if p, err := extractPort(cdpURL); err == nil {
+			port = p
+		}
+
+		// Quit existing Chrome gracefully via AppleScript
+		quitCmd := exec.Command("osascript", "-e", `tell application "Google Chrome" to quit`)
+		quitCmd.Run() // ignore error — Chrome might not be running
+
+		// Wait for Chrome to fully quit
+		for i := 0; i < 10; i++ {
+			time.Sleep(500 * time.Millisecond)
+			checkCmd := exec.Command("pgrep", "-x", "Google Chrome")
+			if checkCmd.Run() != nil {
+				break // Chrome is gone
+			}
+		}
+
+		// Relaunch Chrome with the user's existing profile + CDP port
+		launchCmd := exec.Command("open", "-a", "Google Chrome", "--args",
+			"--remote-debugging-port="+port,
+		)
+		if err := launchCmd.Run(); err != nil {
+			slog.Warn("failed to relaunch Chrome", "error", err)
+			return nil, fmt.Errorf("could not relaunch Chrome with CDP: %w", err)
+		}
+
+		slog.Info("Chrome relaunched with CDP — waiting for it to be ready")
+
+		// Wait for CDP to be ready
+		if err := waitForCDP(cdpURL, 15*time.Second); err != nil {
+			return nil, fmt.Errorf("Chrome relaunched but CDP not responding: %w", err)
+		}
+
+		// Connect to the relaunched Chrome
+		allocCtx, cancel := chromedp.NewRemoteAllocator(context.Background(), cdpURL)
+
+		testCtx, testCancel := context.WithTimeout(allocCtx, 5*time.Second)
+		defer testCancel()
+
+		if _, err := chromedp.Targets(testCtx); err != nil {
+			cancel()
+			return nil, fmt.Errorf("Chrome relaunched but target listing failed: %w", err)
+		}
+
+		slog.Info("connected to user's Chrome with CDP", "url", cdpURL)
+		return &BrowserClient{
+			allocCtx: allocCtx,
+			cancel:   cancel,
+			cdpURL:   cdpURL,
+			managed:  false, // we don't own this Chrome — it's the user's browser
+		}, nil
+	}
+
+	// Non-macOS: return instructions for manual setup
 	slog.Warn("Chrome CDP not available — browser tools will not be registered", "url", cdpURL)
 	return nil, fmt.Errorf(
 		"Chrome is not running with CDP enabled at %s. "+
-			"Quit Chrome and relaunch with: open -a 'Google Chrome' --args --remote-debugging-port=9222 "+
+			"Quit Chrome and relaunch with: google-chrome --remote-debugging-port=9222 "+
 			"— this preserves all your tabs, cookies, and sessions",
 		cdpURL)
 }
