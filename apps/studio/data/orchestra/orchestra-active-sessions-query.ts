@@ -21,14 +21,15 @@ export async function getOrchestraActiveSessions(
     SELECT
       s.id,
       s.agent_id,
-      COALESCE(a.name, 'Unknown Agent') AS agent_name,
+      COALESCE(a.name, s.machine_id, 'Unknown') AS agent_name,
       s.started_at,
       s.last_heartbeat,
-      s.metadata
+      s.session_metadata AS metadata
     FROM agent_sessions s
     LEFT JOIN agents a ON a.id = s.agent_id
-    WHERE s.ended_at IS NULL
-    ORDER BY s.started_at DESC
+    WHERE s.status = 'active'
+    ORDER BY s.last_heartbeat DESC NULLS LAST
+    LIMIT 10
   `
 
   const { result } = await executeSql<OrchestraActiveSession[]>(
