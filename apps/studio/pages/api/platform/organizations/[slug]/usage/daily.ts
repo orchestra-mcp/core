@@ -17,6 +17,6 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 }
 
 const handleGet = async (_req: NextApiRequest, res: NextApiResponse) => {
-  // Self-hosted: no usage metering, return empty array.
-  return res.status(200).json([])
+  // Self-hosted: return empty usage structure matching OrgDailyStatsResponse
+  return res.status(200).json({ usages: [] })
 }
