@@ -2,13 +2,15 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Http;
 use Firebase\JWT\JWT;
+use Illuminate\Support\Facades\Http;
 
 class SupabaseAuthService
 {
     private string $baseUrl;
+
     private string $serviceKey;
+
     private string $jwtSecret;
 
     public function __construct()
@@ -25,9 +27,9 @@ class SupabaseAuthService
     {
         $response = Http::withHeaders([
             'apikey' => $this->serviceKey,
-            'Authorization' => 'Bearer ' . $this->serviceKey,
+            'Authorization' => 'Bearer '.$this->serviceKey,
             'Content-Type' => 'application/json',
-        ])->post(rtrim($this->baseUrl, '/') . '/auth/v1/admin/users', [
+        ])->post(rtrim($this->baseUrl, '/').'/auth/v1/admin/users', [
             'email' => $email,
             'password' => $password,
             'email_confirm' => true,
@@ -59,14 +61,64 @@ class SupabaseAuthService
     }
 
     /**
+     * Sign in a user via Supabase GoTrue password grant.
+     *
+     * Returns the full GoTrue response (access_token, refresh_token, user, etc.)
+     * or null on failure.
+     */
+    public function signInWithPassword(string $email, string $password): ?array
+    {
+        $response = Http::withHeaders([
+            'apikey' => $this->serviceKey,
+            'Content-Type' => 'application/json',
+        ])->post(rtrim($this->baseUrl, '/').'/auth/v1/token?grant_type=password', [
+            'email' => $email,
+            'password' => $password,
+        ]);
+
+        if ($response->failed()) {
+            return null;
+        }
+
+        return $response->json();
+    }
+
+    /**
+     * Look up a Supabase user by email via the Admin API.
+     *
+     * Returns the first matching user array, or null if none found.
+     */
+    public function findUserByEmail(string $email): ?array
+    {
+        $response = Http::withHeaders([
+            'apikey' => $this->serviceKey,
+            'Authorization' => 'Bearer '.$this->serviceKey,
+        ])->get(rtrim($this->baseUrl, '/').'/auth/v1/admin/users');
+
+        if ($response->failed()) {
+            return null;
+        }
+
+        $users = $response->json('users', []);
+
+        foreach ($users as $user) {
+            if (($user['email'] ?? '') === $email) {
+                return $user;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Delete a user from Supabase GoTrue.
      */
     public function deleteUser(string $supabaseUserId): bool
     {
         $response = Http::withHeaders([
             'apikey' => $this->serviceKey,
-            'Authorization' => 'Bearer ' . $this->serviceKey,
-        ])->delete(rtrim($this->baseUrl, '/') . '/auth/v1/admin/users/' . $supabaseUserId);
+            'Authorization' => 'Bearer '.$this->serviceKey,
+        ])->delete(rtrim($this->baseUrl, '/').'/auth/v1/admin/users/'.$supabaseUserId);
 
         return $response->successful();
     }
