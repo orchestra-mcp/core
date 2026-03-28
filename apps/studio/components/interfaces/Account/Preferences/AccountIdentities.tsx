@@ -2,7 +2,8 @@ import { ButtonTooltip } from 'components/ui/ButtonTooltip'
 import { useProfileIdentitiesQuery } from 'data/profile/profile-identities-query'
 import { useUnlinkIdentityMutation } from 'data/profile/profile-unlink-identity-mutation'
 import dayjs from 'dayjs'
-import { BASE_PATH } from 'lib/constants'
+import { BASE_PATH, IS_PLATFORM } from 'lib/constants'
+import { useProfile } from 'lib/profile'
 import { Edit, Unlink } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -49,9 +50,31 @@ const getProviderName = (provider: string) =>
 
 export const AccountIdentities = () => {
   const router = useRouter()
+  const { profile } = useProfile()
 
-  const { data, isPending: isLoading, isSuccess } = useProfileIdentitiesQuery()
-  const identities = data?.identities ?? []
+  const { data, isPending: isLoading, isSuccess, isError } = useProfileIdentitiesQuery({
+    enabled: IS_PLATFORM,
+  })
+
+  // For self-hosted, build a fallback identity from the profile email
+  const selfHostedIdentities =
+    !IS_PLATFORM && profile?.primary_email
+      ? [
+          {
+            identity_id: 'self-hosted-email',
+            id: 'self-hosted-email',
+            user_id: String(profile.id),
+            provider: 'email' as const,
+            identity_data: { email: profile.primary_email, sub: String(profile.id), user_name: undefined as string | undefined },
+            email: profile.primary_email,
+            created_at: '',
+            updated_at: '',
+            last_sign_in_at: '',
+          },
+        ]
+      : []
+
+  const identities = IS_PLATFORM ? (data?.identities ?? []) : selfHostedIdentities
   const isChangeExpired = data?.email_change_sent_at
     ? dayjs().utc().diff(dayjs(data?.email_change_sent_at).utc(), 'minute') > 10
     : false
@@ -91,12 +114,12 @@ export const AccountIdentities = () => {
       </PageSectionMeta>
       <PageSectionContent>
         <Card>
-          {isLoading && (
+          {IS_PLATFORM && isLoading && (
             <CardContent>
               <ShimmeringLoader />
             </CardContent>
           )}
-          {isSuccess && (
+          {(isSuccess || !IS_PLATFORM) && (
             <div className="divide-y">
               {identities.map((identity) => {
                 const { identity_id, provider } = identity
@@ -122,12 +145,12 @@ export const AccountIdentities = () => {
                       <div>
                         <div className="flex items-center gap-x-2">
                           <p className="text-sm capitalize">{providerName}</p>
-                          {provider === 'email' && data.new_email && !isChangeExpired && (
+                          {provider === 'email' && data?.new_email && !isChangeExpired && (
                             <Tooltip>
                               <TooltipTrigger className="flex items-center">
                                 <Badge variant="default">Pending change</Badge>
                               </TooltipTrigger>
-                              <TooltipContent>Changing to {data.new_email}</TooltipContent>
+                              <TooltipContent>Changing to {data?.new_email}</TooltipContent>
                             </Tooltip>
                           )}
                         </div>
