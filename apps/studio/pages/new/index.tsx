@@ -18,7 +18,7 @@ const Wizard: NextPageWithLayout = () => {
   const { appTitle } = useCustomContent(['app:title'])
   const pageTitle = buildStudioPageTitle({
     section: 'New Organization',
-    brand: appTitle || 'Supabase',
+    brand: appTitle || 'Orchestra Studio',
   })
 
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
@@ -85,7 +85,7 @@ const Wizard: NextPageWithLayout = () => {
       {/* Wizard layouts set the visual header but not the browser tab title. */}
       <Head>
         <title>{pageTitle}</title>
-        <meta name="description" content="Supabase Studio" />
+        <meta name="description" content="Orchestra Studio" />
       </Head>
       <HCaptcha
         ref={captchaRefCallback}

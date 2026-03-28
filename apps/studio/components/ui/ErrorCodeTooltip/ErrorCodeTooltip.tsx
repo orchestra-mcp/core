@@ -107,7 +107,7 @@ export const ErrorCodeTooltip = ({ errorCode, service, children }: ErrorCodeTool
                       ? `${BASE_PATH}/img/supabase-dark.svg`
                       : `${BASE_PATH}/img/supabase-light.svg`
                   }
-                  alt="Supabase"
+                  alt="Orchestra"
                   height={14}
                   width={72}
                 />

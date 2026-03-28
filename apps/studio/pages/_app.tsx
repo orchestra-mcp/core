@@ -15,6 +15,7 @@ import 'styles/stripe.scss'
 import 'styles/toast.scss'
 import 'styles/typography.scss'
 import 'styles/ui.scss'
+import 'styles/orchestra-brand.css'
 import 'ui-patterns/ShimmeringLoader/index.css'
 import 'ui/build/css/themes/dark.css'
 import 'ui/build/css/themes/light.css'
@@ -146,7 +147,7 @@ function CustomApp({ Component, pageProps }: AppPropsWithLayout) {
               >
                 <ProfileProvider>
                   <Head>
-                    <title>{appTitle ?? 'Supabase'}</title>
+                    <title>{appTitle ?? 'Orchestra Studio'}</title>
                     <meta name="viewport" content="initial-scale=1.0, width=device-width" />
                     <meta property="og:image" content={`${BASE_PATH}/img/supabase-logo.png`} />
                     <meta name="googlebot" content="notranslate" />
@@ -165,7 +166,7 @@ function CustomApp({ Component, pageProps }: AppPropsWithLayout) {
                       />
                     )}
                   </Head>
-                  <MetaFaviconsPagesRouter applicationName="Supabase Studio" includeManifest />
+                  <MetaFaviconsPagesRouter applicationName="Orchestra Studio" includeManifest />
                   <TooltipProvider delayDuration={0}>
                     <RouteValidationWrapper>
                       <ThemeProvider

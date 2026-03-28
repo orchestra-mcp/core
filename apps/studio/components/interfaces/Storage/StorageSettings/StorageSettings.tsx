@@ -117,9 +117,9 @@ export const StorageSettings = () => {
   } = useCheckEntitlements('storage.image_transformations')
 
   const isSpendCapOn =
-    organization?.plan.id === 'pro' && organization?.usage_billing_enabled === false
+    IS_PLATFORM && organization?.plan.id === 'pro' && organization?.usage_billing_enabled === false
   const hasLimitedStorageAccess =
-    !hasAccessToImageTransformations && !hasAccessToFileSizeConfiguration
+    IS_PLATFORM && !hasAccessToImageTransformations && !hasAccessToFileSizeConfiguration
 
   const [isUpdating, setIsUpdating] = useState(false)
   const [initialValues, setInitialValues] = useState<StorageSettingsState>({
@@ -129,7 +129,7 @@ export const StorageSettings = () => {
   })
 
   const maxBytes = useMemo(() => {
-    if (organization?.usage_billing_enabled || isEntitlementUnlimited()) {
+    if (!IS_PLATFORM || organization?.usage_billing_enabled || isEntitlementUnlimited()) {
       return STORAGE_FILE_SIZE_LIMIT_MAX_BYTES_UNCAPPED
     } else {
       return getEntitlementNumericValue() ?? STORAGE_FILE_SIZE_LIMIT_MAX_BYTES_CAPPED

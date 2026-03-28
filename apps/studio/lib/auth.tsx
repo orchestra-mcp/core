@@ -11,6 +11,7 @@ import {
 } from 'common'
 import { useAiAssistantStateSnapshot } from 'state/ai-assistant-state'
 import { GOTRUE_ERRORS, IS_PLATFORM } from './constants'
+import { OrchAuthProvider, ORCH_AUTH_ENABLED } from './orch-auth'
 
 const AuthErrorToaster = ({ children }: PropsWithChildren) => {
   const error = useAuthError()
@@ -32,10 +33,28 @@ const AuthErrorToaster = ({ children }: PropsWithChildren) => {
   return children
 }
 
+/**
+ * When Orchestra auth is enabled for self-hosted, we still use alwaysLoggedIn
+ * for the platform AuthProvider (since self-hosted doesn't use platform auth),
+ * but we wrap everything in OrchAuthProvider which handles the real auth.
+ *
+ * Flow:
+ * - IS_PLATFORM=true  → Platform GoTrue auth (original behavior)
+ * - IS_PLATFORM=false, ORCH_AUTH_ENABLED=true  → Orchestra GoTrue + admin check
+ * - IS_PLATFORM=false, ORCH_AUTH_ENABLED=false → No auth (original self-hosted behavior)
+ */
 export const AuthProvider = ({ children }: PropsWithChildren) => {
+  const alwaysLoggedIn = !IS_PLATFORM
+
   return (
-    <AuthProviderInternal alwaysLoggedIn={!IS_PLATFORM}>
-      <AuthErrorToaster>{children}</AuthErrorToaster>
+    <AuthProviderInternal alwaysLoggedIn={alwaysLoggedIn}>
+      <AuthErrorToaster>
+        {!IS_PLATFORM && ORCH_AUTH_ENABLED ? (
+          <OrchAuthProvider>{children}</OrchAuthProvider>
+        ) : (
+          children
+        )}
+      </AuthErrorToaster>
     </AuthProviderInternal>
   )
 }

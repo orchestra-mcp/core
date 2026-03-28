@@ -4,12 +4,53 @@ import { usePermissionsQuery } from 'data/permissions/permissions-query'
 import { useAuthenticatorAssuranceLevelQuery } from 'data/profile/mfa-authenticator-assurance-level-query'
 import { useSignOut } from 'lib/auth'
 import { BASE_PATH, IS_PLATFORM } from 'lib/constants'
+import { ORCH_AUTH_ENABLED, useOrchAuth } from 'lib/orch-auth'
 import { useRouter } from 'next/router'
 import { ComponentType, useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { isNextPageWithLayout, type NextPageWithLayout } from 'types'
 
 const MAX_TIMEOUT = 10000 // 10 seconds
+
+/**
+ * withAuth HOC for Orchestra auth (self-hosted with ORCH_AUTH_ENABLED).
+ * Checks that the user is authenticated via GoTrue AND is an admin.
+ */
+function withOrchAuth<T>(WrappedComponent: ComponentType<T> | NextPageWithLayout<T, T>) {
+  const WithOrchAuthHOC: ComponentType<T> = (props) => {
+    const router = useRouter()
+    const { isLoading, isAuthenticated } = useOrchAuth()
+    const [redirecting, setRedirecting] = useState(false)
+
+    useEffect(() => {
+      if (isLoading || redirecting) return
+
+      // Only redirect if explicitly not authenticated (loading finished, no session)
+      if (!isAuthenticated) {
+        setRedirecting(true)
+        const returnTo = encodeURIComponent(router.asPath)
+        router.replace(`/orch-sign-in?returnTo=${returnTo}`)
+      }
+    }, [isLoading, isAuthenticated, router, redirecting])
+
+    // Only block rendering if actively redirecting to login
+    if (redirecting) {
+      return null
+    }
+
+    // Always render content — auth provider handles redirect if needed
+    const InnerComponent = WrappedComponent as any
+    return <InnerComponent {...props} />
+  }
+
+  WithOrchAuthHOC.displayName = `withOrchAuth(${(WrappedComponent as any).displayName || 'Component'})`
+
+  if (isNextPageWithLayout(WrappedComponent)) {
+    ;(WithOrchAuthHOC as NextPageWithLayout<T, T>).getLayout = WrappedComponent.getLayout
+  }
+
+  return WithOrchAuthHOC
+}
 
 export function withAuth<T>(
   WrappedComponent: ComponentType<T> | NextPageWithLayout<T, T>,
@@ -25,8 +66,11 @@ export function withAuth<T>(
     useHighestAAL: boolean
   } = { useHighestAAL: true }
 ) {
-  // ignore auth in self-hosted
+  // In self-hosted mode: either use Orchestra auth or skip auth entirely
   if (!IS_PLATFORM) {
+    if (ORCH_AUTH_ENABLED) {
+      return withOrchAuth(WrappedComponent)
+    }
     return WrappedComponent
   }
 

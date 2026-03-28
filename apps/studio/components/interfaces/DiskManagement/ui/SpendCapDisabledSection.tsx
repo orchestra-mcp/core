@@ -3,6 +3,7 @@ import Link from 'next/link'
 
 import { useSelectedOrganizationQuery } from 'hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from 'hooks/misc/useSelectedProject'
+import { IS_PLATFORM } from 'lib/constants'
 import {
   AlertDescription_Shadcn_ as AlertDescription,
   AlertTitle_Shadcn_ as AlertTitle,
@@ -16,7 +17,10 @@ export function SpendCapDisabledSection() {
   const { data: project } = useSelectedProjectQuery()
 
   const isSpendCapEnabled =
-    org?.plan.id !== 'free' && !org?.usage_billing_enabled && project?.cloud_provider !== 'FLY'
+    IS_PLATFORM &&
+    org?.plan.id !== 'free' &&
+    !org?.usage_billing_enabled &&
+    project?.cloud_provider !== 'FLY'
 
   return (
     <AnimatePresence>

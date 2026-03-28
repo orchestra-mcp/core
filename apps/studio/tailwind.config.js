@@ -15,6 +15,10 @@ module.exports = config({
         grid: '13px',
       },
       colors: {
+        /* Orchestra brand */
+        'orchestra-cyan': '#00E5FF',
+        'orchestra-purple': '#A900FF',
+
         /*  typography */
         'typography-body': {
           light: 'hsl(var(--foreground-light))',

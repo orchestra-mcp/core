@@ -12,6 +12,7 @@ import SignInLayout from 'components/layouts/SignInLayout/SignInLayout'
 import { useCustomContent } from 'hooks/custom-content/useCustomContent'
 import { useIsFeatureEnabled } from 'hooks/misc/useIsFeatureEnabled'
 import { IS_PLATFORM } from 'lib/constants'
+import { ORCH_AUTH_ENABLED } from 'lib/orch-auth'
 import type { NextPageWithLayout } from 'types'
 import { Button } from 'ui'
 
@@ -39,8 +40,16 @@ const SignInPage: NextPageWithLayout = () => {
 
   useEffect(() => {
     if (!IS_PLATFORM) {
-      // on selfhosted instance just redirect to projects page
-      router.replace('/project/default')
+      if (ORCH_AUTH_ENABLED) {
+        // When Orchestra auth is enabled, redirect to Orchestra sign-in page
+        router.replace({
+          pathname: '/orch-sign-in',
+          query: router.query,
+        })
+      } else {
+        // on selfhosted instance just redirect to projects page
+        router.replace('/project/default')
+      }
     }
   }, [router])
 

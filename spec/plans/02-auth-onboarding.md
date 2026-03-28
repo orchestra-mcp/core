@@ -9,53 +9,53 @@
 ## Tasks
 
 ### 2.1 Laravel Auth (Blade + Livewire 4)
-- [ ] Create `LoginController` with Blade views
-- [ ] Create `RegisterController` with Blade views
-- [ ] Registration form: full_name, email, password, confirm_password
-- [ ] Login form: email, password, "Login with GitHub" button
-- [ ] Guest layout (`guest.blade.php`) with Orchestra branding
-- [ ] Dashboard layout (`dashboard.blade.php`) with sidebar navigation
-- [ ] Password reset flow (forgot-password, email link, reset form)
+- [x] Create `LoginController` with Blade views
+- [x] Create `RegisterController` with Blade views
+- [x] Registration form: full_name, email, password, confirm_password
+- [x] Login form: email, password, "Login with GitHub" button
+- [x] Guest layout (`guest.blade.php`) with Orchestra branding
+- [x] Dashboard layout (`dashboard.blade.php`) with sidebar navigation
+- [x] Password reset flow (forgot-password, email link, reset form)
 
 ### 2.2 Supabase Auth Sync Service
-- [ ] Create `SupabaseAuthService` — REST client for GoTrue Admin API
-- [ ] On Laravel register: create user in Supabase GoTrue via Admin API
-- [ ] Store `supabase_user_id` (UUID) on Laravel User model
-- [ ] Supabase trigger auto-creates `profiles` row
-- [ ] On Laravel login: generate Supabase JWT using `JWT_SECRET`
-- [ ] Store JWT in Laravel session for Supabase API calls
-- [ ] Create `SupabaseService` — REST client for Supabase PostgREST
+- [x] Create `SupabaseAuthService` — REST client for GoTrue Admin API
+- [x] On Laravel register: create user in Supabase GoTrue via Admin API
+- [x] Store `supabase_user_id` (UUID) on Laravel User model
+- [x] Supabase trigger auto-creates `profiles` row
+- [x] On Laravel login: generate Supabase JWT using `JWT_SECRET`
+- [x] Store JWT in Laravel session for Supabase API calls
+- [x] Create `SupabaseService` — REST client for Supabase PostgREST
 
 ### 2.3 GitHub OAuth
-- [ ] Register GitHub OAuth App (callback: `/auth/callback/github`)
-- [ ] Implement `SupabaseAuthController@callback` for GitHub
-- [ ] On GitHub callback: create/login Laravel user + sync to Supabase
-- [ ] Store GitHub username on profiles
+- [x] Register GitHub OAuth App (callback: `/auth/callback/github`)
+- [x] Implement `SupabaseAuthController@callback` for GitHub
+- [x] On GitHub callback: create/login Laravel user + sync to Supabase
+- [x] Store GitHub username on profiles
 
 ### 2.4 Onboarding Flow (3-step Livewire wizard)
-- [ ] `EnsureOnboarded` middleware — redirects to `/onboarding/company` if not onboarded
-- [ ] Step 1 — Company Setup (`CompanySetup.php` Livewire):
+- [x] `EnsureOnboarded` middleware — redirects to `/onboarding/company` if not onboarded
+- [x] Step 1 — Company Setup (`CompanySetup.php` Livewire):
   - Company name, slug (auto-generated), description
   - Creates `organizations` row + default `teams` row
   - Creates `team_members` row (owner role)
-- [ ] Step 2 — Team Setup (`TeamSetup.php` Livewire):
+- [x] Step 2 — Team Setup (`TeamSetup.php` Livewire):
   - Invite team members by email (optional, can skip)
   - Sets up additional team structure
-- [ ] Step 3 — Connect Claude (`ConnectClaude.php` Livewire):
+- [x] Step 3 — Connect Claude (`ConnectClaude.php` Livewire):
   - Auto-generates first MCP token
   - Shows connection instructions with copy-paste config
   - Shows `.mcp.json` config and `CLAUDE.md` snippet
   - Mark `profiles.onboarding_completed = true`
 
 ### 2.5 MCP Token Generation
-- [ ] Create `TokenService`:
+- [x] Create `TokenService`:
   - Generate token: `orch_` + 32 random hex chars
   - Store SHA-256 hash in `mcp_tokens.token_hash`
   - Store display prefix `orch_xxxxxxxx` in `token_prefix`
   - Return plain token only once (on creation)
-- [ ] Livewire `CreateToken` component — modal with token name input
-- [ ] Livewire `TokenList` component — list tokens with revoke action
-- [ ] Token display page: show plain token with "copy" button, warn "won't be shown again"
+- [x] Livewire `CreateToken` component — modal with token name input
+- [x] Livewire `TokenList` component — list tokens with revoke action
+- [x] Token display page: show plain token with "copy" button, warn "won't be shown again"
 
 ### 2.6 Studio Auth Integration
 - [ ] Modify Studio `_app.tsx` (or equivalent) to check for Supabase JWT
@@ -66,12 +66,12 @@
 - [ ] If admin: load full Studio interface
 
 ### 2.7 Studio Branding Overhaul
-- [ ] Replace Supabase logo with `arts/logo.svg` / `arts/logo-dark.svg`
-- [ ] Replace favicon with `arts/icon.svg`
-- [ ] Update color palette from `arts/colors.css`
-- [ ] Update typography from `arts/fonts/`
-- [ ] Change app name to "Orchestra Studio"
-- [ ] Update title bar to "Orchestra Studio — Admin"
+- [x] Replace Supabase logo with `arts/logo.svg` / `arts/logo-dark.svg`
+- [x] Replace favicon with `arts/icon.svg`
+- [x] Update color palette from `arts/colors.css`
+- [x] Update typography from `arts/fonts/`
+- [x] Change app name to "Orchestra Studio"
+- [x] Update title bar to "Orchestra Studio — Admin"
 
 ---
 

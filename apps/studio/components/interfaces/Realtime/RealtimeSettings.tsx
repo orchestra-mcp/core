@@ -8,6 +8,7 @@ import * as z from 'zod'
 
 import { useParams } from 'common'
 import AlertError from 'components/ui/AlertError'
+import { IS_PLATFORM } from 'lib/constants'
 import { ToggleSpendCapButton } from 'components/ui/ToggleSpendCapButton'
 import { UpgradePlanButton } from 'components/ui/UpgradePlanButton'
 import { useDatabasePoliciesQuery } from 'data/database-policies/database-policies-query'
@@ -70,8 +71,8 @@ export const RealtimeSettings = () => {
     schema: 'realtime',
   })
 
-  const isFreePlan = organization?.plan.id === 'free'
-  const isUsageBillingEnabled = organization?.usage_billing_enabled
+  const isFreePlan = IS_PLATFORM && organization?.plan.id === 'free'
+  const isUsageBillingEnabled = !IS_PLATFORM || organization?.usage_billing_enabled
   const isRealtimeDisabled = data?.suspend ?? REALTIME_DEFAULT_CONFIG.suspend
   // Check if RLS policies exist for realtime.messages table
   const realtimeMessagesPolicies = policies?.filter(

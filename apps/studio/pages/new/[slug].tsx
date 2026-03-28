@@ -50,7 +50,7 @@ import { useLocalStorageQuery } from 'hooks/misc/useLocalStorage'
 import { useSelectedOrganizationQuery } from 'hooks/misc/useSelectedOrganization'
 import { withAuth } from 'hooks/misc/withAuth'
 import { usePHFlag } from 'hooks/ui/useFlag'
-import { DOCS_URL, PROJECT_STATUS, PROVIDERS, useDefaultProvider } from 'lib/constants'
+import { DOCS_URL, IS_PLATFORM, PROJECT_STATUS, PROVIDERS, useDefaultProvider } from 'lib/constants'
 import { buildStudioPageTitle } from 'lib/page-title'
 import { useProfile } from 'lib/profile'
 import { useTrack } from 'lib/telemetry/track'
@@ -64,6 +64,7 @@ import { toast } from 'sonner'
 import type { NextPageWithLayout } from 'types'
 import { Button, Form_Shadcn_, FormField_Shadcn_, useWatch_Shadcn_ } from 'ui'
 import { Admonition } from 'ui-patterns/admonition'
+import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 import { z } from 'zod'
 
@@ -78,7 +79,7 @@ const Wizard: NextPageWithLayout = () => {
   const { profile } = useProfile()
   const pageTitle = buildStudioPageTitle({
     section: 'New Project',
-    brand: appTitle || 'Supabase',
+    brand: appTitle || 'Orchestra Studio',
   })
 
   const { data: currentOrg } = useSelectedOrganizationQuery()
@@ -122,7 +123,7 @@ const Wizard: NextPageWithLayout = () => {
     resolver: zodResolver(FormSchema),
     mode: 'onChange',
     defaultValues: {
-      organization: slug,
+      organization: IS_PLATFORM ? slug : slug || 'default',
       projectName: projectName || '',
       highAvailability: false,
       postgresVersion: '',
@@ -130,7 +131,7 @@ const Wizard: NextPageWithLayout = () => {
       dbPass: '',
       dbPassStrength: 0,
       dbPassStrengthMessage: '',
-      dbRegion: undefined,
+      dbRegion: IS_PLATFORM ? undefined : 'local',
       instanceSize: canChooseInstanceSize ? sizes[0] : undefined,
       dataApi: true,
       enableRlsEventTrigger: false,
@@ -278,6 +279,12 @@ const Wizard: NextPageWithLayout = () => {
   })
 
   const onSubmitWithComputeCostsConfirmation = async (values: z.infer<typeof FormSchema>) => {
+    // Self-hosted mode: skip cost confirmation entirely
+    if (!IS_PLATFORM) {
+      await onSubmit(values)
+      return
+    }
+
     const launchingLargerInstance =
       values.instanceSize &&
       !sizesWithNoCostConfirmationRequired.includes(values.instanceSize as DesiredInstanceSize)
@@ -293,7 +300,9 @@ const Wizard: NextPageWithLayout = () => {
   }
 
   const onSubmit = async (values: z.infer<typeof FormSchema>) => {
-    if (!currentOrg) return console.error('Unable to retrieve current organization')
+    if (IS_PLATFORM && !currentOrg) {
+      return console.error('Unable to retrieve current organization')
+    }
 
     const {
       cloudProvider,
@@ -308,6 +317,21 @@ const Wizard: NextPageWithLayout = () => {
       postgresVersionSelection,
       useOrioleDb,
     } = values
+
+    // Self-hosted: create project with minimal fields
+    if (!IS_PLATFORM) {
+      const data: ProjectCreateVariables = {
+        dbPass,
+        cloudProvider: PROVIDERS[defaultProvider].id,
+        organizationSlug: currentOrg?.slug ?? 'default',
+        name: projectName,
+        dbRegion: 'local',
+        dbPricingTierId: 'tier_free',
+        dataApiUseApiSchema: false,
+      }
+      createProject(data)
+      return
+    }
 
     if (useOrioleDb && !availableOrioleVersion) {
       return toast.error('No available OrioleDB image found, only Postgres is available')
@@ -324,7 +348,7 @@ const Wizard: NextPageWithLayout = () => {
     const data: ProjectCreateVariables = {
       dbPass,
       cloudProvider,
-      organizationSlug: currentOrg.slug,
+      organizationSlug: currentOrg!.slug,
       name: projectName,
       highAvailability,
       // gets ignored due to org billing subscription anyway
@@ -370,8 +394,8 @@ const Wizard: NextPageWithLayout = () => {
   }, [allOrgProjects, allProjects, setAllProjects])
 
   useEffect(() => {
-    // Handle no org: redirect to new org route
-    if (isEmptyOrganizations) {
+    // Handle no org: redirect to new org route (platform only)
+    if (IS_PLATFORM && isEmptyOrganizations) {
       router.push(`/new`)
     }
   }, [isEmptyOrganizations, router])
@@ -384,19 +408,19 @@ const Wizard: NextPageWithLayout = () => {
   }, [slug])
 
   useEffect(() => {
-    if (form.getValues('dbRegion') === undefined && defaultRegion) {
+    if (IS_PLATFORM && form.getValues('dbRegion') === undefined && defaultRegion) {
       form.setValue('dbRegion', defaultRegion)
     }
   }, [defaultRegion])
 
   useEffect(() => {
-    if (regionError) {
+    if (IS_PLATFORM && regionError) {
       form.setValue('dbRegion', PROVIDERS[defaultProvider].default_region.displayName)
     }
   }, [regionError])
 
   useEffect(() => {
-    if (recommendedSmartRegion) {
+    if (IS_PLATFORM && recommendedSmartRegion) {
       form.setValue('dbRegion', recommendedSmartRegion)
     }
   }, [recommendedSmartRegion])
@@ -416,58 +440,90 @@ const Wizard: NextPageWithLayout = () => {
       {/* Wizard layouts set the visual header but not the browser tab title. */}
       <Head>
         <title>{pageTitle}</title>
-        <meta name="description" content="Supabase Studio" />
+        <meta name="description" content="Orchestra Studio" />
       </Head>
       <Form_Shadcn_ {...form}>
         <form onSubmit={form.handleSubmit(onSubmitWithComputeCostsConfirmation)}>
           <Panel
-            loading={!isOrganizationsSuccess}
+            loading={IS_PLATFORM ? !isOrganizationsSuccess : false}
             title={
               <div key="panel-title">
                 <h3>Create a new project</h3>
                 <p className="text-sm text-foreground-lighter text-balance">
-                  Your project will have its own dedicated instance and full Postgres database. An
-                  API will be set up so you can easily interact with your new database.
+                  {IS_PLATFORM
+                    ? 'Your project will have its own dedicated instance and full Postgres database. An API will be set up so you can easily interact with your new database.'
+                    : 'Set up your self-hosted project with a local Postgres database.'}
                 </p>
               </div>
             }
             footer={
-              <ProjectCreationFooter
-                form={form}
-                canCreateProject={canCreateProject}
-                instanceSize={instanceSize}
-                organizationProjects={organizationProjects}
-                isCreatingNewProject={isCreatingNewProject}
-                isSuccessNewProject={isSuccessNewProject}
-              />
+              IS_PLATFORM ? (
+                <ProjectCreationFooter
+                  form={form}
+                  canCreateProject={canCreateProject}
+                  instanceSize={instanceSize}
+                  organizationProjects={organizationProjects}
+                  isCreatingNewProject={isCreatingNewProject}
+                  isSuccessNewProject={isSuccessNewProject}
+                />
+              ) : (
+                <div key="panel-footer" className="flex items-center justify-end w-full space-x-2">
+                  <Button
+                    type="default"
+                    disabled={isCreatingNewProject || isSuccessNewProject}
+                    onClick={() => router.push('/project/default')}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    htmlType="submit"
+                    loading={isCreatingNewProject || isSuccessNewProject}
+                  >
+                    Create new project
+                  </Button>
+                </div>
+              )
             }
           >
             <>
-              {projectCreationDisabled ? (
+              {projectCreationDisabled && IS_PLATFORM ? (
                 <DisabledWarningDueToIncident title="Project creation is currently disabled" />
               ) : (
                 <div className="divide-y divide-border-muted">
-                  <OrganizationSelector form={form} />
+                  {IS_PLATFORM && <OrganizationSelector form={form} />}
 
-                  {canCreateProject && (
+                  {(!IS_PLATFORM || canCreateProject) && (
                     <>
                       <ProjectNameInput form={form} />
-                      <HighAvailabilityInput form={form} />
 
-                      {cloudProviderEnabled && showNonProdFields && (
+                      {IS_PLATFORM && <HighAvailabilityInput form={form} />}
+
+                      {IS_PLATFORM && cloudProviderEnabled && showNonProdFields && (
                         <CloudProviderSelector form={form} />
                       )}
 
-                      {canChooseInstanceSize && <ComputeSizeSelector form={form} />}
+                      {IS_PLATFORM && canChooseInstanceSize && (
+                        <ComputeSizeSelector form={form} />
+                      )}
 
                       <DatabasePasswordInput form={form} />
 
-                      <RegionSelector
-                        form={form}
-                        instanceSize={instanceSize as DesiredInstanceSize}
-                      />
+                      {IS_PLATFORM ? (
+                        <RegionSelector
+                          form={form}
+                          instanceSize={instanceSize as DesiredInstanceSize}
+                        />
+                      ) : (
+                        <Panel.Content>
+                          <FormItemLayout layout="horizontal" label="Region" isReactForm={false}>
+                            <div className="flex items-center gap-x-2 text-sm text-foreground">
+                              <span>Local (self-hosted)</span>
+                            </div>
+                          </FormItemLayout>
+                        </Panel.Content>
+                      )}
 
-                      {showPostgresVersionSelector && (
+                      {IS_PLATFORM && showPostgresVersionSelector && (
                         <Panel.Content>
                           <FormField_Shadcn_
                             control={form.control}
@@ -485,14 +541,16 @@ const Wizard: NextPageWithLayout = () => {
                         </Panel.Content>
                       )}
 
-                      {showNonProdFields && <CustomPostgresVersionInput form={form} />}
+                      {IS_PLATFORM && showNonProdFields && (
+                        <CustomPostgresVersionInput form={form} />
+                      )}
 
-                      <SecurityOptions form={form} />
-                      {showAdvancedConfig && !!availableOrioleVersion && (
+                      {IS_PLATFORM && <SecurityOptions form={form} />}
+                      {IS_PLATFORM && showAdvancedConfig && !!availableOrioleVersion && (
                         <AdvancedConfiguration form={form} />
                       )}
 
-                      {shouldShowFreeProjectInfo ? (
+                      {IS_PLATFORM && shouldShowFreeProjectInfo ? (
                         <Admonition
                           className="rounded-none border-0 border-t"
                           type="note"
@@ -511,12 +569,12 @@ const Wizard: NextPageWithLayout = () => {
                     </>
                   )}
 
-                  {freePlanWithExceedingLimits ? (
+                  {IS_PLATFORM && freePlanWithExceedingLimits ? (
                     isAdmin &&
                     slug && (
                       <FreeProjectLimitWarning membersExceededLimit={membersExceededLimit || []} />
                     )
-                  ) : hasOutstandingInvoices ? (
+                  ) : IS_PLATFORM && hasOutstandingInvoices ? (
                     <Panel.Content>
                       <Admonition
                         type="default"
@@ -543,36 +601,38 @@ const Wizard: NextPageWithLayout = () => {
             </>
           </Panel>
 
-          <ConfirmationModal
-            size="large"
-            loading={false}
-            visible={isComputeCostsConfirmationModalVisible}
-            title="Confirm compute costs"
-            confirmLabel="I understand"
-            onCancel={() => setIsComputeCostsConfirmationModalVisible(false)}
-            onConfirm={async () => {
-              const values = form.getValues()
-              await onSubmit(values)
-              setIsComputeCostsConfirmationModalVisible(false)
-            }}
-            variant={'warning'}
-          >
-            <div className="text-sm text-foreground-light space-y-1">
-              <p>
-                Launching a project on compute size "{instanceLabel(instanceSize)}" increases your
-                monthly costs by ${additionalMonthlySpend}, independent of how actively you use it.
-                By clicking "I understand", you agree to the additional costs.{' '}
-                <Link
-                  href={`${DOCS_URL}/guides/platform/manage-your-usage/compute`}
-                  target="_blank"
-                  className="underline"
-                >
-                  Compute Costs
-                </Link>{' '}
-                are non-refundable.
-              </p>
-            </div>
-          </ConfirmationModal>
+          {IS_PLATFORM && (
+            <ConfirmationModal
+              size="large"
+              loading={false}
+              visible={isComputeCostsConfirmationModalVisible}
+              title="Confirm compute costs"
+              confirmLabel="I understand"
+              onCancel={() => setIsComputeCostsConfirmationModalVisible(false)}
+              onConfirm={async () => {
+                const values = form.getValues()
+                await onSubmit(values)
+                setIsComputeCostsConfirmationModalVisible(false)
+              }}
+              variant={'warning'}
+            >
+              <div className="text-sm text-foreground-light space-y-1">
+                <p>
+                  Launching a project on compute size "{instanceLabel(instanceSize)}" increases your
+                  monthly costs by ${additionalMonthlySpend}, independent of how actively you use it.
+                  By clicking "I understand", you agree to the additional costs.{' '}
+                  <Link
+                    href={`${DOCS_URL}/guides/platform/manage-your-usage/compute`}
+                    target="_blank"
+                    className="underline"
+                  >
+                    Compute Costs
+                  </Link>{' '}
+                  are non-refundable.
+                </p>
+              </div>
+            </ConfirmationModal>
+          )}
         </form>
       </Form_Shadcn_>
     </>

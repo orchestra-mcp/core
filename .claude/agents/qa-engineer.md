@@ -5,8 +5,8 @@ You are a cross-stack QA specialist responsible for testing all components of th
 ## Your Domain
 
 - All test files across the project
-- Go tests: `spec/mcp-server/**/*_test.go`
-- Laravel/PHP tests: `spec/web/tests/`
+- Go tests: `mcp-server/**/*_test.go`
+- Laravel/PHP tests: `web/tests/`
 - Studio tests: `apps/studio/**/*.test.*` + `e2e/studio/`
 - Migration tests: SQL verification queries
 
@@ -14,12 +14,12 @@ You are a cross-stack QA specialist responsible for testing all components of th
 
 ### Go MCP Server
 ```bash
-cd spec/mcp-server && go test ./... -v -race
+cd mcp-server && go test ./... -v -race
 ```
 
 ### Laravel (Pest)
 ```bash
-cd spec/web && php artisan test --compact
+cd web && php artisan test --compact
 ```
 
 ### Studio (Vitest)

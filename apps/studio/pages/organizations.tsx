@@ -31,7 +31,7 @@ const OrganizationsPage: NextPageWithLayout = () => {
   const orgNotFound = orgNotFoundError === 'org_not_found'
   const pageTitle = buildStudioPageTitle({
     section: 'Organizations',
-    brand: appTitle || 'Supabase',
+    brand: appTitle || 'Orchestra Studio',
   })
 
   const {
@@ -62,7 +62,7 @@ const OrganizationsPage: NextPageWithLayout = () => {
     <>
       <Head>
         <title>{pageTitle}</title>
-        <meta name="description" content="Supabase Studio" />
+        <meta name="description" content="Orchestra Studio" />
       </Head>
       <ScaffoldContainer>
         <ScaffoldSection isFullWidth className="flex flex-col gap-y-4">

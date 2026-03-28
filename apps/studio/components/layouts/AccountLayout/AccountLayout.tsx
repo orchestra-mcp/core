@@ -28,7 +28,7 @@ const AccountLayout = ({ children, title }: PropsWithChildren<AccountLayoutProps
   const showSecuritySettings = useIsFeatureEnabled('account:show_security_settings')
 
   const { appTitle } = useCustomContent(['app:title'])
-  const brandTitle = appTitle || 'Supabase'
+  const brandTitle = appTitle || 'Orchestra Studio'
 
   const [lastVisitedOrganization] = useLocalStorageQuery(
     LOCAL_STORAGE_KEYS.LAST_VISITED_ORGANIZATION,
@@ -104,17 +104,13 @@ const AccountLayout = ({ children, title }: PropsWithChildren<AccountLayoutProps
     return unregister
   }, [registerOpenMenu, setMobileSheetContent, sections])
 
-  useEffect(() => {
-    if (!IS_PLATFORM) {
-      router.push('/project/default')
-    }
-  }, [router])
+  // Orchestra: allow account pages in self-hosted mode
 
   return (
     <>
       <Head>
         <title>{pageTitle}</title>
-        <meta name="description" content="Supabase Studio" />
+        <meta name="description" content="Orchestra Studio" />
       </Head>
       <div className={cn('flex flex-col w-screen h-[calc(100vh-48px)]')}>
         <WithSidebar

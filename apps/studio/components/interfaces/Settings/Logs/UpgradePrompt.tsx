@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
 import { useSelectedOrganizationQuery } from 'hooks/misc/useSelectedOrganization'
+import { IS_PLATFORM } from 'lib/constants'
 import { Button, Modal } from 'ui'
 import { TIER_QUERY_LIMITS } from './Logs.constants'
 
@@ -27,6 +28,9 @@ const UpgradePrompt: React.FC<Props> = ({
   source = 'logsRetentionUpgradePrompt',
 }) => {
   const { data: organization } = useSelectedOrganizationQuery()
+
+  // Self-hosted users have full access — never show upgrade prompts
+  if (!IS_PLATFORM) return null
 
   return (
     <Modal

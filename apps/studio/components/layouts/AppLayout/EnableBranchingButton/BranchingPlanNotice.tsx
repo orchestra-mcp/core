@@ -2,12 +2,16 @@ import { AlertCircleIcon } from 'lucide-react'
 import Link from 'next/link'
 
 import { useSelectedOrganizationQuery } from 'hooks/misc/useSelectedOrganization'
+import { IS_PLATFORM } from 'lib/constants'
 import { useAppStateSnapshot } from 'state/app-state'
 import { AlertDescription_Shadcn_, AlertTitle_Shadcn_, Alert_Shadcn_, Button } from 'ui'
 
 export const BranchingPlanNotice = () => {
   const snap = useAppStateSnapshot()
   const { data: selectedOrg } = useSelectedOrganizationQuery()
+
+  // Self-hosted users have full access — never show upgrade prompts
+  if (!IS_PLATFORM) return null
 
   return (
     <Alert_Shadcn_ className="rounded-none px-7 py-6 [&>svg]:top-6 [&>svg]:left-6 border-0 border-t">

@@ -2,6 +2,7 @@ import { ReactNode } from 'react'
 import { cn } from 'ui'
 import { Admonition } from 'ui-patterns'
 
+import { IS_PLATFORM } from 'lib/constants'
 import { DocsButton } from './DocsButton'
 import { UpgradePlanButton } from './UpgradePlanButton'
 
@@ -41,6 +42,9 @@ export const UpgradeToPro = ({
   className,
   docsUrl,
 }: UpgradeToProProps) => {
+  // Self-hosted users have full access — never show upgrade prompts
+  if (!IS_PLATFORM) return null
+
   return (
     <Admonition
       type="default"

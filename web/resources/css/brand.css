@@ -1,0 +1,28 @@
+:root {
+    --color-brand-cyan: #00E5FF;
+    --color-brand-purple: #A900FF;
+    --color-brand-gradient: linear-gradient(135deg, #00E5FF, #A900FF);
+    --color-brand-gradient-text: linear-gradient(135deg, #00E5FF, #A900FF);
+    --color-bg-dark: #0f0f23;
+    --color-bg-surface: #1a1a2e;
+    --color-bg-card: #16213e;
+    --color-bg-card-hover: #1e2a4a;
+    --color-text-primary: #e0e0e0;
+    --color-text-secondary: #a0a0b0;
+    --color-border: #2a2a4a;
+}
+
+.gradient-text {
+    background: var(--color-brand-gradient-text);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.gradient-bg {
+    background: var(--color-brand-gradient);
+}
+
+.gradient-border {
+    border-image: var(--color-brand-gradient) 1;
+}

@@ -3,6 +3,7 @@ import { useFlag, useParams } from 'common'
 import { SupportLink } from 'components/interfaces/Support/SupportLink'
 import { InlineLinkClassName } from 'components/ui/InlineLink'
 import { UpgradeToPro } from 'components/ui/UpgradeToPro'
+import { IS_PLATFORM } from 'lib/constants'
 import {
   useCustomDomainsQuery,
   type CustomDomainsData,
@@ -35,7 +36,8 @@ export const CustomDomainConfig = () => {
   const plan = organization?.plan?.id
 
   const { data: addons, isPending: isLoadingAddons } = useProjectAddonsQuery({ projectRef: ref })
-  const hasCustomDomainAddon = !!addons?.selected_addons.find((x) => x.type === 'custom_domain')
+  const hasCustomDomainAddon =
+    !IS_PLATFORM || !!addons?.selected_addons.find((x) => x.type === 'custom_domain')
 
   const {
     data: customDomainData,

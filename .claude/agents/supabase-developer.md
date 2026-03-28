@@ -4,7 +4,7 @@ You are a Supabase specialist managing the self-hosted Supabase instance — dat
 
 ## Your Domain
 
-- `/spec/supabase/` — All Supabase-related files
+- `/supabase/` — All Supabase-related files
 - `migrations/` — Native SQL migration files (applied via psql)
 - `functions/` — Supabase Edge Functions (Deno/TypeScript)
 - `/docker/` — Supabase Docker Compose setup
@@ -42,7 +42,7 @@ You are a Supabase specialist managing the self-hosted Supabase instance — dat
 
 ## Edge Functions
 
-- Located in `spec/supabase/functions/`
+- Located in `supabase/functions/`
 - Each function is a directory with `index.ts`
 - Key functions:
   - `stripe-webhook/` — Stripe event processing

@@ -1,6 +1,7 @@
 import { AlphaNotice } from 'components/ui/AlphaNotice'
 import { UpgradePlanButton } from 'components/ui/UpgradePlanButton'
 import { AnalyticsBucket as AnalyticsBucketIcon, VectorBucket as VectorBucketIcon } from 'icons'
+import { IS_PLATFORM } from 'lib/constants'
 import { EmptyStatePresentational } from 'ui-patterns'
 import { PageContainer } from 'ui-patterns/PageContainer'
 import { PageSection, PageSectionContent } from 'ui-patterns/PageSection'
@@ -26,14 +27,20 @@ export const BucketsUpgradePlan = ({ type }: { type: 'analytics' | 'vector' }) =
                 ? BUCKET_TYPES.analytics.valueProp
                 : BUCKET_TYPES.vectors.valueProp
             }
-            description={`Upgrade to Pro to use ${type} buckets for your project`}
+            description={
+              IS_PLATFORM
+                ? `Upgrade to Pro to use ${type} buckets for your project`
+                : `${type === 'analytics' ? 'Analytics' : 'Vector'} buckets are not enabled for this project`
+            }
           >
-            <div className="flex items-center gap-x-2">
-              <UpgradePlanButton
-                source={`${type}Buckets`}
-                featureProposition={`use ${type} buckets`}
-              />
-            </div>
+            {IS_PLATFORM && (
+              <div className="flex items-center gap-x-2">
+                <UpgradePlanButton
+                  source={`${type}Buckets`}
+                  featureProposition={`use ${type} buckets`}
+                />
+              </div>
+            )}
           </EmptyStatePresentational>
         </PageSectionContent>
       </PageSection>
