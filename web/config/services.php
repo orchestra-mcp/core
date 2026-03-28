@@ -35,6 +35,12 @@ return [
         ],
     ],
 
+    'github' => [
+        'client_id' => env('GITHUB_CLIENT_ID'),
+        'client_secret' => env('GITHUB_CLIENT_SECRET'),
+        'redirect' => env('GITHUB_CALLBACK_URL', '/auth/callback/github'),
+    ],
+
     'supabase' => [
         'url' => env('SUPABASE_URL', 'http://localhost:54321'),
         'anon_key' => env('SUPABASE_ANON_KEY', ''),
