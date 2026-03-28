@@ -34,9 +34,7 @@ var skillGetSchema = json.RawMessage(`{
 	"properties": {
 		"id":   {"type": "string", "format": "uuid", "description": "Skill UUID"},
 		"slug": {"type": "string", "description": "Skill slug"}
-	},
-	"oneOf": [
-		{"required": ["id"]},
+	}},
 		{"required": ["slug"]}
 	]
 }`)

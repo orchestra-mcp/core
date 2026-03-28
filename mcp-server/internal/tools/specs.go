@@ -36,9 +36,7 @@ var specGetSchema = json.RawMessage(`{
 		"id":         {"type": "string", "format": "uuid", "description": "Spec UUID"},
 		"slug":       {"type": "string", "description": "Spec slug"},
 		"project_id": {"type": "string", "format": "uuid", "description": "Project ID (required when using slug)"}
-	},
-	"oneOf": [
-		{"required": ["id"]},
+	}},
 		{"required": ["slug", "project_id"]}
 	]
 }`)
