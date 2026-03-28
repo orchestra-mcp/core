@@ -19,29 +19,26 @@ const MAX_TIMEOUT = 10000 // 10 seconds
 function withOrchAuth<T>(WrappedComponent: ComponentType<T> | NextPageWithLayout<T, T>) {
   const WithOrchAuthHOC: ComponentType<T> = (props) => {
     const router = useRouter()
-    const { isLoading, isAuthenticated, isAdmin } = useOrchAuth()
+    const { isLoading, isAuthenticated } = useOrchAuth()
+    const [redirecting, setRedirecting] = useState(false)
 
     useEffect(() => {
-      if (isLoading) return
+      if (isLoading || redirecting) return
 
+      // Only redirect if explicitly not authenticated (loading finished, no session)
       if (!isAuthenticated) {
+        setRedirecting(true)
         const returnTo = encodeURIComponent(router.asPath)
         router.replace(`/orch-sign-in?returnTo=${returnTo}`)
-      } else if (!isAdmin) {
-        router.replace('/access-denied')
       }
-    }, [isLoading, isAuthenticated, isAdmin, router])
+    }, [isLoading, isAuthenticated, router, redirecting])
 
-    // Show nothing while loading
-    if (isLoading) {
+    // Only block rendering if actively redirecting to login
+    if (redirecting) {
       return null
     }
 
-    // If authenticated, show content (admin check happens in provider redirect)
-    if (!isAuthenticated) {
-      return null
-    }
-
+    // Always render content — auth provider handles redirect if needed
     const InnerComponent = WrappedComponent as any
     return <InnerComponent {...props} />
   }
