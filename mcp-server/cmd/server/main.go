@@ -10,6 +10,9 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/orchestra-mcp/server/internal/auth"
+	"github.com/orchestra-mcp/server/internal/db"
+	"github.com/orchestra-mcp/server/internal/embedding"
 	"github.com/orchestra-mcp/server/internal/mcp"
 )
 
@@ -30,26 +33,113 @@ func main() {
 		port = defaultPort
 	}
 
+	// --- Initialize DB client (Supabase REST) ---
+	supabaseURL := os.Getenv("SUPABASE_URL")
+	supabaseKey := os.Getenv("SUPABASE_SERVICE_KEY")
+
+	var dbClient *db.Client
+	if supabaseURL != "" && supabaseKey != "" {
+		dbClient = db.NewClient(supabaseURL, supabaseKey)
+		slog.Info("supabase client initialized", "url", supabaseURL)
+	} else {
+		slog.Warn("SUPABASE_URL or SUPABASE_SERVICE_KEY not set — DB client disabled")
+	}
+
+	// --- Initialize embedding client ---
+	embProvider := os.Getenv("EMBEDDING_PROVIDER")
+	embAPIKey := os.Getenv("EMBEDDING_API_KEY")
+	embModel := os.Getenv("EMBEDDING_MODEL")
+
+	var embClient *embedding.Client
+	if embAPIKey != "" {
+		if embProvider == "" {
+			embProvider = "openai"
+		}
+		if embModel == "" {
+			embModel = "text-embedding-3-small"
+		}
+		embClient = embedding.NewClient(embProvider, embAPIKey, embModel)
+		slog.Info("embedding client initialized", "provider", embProvider, "model", embModel)
+	} else {
+		slog.Warn("EMBEDDING_API_KEY not set — embedding client disabled")
+	}
+
+	// --- Initialize auth middleware ---
+	databaseURL := os.Getenv("DATABASE_URL")
+
+	var authMiddleware *auth.TokenMiddleware
+	if databaseURL != "" {
+		var err error
+		authMiddleware, err = auth.NewTokenMiddleware(databaseURL)
+		if err != nil {
+			slog.Error("failed to initialize auth middleware", "error", err)
+			os.Exit(1)
+		}
+		defer authMiddleware.Close()
+		slog.Info("auth middleware initialized")
+	} else {
+		slog.Warn("DATABASE_URL not set — auth middleware disabled (all requests allowed)")
+	}
+
+	// --- Build tool registry ---
 	registry := mcp.NewToolRegistry()
+
+	// Register a built-in echo tool for testing connectivity.
+	registry.Register("echo", "Echo back the input text (for testing)", json.RawMessage(`{
+		"type": "object",
+		"properties": {
+			"text": {"type": "string", "description": "Text to echo back"}
+		},
+		"required": ["text"]
+	}`), func(ctx context.Context, params json.RawMessage) (*mcp.ToolResult, error) {
+		var input struct {
+			Text string `json:"text"`
+		}
+		if err := json.Unmarshal(params, &input); err != nil {
+			return nil, err
+		}
+		return &mcp.ToolResult{
+			Content: []mcp.ContentBlock{{Type: "text", Text: input.Text}},
+		}, nil
+	})
+
+	// Store clients in a shared context so tool handlers can access them.
+	_ = dbClient
+	_ = embClient
+
+	// --- Create MCP server ---
 	server := mcp.NewServer(registry)
 
+	// --- Setup routes ---
 	mux := http.NewServeMux()
 
+	// Health check — no auth required.
 	mux.HandleFunc("GET /mcp/health", handleHealth)
-	mux.HandleFunc("/mcp", server.HandleSSE)
+
+	// MCP SSE + POST endpoint — auth required when middleware is available.
+	if authMiddleware != nil {
+		mux.Handle("GET /mcp", authMiddleware.Middleware(http.HandlerFunc(server.HandleSSE)))
+		mux.Handle("POST /mcp", authMiddleware.Middleware(http.HandlerFunc(server.HandleMessage)))
+	} else {
+		mux.HandleFunc("GET /mcp", server.HandleSSE)
+		mux.HandleFunc("POST /mcp", server.HandleMessage)
+	}
+
+	// WebSocket endpoint (placeholder).
 	mux.HandleFunc("/mcp/ws", server.HandleWebSocket)
 
 	handler := corsMiddleware(mux)
 
 	srv := &http.Server{
-		Addr:         ":" + port,
-		Handler:      handler,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
-		IdleTimeout:  60 * time.Second,
+		Addr:              ":" + port,
+		Handler:           handler,
+		ReadTimeout:       15 * time.Second,
+		WriteTimeout:      0, // SSE connections are long-lived; no write timeout.
+		IdleTimeout:       60 * time.Second,
+		ReadHeaderTimeout: 5 * time.Second,
 	}
 
-	// Graceful shutdown
+	// Graceful shutdown.
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
 
