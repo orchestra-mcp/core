@@ -41,8 +41,9 @@ export const LocalDropdown = ({
     user?.email
   const email = user?.email
 
-  const handleLogout = async () => {
-    await signOut()
+  const handleLogout = () => {
+    // Use server-side logout that clears all storage and redirects
+    window.location.href = '/api/orch-auth/logout'
   }
 
   return (

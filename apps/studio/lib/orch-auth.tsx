@@ -39,7 +39,10 @@ const ORCH_STORAGE_KEY = 'orchestra.studio.auth.token'
 const ORCH_ADMIN_KEY = 'orchestra.studio.auth.is_admin'
 
 // Pages that don't require auth
-const PUBLIC_PAGES = ['/orch-sign-in', '/access-denied']
+const PUBLIC_PAGES = ['/orch-sign-in', '/access-denied', '/sign-in']
+
+// Pages that should skip the admin redirect (auth still required)
+const SKIP_ADMIN_CHECK_PAGES = ['/account']
 
 // ─── Supabase Client (singleton for Orchestra auth) ─────────────────────────
 
@@ -129,6 +132,7 @@ const OrchAuthContext = createContext<OrchAuthState>({
 export function OrchAuthProvider({ children }: PropsWithChildren) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
+  const [isCheckingAdmin, setIsCheckingAdmin] = useState(false)
   const [session, setSession] = useState<Session | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
 
@@ -145,17 +149,22 @@ export function OrchAuthProvider({ children }: PropsWithChildren) {
     supabase.auth.getSession().then(async ({ data: { session: existingSession } }) => {
       if (existingSession?.user) {
         setSession(existingSession)
-        // Check admin from cache first for faster load
+        // Use cache for instant load
         const cachedAdmin = safeGetLocalStorage(ORCH_ADMIN_KEY)
         if (cachedAdmin === 'true') {
           setIsAdmin(true)
+          setIsLoading(false)
         }
-        // Always verify admin status from DB
+        // Verify from server
+        setIsCheckingAdmin(true)
         const adminStatus = await checkIsAdmin(supabase, existingSession.user.id)
         setIsAdmin(adminStatus)
         safeSetLocalStorage(ORCH_ADMIN_KEY, String(adminStatus))
+        setIsCheckingAdmin(false)
+        setIsLoading(false)
+      } else {
+        setIsLoading(false)
       }
-      setIsLoading(false)
     })
 
     // Listen for auth changes
@@ -164,9 +173,11 @@ export function OrchAuthProvider({ children }: PropsWithChildren) {
     } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       setSession(newSession)
       if (newSession?.user) {
+        setIsCheckingAdmin(true)
         const adminStatus = await checkIsAdmin(supabase, newSession.user.id)
         setIsAdmin(adminStatus)
         safeSetLocalStorage(ORCH_ADMIN_KEY, String(adminStatus))
+        setIsCheckingAdmin(false)
       } else {
         setIsAdmin(false)
         safeRemoveLocalStorage(ORCH_ADMIN_KEY)
@@ -178,21 +189,21 @@ export function OrchAuthProvider({ children }: PropsWithChildren) {
     }
   }, [])
 
-  // Redirect logic
+  // Redirect logic — only when NOT checking admin
   useEffect(() => {
-    if (!ORCH_AUTH_ENABLED || isLoading) return
+    if (!ORCH_AUTH_ENABLED || isLoading || isCheckingAdmin) return
 
     const currentPath = router.pathname
     const isPublicPage = PUBLIC_PAGES.some((p) => currentPath.startsWith(p))
 
+    const skipAdminCheck = SKIP_ADMIN_CHECK_PAGES.some((p) => currentPath.startsWith(p))
+
     if (!session && !isPublicPage) {
-      // Not authenticated, redirect to sign-in
       router.replace(`/orch-sign-in?returnTo=${encodeURIComponent(router.asPath)}`)
-    } else if (session && !isAdmin && !isPublicPage) {
-      // Authenticated but not admin
+    } else if (session && !isAdmin && !isPublicPage && !skipAdminCheck) {
       router.replace('/access-denied')
     }
-  }, [session, isAdmin, isLoading, router.pathname])
+  }, [session, isAdmin, isLoading, isCheckingAdmin, router.pathname])
 
   const signIn = useCallback(async (email: string, password: string) => {
     const supabase = getOrchSupabaseClient()

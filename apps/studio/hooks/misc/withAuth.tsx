@@ -32,8 +32,13 @@ function withOrchAuth<T>(WrappedComponent: ComponentType<T> | NextPageWithLayout
       }
     }, [isLoading, isAuthenticated, isAdmin, router])
 
-    // Show nothing while loading or redirecting
-    if (isLoading || !isAuthenticated || !isAdmin) {
+    // Show nothing while loading
+    if (isLoading) {
+      return null
+    }
+
+    // If authenticated, show content (admin check happens in provider redirect)
+    if (!isAuthenticated) {
       return null
     }
 
