@@ -26,6 +26,8 @@ class User extends Authenticatable
         'supabase_user_id',
         'organization_id',
         'onboarding_completed',
+        'timezone',
+        'language',
     ];
 
     /**
