@@ -35,9 +35,7 @@ var agentGetSchema = json.RawMessage(`{
 	"properties": {
 		"id":   {"type": "string", "format": "uuid", "description": "Agent UUID"},
 		"slug": {"type": "string", "description": "Agent slug"}
-	}},
-		{"required": ["slug"]}
-	]
+	}
 }`)
 
 var agentListSchema = json.RawMessage(`{

@@ -33,9 +33,7 @@ var workflowGetSchema = json.RawMessage(`{
 	"properties": {
 		"id":   {"type": "string", "format": "uuid", "description": "Workflow UUID"},
 		"slug": {"type": "string", "description": "Workflow slug"}
-	}},
-		{"required": ["slug"]}
-	]
+	}
 }`)
 
 var workflowListSchema = json.RawMessage(`{
