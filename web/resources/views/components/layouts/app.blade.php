@@ -64,9 +64,9 @@
             <header class="sticky top-0 z-10 flex items-center justify-end h-16 px-8 bg-brand-surface border-b border-brand-border">
                 <div class="flex items-center gap-4">
                     <span class="text-sm text-brand-text-secondary">{{ auth()->user()->name ?? 'User' }}</span>
-                    <form method="POST" action="{{ route('login') }}">
+                    <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="text-sm text-brand-text-secondary hover:text-brand-text">Logout</button>
+                        <button type="submit" class="text-sm text-brand-text-secondary hover:text-brand-text cursor-pointer">Logout</button>
                     </form>
                 </div>
             </header>
