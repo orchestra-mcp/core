@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"strings"
 	"net"
 	"net/http"
 	"net/url"
@@ -37,23 +38,60 @@ type BrowserClient struct {
 	cmd      *exec.Cmd // process handle for managed Chrome
 }
 
+
+// newCDPContext creates a fresh chromedp context from the allocator for a single operation.
+func (bc *BrowserClient) newCDPContext(timeout time.Duration) (context.Context, context.CancelFunc) {
+	ctx, cancel1 := chromedp.NewContext(bc.allocCtx)
+	ctx2, cancel2 := context.WithTimeout(ctx, timeout)
+	return ctx2, func() { cancel2(); cancel1() }
+}
+
 // NewBrowserClient connects to a running Chrome instance at the given CDP URL.
 // If no Chrome is available, it auto-launches one with the appropriate flags.
 // The URL should be an HTTP endpoint like "http://localhost:9222".
 func NewBrowserClient(cdpURL string) (*BrowserClient, error) {
-	// Step 1: Try to connect to an existing Chrome instance.
-	if isChromeCDPAvailable(cdpURL) {
-		slog.Info("connecting to existing Chrome CDP", "url", cdpURL)
-		allocCtx, cancel := chromedp.NewRemoteAllocator(context.Background(), cdpURL)
+	// Normalize: if given an HTTP URL, resolve the WebSocket URL from /json/version
+	httpURL := cdpURL
+	wsURL := cdpURL
+	if strings.HasPrefix(cdpURL, "http") {
+		httpURL = cdpURL
+		// Resolve WebSocket URL from Chrome's version endpoint
+		resp, err := http.Get(strings.TrimRight(httpURL, "/") + "/json/version")
+		if err == nil {
+			defer resp.Body.Close()
+			var info struct {
+				WebSocketDebuggerURL string `json:"webSocketDebuggerUrl"`
+			}
+			if json.NewDecoder(resp.Body).Decode(&info) == nil && info.WebSocketDebuggerURL != "" {
+				wsURL = info.WebSocketDebuggerURL
+			}
+		}
+	} else if strings.HasPrefix(cdpURL, "ws") {
+		// Given a WS URL, derive the HTTP URL for health checks
+		httpURL = strings.Replace(cdpURL, "ws://", "http://", 1)
+		httpURL = strings.Replace(httpURL, "wss://", "https://", 1)
+		if idx := strings.Index(httpURL, "/devtools"); idx > 0 {
+			httpURL = httpURL[:idx]
+		}
+	}
 
-		// Verify the connection by listing targets with a short timeout.
-		testCtx, testCancel := context.WithTimeout(allocCtx, 5*time.Second)
+	// Step 1: Try to connect to an existing Chrome instance.
+	if isChromeCDPAvailable(httpURL) {
+		slog.Info("connecting to existing Chrome CDP", "http", httpURL, "ws", wsURL)
+		allocCtx, allocCancel := chromedp.NewRemoteAllocator(context.Background(), wsURL)
+
+		// Create a chromedp context from the allocator to verify the connection.
+		testCtx, testCancel := chromedp.NewContext(allocCtx)
+		timeoutCtx, timeoutCancel := context.WithTimeout(testCtx, 5*time.Second)
+		defer timeoutCancel()
 		defer testCancel()
 
-		if _, err := chromedp.Targets(testCtx); err != nil {
-			cancel()
-			return nil, fmt.Errorf("Chrome CDP responded but target listing failed at %s: %w", cdpURL, err)
+		if _, err := chromedp.Targets(timeoutCtx); err != nil {
+			allocCancel()
+			return nil, fmt.Errorf("Chrome CDP target listing failed at %s: %w", wsURL, err)
 		}
+
+		cancel := allocCancel
 
 		return &BrowserClient{
 			allocCtx: allocCtx,
@@ -414,7 +452,7 @@ func makeBrowserTabs(bc *BrowserClient) mcp.ToolHandler {
 			return mcp.ErrorResult(browserNotConnected), nil
 		}
 
-		listCtx, cancel := context.WithTimeout(bc.allocCtx, defaultBrowserTimeout)
+		listCtx, cancel := bc.newCDPContext(defaultBrowserTimeout)
 		defer cancel()
 
 		targets, err := chromedp.Targets(listCtx)
@@ -464,7 +502,7 @@ func makeBrowserNavigate(bc *BrowserClient) mcp.ToolHandler {
 			return mcp.ErrorResult("url is required"), nil
 		}
 
-		findCtx, findCancel := context.WithTimeout(bc.allocCtx, defaultBrowserTimeout)
+		findCtx, findCancel := bc.newCDPContext(defaultBrowserTimeout)
 		defer findCancel()
 
 		tgt, err := findPageTarget(findCtx, bc, input.TabID)
@@ -512,7 +550,7 @@ func makeBrowserScreenshot(bc *BrowserClient) mcp.ToolHandler {
 			orgID = userCtx.OrgID
 		}
 
-		findCtx, findCancel := context.WithTimeout(bc.allocCtx, defaultBrowserTimeout)
+		findCtx, findCancel := bc.newCDPContext(defaultBrowserTimeout)
 		defer findCancel()
 
 		tgt, err := findPageTarget(findCtx, bc, input.TabID)
@@ -596,7 +634,7 @@ func makeBrowserEval(bc *BrowserClient) mcp.ToolHandler {
 			return mcp.ErrorResult("expression is required"), nil
 		}
 
-		findCtx, findCancel := context.WithTimeout(bc.allocCtx, defaultBrowserTimeout)
+		findCtx, findCancel := bc.newCDPContext(defaultBrowserTimeout)
 		defer findCancel()
 
 		tgt, err := findPageTarget(findCtx, bc, input.TabID)
@@ -642,7 +680,7 @@ func makeBrowserDOM(bc *BrowserClient) mcp.ToolHandler {
 			input.MaxElements = 10
 		}
 
-		findCtx, findCancel := context.WithTimeout(bc.allocCtx, defaultBrowserTimeout)
+		findCtx, findCancel := bc.newCDPContext(defaultBrowserTimeout)
 		defer findCancel()
 
 		tgt, err := findPageTarget(findCtx, bc, input.TabID)
@@ -706,7 +744,7 @@ func makeBrowserClick(bc *BrowserClient) mcp.ToolHandler {
 			return mcp.ErrorResult("selector is required"), nil
 		}
 
-		findCtx, findCancel := context.WithTimeout(bc.allocCtx, defaultBrowserTimeout)
+		findCtx, findCancel := bc.newCDPContext(defaultBrowserTimeout)
 		defer findCancel()
 
 		tgt, err := findPageTarget(findCtx, bc, input.TabID)
