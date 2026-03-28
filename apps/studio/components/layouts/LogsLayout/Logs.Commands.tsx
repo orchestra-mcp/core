@@ -58,6 +58,12 @@ export function useLogsGotoCommands(options?: CommandOptions) {
               route: `/project/${ref}/logs/realtime-logs`,
               defaultHidden: true,
             },
+            {
+              id: 'nav-logs-orchestra',
+              name: 'Orchestra Logs',
+              route: `/project/${ref}/logs/orchestra-logs`,
+              defaultHidden: true,
+            },
           ] as IRouteCommand[])
         : []),
     ],

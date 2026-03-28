@@ -9,6 +9,7 @@ import { Alert_Shadcn_, AlertDescription_Shadcn_, AlertTitle_Shadcn_, WarningIco
 
 import { AWSPrivateLinkSection } from './AWSPrivateLink/AWSPrivateLinkSection'
 import { GitHubSection } from './GithubIntegration/GithubSection'
+import { OrchestraIntegrationsSettings } from './OrchestraIntegrations'
 import { VercelSection } from './VercelIntegration/VercelSection'
 
 export const IntegrationImageHandler = ({ title }: { title: 'vercel' | 'github' | 'aws' }) => {
@@ -65,6 +66,10 @@ const IntegrationSettings = () => {
           <AWSPrivateLinkSection />
         </>
       )}
+      <ScaffoldDivider />
+      <ScaffoldContainer>
+        <OrchestraIntegrationsSettings />
+      </ScaffoldContainer>
     </>
   )
 }
