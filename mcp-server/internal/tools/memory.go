@@ -179,7 +179,7 @@ func makeMemorySearch(dbClient *db.Client, embedder *embedding.Client) mcp.ToolH
 		}
 
 		// Use PostgreSQL text search instead of vector embeddings
-		qstr := fmt.Sprintf("organization_id=eq.%s&order=created_at.desc&limit=%d&select=id,title,content,summary,source,tags,created_at&or=(title.ilike.%%%s%%,content.ilike.%%%s%%)", userCtx.OrgID, p.MatchCount, p.Query, p.Query)
+		qstr := fmt.Sprintf("organization_id=eq.%s&order=created_at.desc&limit=%d&select=id,title,content,summary,source,tags,created_at&or=(title.ilike.*%s*,content.ilike.*%s*)", userCtx.OrgID, p.MatchCount, p.Query, p.Query)
 		if p.AgentID != "" {
 			qstr += "&agent_id=eq." + p.AgentID
 		}
