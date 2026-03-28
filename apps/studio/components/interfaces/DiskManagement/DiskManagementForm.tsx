@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PermissionAction } from '@supabase/shared-types/out/constants'
-import { useParams } from 'common'
+import { IS_PLATFORM, useParams } from 'common'
 import { MAX_WIDTH_CLASSES, PADDING_CLASSES, ScaffoldContainer } from 'components/layouts/Scaffold'
 import { DocsButton } from 'components/ui/DocsButton'
 import { RequestUpgradeToBillingOwners } from 'components/ui/RequestUpgradeToBillingOwners'
@@ -74,7 +74,10 @@ export function DiskManagementForm() {
   const { setProjectStatus } = useSetProjectStatus()
 
   const isSpendCapEnabled =
-    org?.plan.id !== 'free' && !org?.usage_billing_enabled && project?.cloud_provider !== 'FLY'
+    IS_PLATFORM &&
+    org?.plan.id !== 'free' &&
+    !org?.usage_billing_enabled &&
+    project?.cloud_provider !== 'FLY'
 
   const { data: resourceWarnings } = useResourceWarningsQuery({ ref: projectRef })
   // [Joshen Cleanup] JFYI this client side filtering can be cleaned up once BE changes are live which will only return the warnings based on the provided ref

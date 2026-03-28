@@ -4,6 +4,7 @@ import { SupportLink } from 'components/interfaces/Support/SupportLink'
 import { useAsyncCheckPermissions } from 'hooks/misc/useCheckPermissions'
 import { useIsFeatureEnabled } from 'hooks/misc/useIsFeatureEnabled'
 import { useSelectedOrganizationQuery } from 'hooks/misc/useSelectedOrganization'
+import { IS_PLATFORM } from 'lib/constants'
 import Link from 'next/link'
 import { PropsWithChildren } from 'react'
 import { Button } from 'ui'
@@ -57,6 +58,9 @@ export const UpgradePlanButton = ({
     undefined,
     { organizationSlug: slug }
   )
+
+  // Self-hosted users have full access — never show upgrade buttons
+  if (!IS_PLATFORM) return null
 
   const subject = `Enquiry to upgrade ${!!plan ? `to ${plan} ` : ''}plan for organization`
   const message = `Name: ${organization?.name}\nSlug: ${slug}\nRequested plan: ${plan ?? PLAN_REQUEST_EMPTY_PLACEHOLDER}`
