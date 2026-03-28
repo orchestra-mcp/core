@@ -36,6 +36,11 @@ func FromContext(ctx context.Context) (*UserContext, bool) {
 	return uc, ok
 }
 
+// WithUserContext returns a new context with the given UserContext attached.
+func WithUserContext(ctx context.Context, uc *UserContext) context.Context {
+	return context.WithValue(ctx, userContextKey, uc)
+}
+
 // UserContextFromContext extracts the UserContext from ctx.
 // Unlike FromContext it returns only the UserContext (nil when absent).
 func UserContextFromContext(ctx context.Context) *UserContext {
@@ -147,9 +152,25 @@ func ExtractToken(r *http.Request) string {
 // Middleware returns an HTTP middleware that validates the token and injects UserContext into the request context.
 func (m *TokenMiddleware) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Skip auth for POST requests with a sessionId (legacy SSE or Streamable HTTP).
+		// The session already has the auth context from the initial connection.
+		if r.Method == http.MethodPost {
+			sessionID := r.URL.Query().Get("sessionId")
+			if sessionID == "" {
+				sessionID = r.Header.Get("Mcp-Session-Id")
+			}
+			if sessionID != "" {
+				// Session-based request — let the MCP server handle auth via stored context
+				next.ServeHTTP(w, r)
+				return
+			}
+		}
+
 		rawToken := ExtractToken(r)
 		if rawToken == "" {
-			http.Error(w, `{"error":"missing authentication token"}`, http.StatusUnauthorized)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(map[string]string{"error": "missing authentication token"})
 			return
 		}
 
@@ -158,7 +179,9 @@ func (m *TokenMiddleware) Middleware(next http.Handler) http.Handler {
 		uc, err := m.Validate(tokenHash)
 		if err != nil {
 			slog.Warn("auth: token validation failed", "error", err, "remote", r.RemoteAddr)
-			http.Error(w, `{"error":"invalid or expired token"}`, http.StatusUnauthorized)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(map[string]string{"error": "invalid or expired token"})
 			return
 		}
 

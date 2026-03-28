@@ -68,6 +68,11 @@ export const MOBILE_PRODUCT_MENU_REGISTRY: Record<string, ComponentType | null> 
       default: m.SettingsProductMenu,
     }))
   ),
+  orchestra: React.lazy(() =>
+    import('components/layouts/OrchestraLayout/OrchestraLayout').then((m) => ({
+      default: m.OrchestraProductMenu,
+    }))
+  ),
 }
 
 export function getProductMenuComponent(sectionKey: string): ComponentType | null {

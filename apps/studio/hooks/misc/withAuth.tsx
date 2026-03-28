@@ -21,9 +21,18 @@ function withOrchAuth<T>(WrappedComponent: ComponentType<T> | NextPageWithLayout
     const router = useRouter()
     const { isLoading, isAuthenticated } = useOrchAuth()
     const [redirecting, setRedirecting] = useState(false)
+    // Track whether we're on the client — during SSR we must not redirect
+    // because localStorage (and thus the session) is unavailable.
+    const [isMounted, setIsMounted] = useState(false)
 
     useEffect(() => {
-      if (isLoading || redirecting) return
+      setIsMounted(true)
+    }, [])
+
+    useEffect(() => {
+      // Wait for client-side mount and auth initialization before deciding to redirect.
+      // During SSR or before hydration, isLoading stays true so this is a no-op.
+      if (!isMounted || isLoading || redirecting) return
 
       // Only redirect if explicitly not authenticated (loading finished, no session)
       if (!isAuthenticated) {
@@ -31,7 +40,7 @@ function withOrchAuth<T>(WrappedComponent: ComponentType<T> | NextPageWithLayout
         const returnTo = encodeURIComponent(router.asPath)
         router.replace(`/orch-sign-in?returnTo=${returnTo}`)
       }
-    }, [isLoading, isAuthenticated, router, redirecting])
+    }, [isMounted, isLoading, isAuthenticated, router, redirecting])
 
     // Only block rendering if actively redirecting to login
     if (redirecting) {

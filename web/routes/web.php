@@ -46,5 +46,7 @@ Route::middleware(['auth', 'onboarded'])->prefix('dashboard')->group(function ()
     Route::get('/', fn () => view('dashboard.index'))->name('dashboard');
     Route::get('/tokens', fn () => view('dashboard.tokens'))->name('dashboard.tokens');
     Route::get('/team', fn () => view('dashboard.team'))->name('dashboard.team');
+    Route::get('/usage', fn () => view('dashboard.usage'))->name('dashboard.usage');
+    Route::get('/settings', fn () => view('dashboard.settings'))->name('dashboard.settings');
     Route::get('/billing', fn () => view('dashboard.billing'))->name('dashboard.billing');
 });

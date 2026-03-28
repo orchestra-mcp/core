@@ -23,7 +23,7 @@ class TokenList extends Component
     public function loadTokens(): void
     {
         $tokenService = app(TokenService::class);
-        $this->tokens = $tokenService->listForUser(auth()->id());
+        $this->tokens = $tokenService->listForUser(auth()->user()->orchestraId());
     }
 
     public function createToken(): void
@@ -34,7 +34,7 @@ class TokenList extends Component
 
         $tokenService = app(TokenService::class);
         $result = $tokenService->generate(
-            userId: auth()->id(),
+            userId: auth()->user()->orchestraId(),
             organizationId: auth()->user()->organization_id ?? '',
             name: $this->newTokenName,
         );
@@ -47,7 +47,7 @@ class TokenList extends Component
     public function revokeToken(string $tokenId): void
     {
         $tokenService = app(TokenService::class);
-        $tokenService->revoke($tokenId, auth()->id());
+        $tokenService->revoke($tokenId, auth()->user()->orchestraId());
         $this->loadTokens();
     }
 

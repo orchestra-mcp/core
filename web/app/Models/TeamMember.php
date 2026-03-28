@@ -26,6 +26,12 @@ class TeamMember extends Model
     public $incrementing = false;
 
     /**
+     * Indicates if the model should be timestamped.
+     * team_members table only has joined_at, no updated_at/created_at.
+     */
+    public $timestamps = false;
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>

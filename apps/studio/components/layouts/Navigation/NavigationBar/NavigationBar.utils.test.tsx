@@ -2,6 +2,7 @@ import type { Project } from 'data/projects/project-detail-query'
 import { describe, expect, it } from 'vitest'
 
 import {
+  generateOrchestraRoutes,
   generateOtherRoutes,
   generateProductRoutes,
   generateSettingsRoutes,
@@ -184,6 +185,34 @@ describe('generateOtherRoutes', () => {
     const routes = generateOtherRoutes(REF, inactiveProject, { isPlatform: true })
     const advisorsRoute = routes.find((r) => r.key === 'advisors')
     expect(advisorsRoute?.disabled).toBe(true)
+  })
+})
+
+describe('generateOrchestraRoutes', () => {
+  it('returns a single Orchestra route', () => {
+    const routes = generateOrchestraRoutes(REF, activeProject)
+    expect(keys(routes)).toEqual(['orchestra'])
+  })
+
+  it('links to the orchestra page when project is active', () => {
+    const routes = generateOrchestraRoutes(REF, activeProject)
+    const orchestraRoute = routes.find((r) => r.key === 'orchestra')
+    expect(orchestraRoute?.link).toBe(`/project/${REF}/orchestra`)
+  })
+
+  it('marks route as disabled when project is not active', () => {
+    const routes = generateOrchestraRoutes(REF, inactiveProject)
+    expect(routes.every((r) => r.disabled)).toBe(true)
+  })
+
+  it('points link to building URL when project is building', () => {
+    const routes = generateOrchestraRoutes(REF, buildingProject)
+    expect(routes.every((r) => r.link === `/project/${REF}`)).toBe(true)
+  })
+
+  it('returns link as undefined when ref is undefined', () => {
+    const routes = generateOrchestraRoutes(undefined, activeProject)
+    expect(routes.every((r) => r.link === undefined)).toBe(true)
   })
 })
 

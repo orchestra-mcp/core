@@ -4,15 +4,39 @@ namespace App\Models;
 
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    /**
+     * Get the Supabase UUID used as the primary identifier for Orchestra tables.
+     *
+     * With Supabase GoTrue as the primary auth provider, this should always
+     * return the real GoTrue UUID set during registration or login. The
+     * fallback UUID generation exists only for legacy users not yet synced.
+     */
+    public function orchestraId(): string
+    {
+        if (! $this->supabase_user_id) {
+            Log::warning(
+                'User missing supabase_user_id — generating fallback UUID. '
+                .'This user should re-authenticate to sync with GoTrue.',
+                ['user_id' => $this->id, 'email' => $this->email]
+            );
+            $this->supabase_user_id = (string) Str::uuid();
+            $this->saveQuietly();
+        }
+
+        return $this->supabase_user_id;
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -26,6 +50,8 @@ class User extends Authenticatable
         'supabase_user_id',
         'organization_id',
         'onboarding_completed',
+        'timezone',
+        'language',
     ];
 
     /**

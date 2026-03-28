@@ -22,15 +22,15 @@ class DashboardHome extends Component
         $user = auth()->user();
 
         // Token count (active, non-revoked)
-        $this->totalTokens = McpToken::where('user_id', $user->id)
+        $this->totalTokens = McpToken::where('user_id', $user->orchestraId())
             ->whereNull('revoked_at')
             ->count();
 
         // Agent count — count team members as proxy for agents
-        $this->totalAgents = $user->teamMemberships()->count();
+        $this->totalAgents = \App\Models\TeamMember::where('user_id', $user->orchestraId())->count();
 
         // Tasks this month — use token usage as proxy
-        $this->totalTasks = McpToken::where('user_id', $user->id)
+        $this->totalTasks = McpToken::where('user_id', $user->orchestraId())
             ->whereNull('revoked_at')
             ->sum('usage_count') ?? 0;
 
@@ -38,7 +38,7 @@ class DashboardHome extends Component
         $this->memoryUsed = $this->formatMemory($this->totalTasks * 0.5);
 
         // Recent activity from tokens (last used)
-        $this->recentActivity = McpToken::where('user_id', $user->id)
+        $this->recentActivity = McpToken::where('user_id', $user->orchestraId())
             ->whereNotNull('last_used_at')
             ->orderByDesc('last_used_at')
             ->limit(10)

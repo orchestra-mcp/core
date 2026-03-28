@@ -16,6 +16,11 @@ class McpToken extends Model
     protected $table = 'mcp_tokens';
 
     /**
+     * mcp_tokens has created_at but no updated_at.
+     */
+    const UPDATED_AT = null;
+
+    /**
      * The primary key type.
      */
     protected $keyType = 'string';
@@ -59,7 +64,7 @@ class McpToken extends Model
     protected function casts(): array
     {
         return [
-            'scopes' => 'array',
+            // scopes is PostgreSQL TEXT[] — don't cast as array (use {read,write} format)
             'last_used_at' => 'datetime',
             'expires_at' => 'datetime',
             'revoked_at' => 'datetime',

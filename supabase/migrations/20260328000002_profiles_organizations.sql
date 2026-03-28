@@ -2,7 +2,7 @@
 
 -- ── User Profiles (extends auth.users) ──
 CREATE TABLE IF NOT EXISTS public.profiles (
-    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY,
     full_name TEXT,
     username TEXT UNIQUE,
     avatar_url TEXT,
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS public.organizations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     slug TEXT UNIQUE NOT NULL,
-    owner_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    owner_id UUID NOT NULL,
     plan org_plan DEFAULT 'free',
     logo_url TEXT,
     description TEXT,
@@ -115,9 +115,9 @@ CREATE INDEX IF NOT EXISTS idx_teams_org ON public.teams(organization_id);
 CREATE TABLE IF NOT EXISTS public.team_members (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     team_id UUID NOT NULL REFERENCES public.teams(id) ON DELETE CASCADE,
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL,
     role team_role DEFAULT 'member',
-    invited_by UUID REFERENCES auth.users(id),
+    invited_by UUID,
     invited_at TIMESTAMPTZ,
     joined_at TIMESTAMPTZ DEFAULT now(),
     UNIQUE(team_id, user_id)

@@ -5,24 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" type="image/png" href="/favicon.png">
-    <meta name="theme-color" content="#0f0f23">
+    <meta name="theme-color" content="#1c1c1c">
     <meta property="og:image" content="/img/cover.jpg">
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700" rel="stylesheet" />
 
     <title>{{ $title ?? config('app.name', 'Orchestra MCP') }}</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
-<body class="min-h-screen bg-brand-dark flex flex-col items-center justify-center">
+<body class="min-h-screen bg-[#1c1c1c] flex flex-col items-center justify-center px-4">
     {{-- Branding --}}
-    <div class="mb-8 text-center">
-        <img src="/img/logo.svg" alt="Orchestra MCP" class="h-16 mx-auto mb-4">
-        <h1 class="text-2xl font-bold gradient-text">Orchestra MCP</h1>
+    <div class="mb-10 text-center">
+        <img src="/img/logo.svg" alt="Orchestra MCP" class="h-12 mx-auto mb-4">
+        <h1 class="text-xl font-semibold gradient-text tracking-tight">Orchestra MCP</h1>
     </div>
 
     {{-- Card --}}
-    <div class="w-full max-w-md bg-brand-card rounded-xl shadow-lg border border-brand-border p-8">
+    <div class="w-full max-w-[420px] bg-[#252525] rounded-lg border border-[#333333] p-8 shadow-xl shadow-black/20">
         {{ $slot }}
+    </div>
+
+    {{-- Footer --}}
+    <div class="mt-8 text-center">
+        <p class="text-xs text-[#555555]">&copy; {{ date('Y') }} Orchestra MCP. All rights reserved.</p>
     </div>
 
     @livewireScripts

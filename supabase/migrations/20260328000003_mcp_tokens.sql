@@ -2,8 +2,8 @@
 
 CREATE TABLE IF NOT EXISTS public.mcp_tokens (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    organization_id UUID NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL,
+    organization_id UUID NOT NULL,
     token_hash TEXT UNIQUE NOT NULL,       -- SHA-256 hash
     token_prefix TEXT NOT NULL,            -- "orch_xxxxxxxx" display prefix
     name TEXT DEFAULT 'default',

@@ -123,7 +123,7 @@ func RegisterGitHubTools(registry *mcp.ToolRegistry, dbClient *db.Client) {
 func getGitHubClient(ctx context.Context, dbClient *db.Client, userID string) (*github.Client, error) {
 	q := url.Values{}
 	q.Set("user_id", "eq."+userID)
-	q.Set("select", "access_token")
+	q.Set("select", "access_token_encrypted")
 	q.Set("limit", "1")
 
 	data, err := dbClient.Get(ctx, "github_connections", q.Encode())
@@ -132,16 +132,16 @@ func getGitHubClient(ctx context.Context, dbClient *db.Client, userID string) (*
 	}
 
 	var rows []struct {
-		AccessToken string `json:"access_token"`
+		AccessTokenEncrypted string `json:"access_token_encrypted"`
 	}
 	if err := json.Unmarshal(data, &rows); err != nil {
 		return nil, fmt.Errorf("decode github_connections: %w", err)
 	}
-	if len(rows) == 0 || rows[0].AccessToken == "" {
+	if len(rows) == 0 || rows[0].AccessTokenEncrypted == "" {
 		return nil, fmt.Errorf("no GitHub connection found — please connect GitHub first")
 	}
 
-	return github.NewClient(rows[0].AccessToken), nil
+	return github.NewClient(rows[0].AccessTokenEncrypted), nil
 }
 
 // splitRepo splits "owner/repo" into owner and repo parts.
@@ -445,18 +445,32 @@ func makeProjectLinkRepo(dbClient *db.Client) mcp.ToolHandler {
 			return errResult, nil
 		}
 
+		// Look up the user's github_connection to get the connection ID.
+		connQ := url.Values{}
+		connQ.Set("user_id", "eq."+uc.UserID)
+		connQ.Set("select", "id")
+		connQ.Set("limit", "1")
+		connData, err := dbClient.Get(ctx, "github_connections", connQ.Encode())
+		if err != nil {
+			return mcp.ErrorResult("failed to query github_connections: " + err.Error()), nil
+		}
+		var conns []struct {
+			ID string `json:"id"`
+		}
+		if err := json.Unmarshal(connData, &conns); err != nil || len(conns) == 0 {
+			return mcp.ErrorResult("no GitHub connection found — please connect GitHub first"), nil
+		}
+
 		defaultBranch := input.DefaultBranch
 		if defaultBranch == "" {
 			defaultBranch = "main"
 		}
 
 		row := map[string]interface{}{
-			"project_id":      input.ProjectID,
-			"organization_id": uc.OrgID,
-			"repo_full_name":  input.RepoFullName,
-			"default_branch":  defaultBranch,
-			"linked_by":       uc.UserID,
-			"linked_at":       time.Now().UTC().Format(time.RFC3339),
+			"project_id":           input.ProjectID,
+			"github_connection_id": conns[0].ID,
+			"repo_full_name":       input.RepoFullName,
+			"default_branch":       defaultBranch,
 		}
 
 		result, err := dbClient.Post(ctx, "project_repos", row)

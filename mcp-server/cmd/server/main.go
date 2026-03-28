@@ -13,7 +13,10 @@ import (
 	"github.com/orchestra-mcp/server/internal/auth"
 	"github.com/orchestra-mcp/server/internal/db"
 	"github.com/orchestra-mcp/server/internal/embedding"
+	"github.com/orchestra-mcp/server/internal/logging"
 	"github.com/orchestra-mcp/server/internal/mcp"
+	"github.com/orchestra-mcp/server/internal/notifications"
+	"github.com/orchestra-mcp/server/internal/realtime"
 	"github.com/orchestra-mcp/server/internal/tools"
 )
 
@@ -82,6 +85,39 @@ func main() {
 		slog.Warn("DATABASE_URL not set — auth middleware disabled (all requests allowed)")
 	}
 
+	// --- Initialize DB logger ---
+	var dbLogger *logging.DBLogger
+	if databaseURL != "" {
+		var err error
+		dbLogger, err = logging.NewDBLogger(databaseURL, "go_mcp")
+		if err != nil {
+			slog.Error("failed to initialize DB logger", "error", err)
+			// Non-fatal: continue without DB logging.
+		} else {
+			defer dbLogger.Close()
+			slog.Info("DB logger initialized", "service", "go_mcp")
+		}
+	} else {
+		slog.Warn("DATABASE_URL not set — DB logger disabled")
+	}
+
+	// --- Initialize rate limiter ---
+	rateLimiter := auth.NewRateLimiter()
+	slog.Info("rate limiter initialized")
+
+	// --- Initialize realtime hub ---
+	hub := realtime.NewHub()
+	_ = hub // available for tool handlers to broadcast changes
+	slog.Info("realtime hub initialized")
+
+	// --- Initialize Slack client ---
+	slackClient := notifications.NewSlackClient()
+	if slackClient.Enabled() {
+		slog.Info("slack client initialized")
+	} else {
+		slog.Warn("SLACK_BOT_TOKEN not set — Slack notifications disabled")
+	}
+
 	// --- Build tool registry ---
 	registry := mcp.NewToolRegistry()
 
@@ -104,17 +140,55 @@ func main() {
 		}, nil
 	})
 
-	// Register tool groups.
+	// Register tool groups — ALL DB-dependent tools register when dbClient is available.
 	if dbClient != nil {
+		tools.RegisterProjectTools(registry, dbClient)
+		slog.Info("registered project tools")
+
+		tools.RegisterAgentTools(registry, dbClient)
+		slog.Info("registered agent tools")
+
+		tools.RegisterTaskTools(registry, dbClient)
+		slog.Info("registered task tools")
+
+		tools.RegisterSessionTools(registry, dbClient)
+		slog.Info("registered session tools")
+
+		tools.RegisterNoteTools(registry, dbClient)
+		slog.Info("registered note tools")
+
+		tools.RegisterSpecTools(registry, dbClient)
+		slog.Info("registered spec tools")
+
+		tools.RegisterSkillTools(registry, dbClient)
+		slog.Info("registered skill tools")
+
+		tools.RegisterWorkflowTools(registry, dbClient)
+		slog.Info("registered workflow tools")
+
+		tools.RegisterActivityTools(registry, dbClient)
+		slog.Info("registered activity tools")
+
 		tools.RegisterGitHubTools(registry, dbClient)
 		slog.Info("registered GitHub tools")
+
+		tools.RegisterUsageTools(registry, dbClient)
+		slog.Info("registered usage tools")
+
+		// Memory and decision tools accept an optional embedding client.
+		// They degrade gracefully (no semantic search) when embClient is nil.
+		tools.RegisterMemoryTools(registry, dbClient, embClient)
+		slog.Info("registered memory tools")
+
+		tools.RegisterDecisionTools(registry, dbClient, embClient)
+		slog.Info("registered decision tools")
 	}
 
-	// Store clients in a shared context so tool handlers can access them.
-	_ = embClient
+	tools.RegisterSlackTools(registry, slackClient)
+	slog.Info("registered Slack tools")
 
-	// --- Create MCP server ---
-	server := mcp.NewServer(registry)
+	// --- Create MCP server (with DB client for audit logging) ---
+	server := mcp.NewServer(registry, dbLogger, dbClient)
 
 	// --- Setup routes ---
 	mux := http.NewServeMux()
@@ -122,17 +196,25 @@ func main() {
 	// Health check — no auth required.
 	mux.HandleFunc("GET /mcp/health", handleHealth)
 
-	// MCP SSE + POST endpoint — auth required when middleware is available.
+	// MCP unified endpoint — handles GET (SSE streams), POST (JSON-RPC), and
+	// DELETE (session termination) for both the new Streamable HTTP transport
+	// (2025-11-25) and the legacy SSE transport (2024-11-05).
 	if authMiddleware != nil {
-		mux.Handle("GET /mcp", authMiddleware.Middleware(http.HandlerFunc(server.HandleSSE)))
-		mux.Handle("POST /mcp", authMiddleware.Middleware(http.HandlerFunc(server.HandleMessage)))
+		mcpHandler := authMiddleware.Middleware(rateLimiter.Middleware(http.HandlerFunc(server.HandleMCP)))
+		mux.Handle("/mcp", authFailureLogger(mcpHandler, dbLogger))
 	} else {
-		mux.HandleFunc("GET /mcp", server.HandleSSE)
-		mux.HandleFunc("POST /mcp", server.HandleMessage)
+		mux.HandleFunc("/mcp", server.HandleMCP)
 	}
 
 	// WebSocket endpoint (placeholder).
 	mux.HandleFunc("/mcp/ws", server.HandleWebSocket)
+
+	// Catch-all: return JSON 404 instead of plain text (Claude Code expects JSON)
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(map[string]string{"error": "not found", "path": r.URL.Path})
+	})
 
 	handler := corsMiddleware(mux)
 
@@ -151,14 +233,28 @@ func main() {
 
 	go func() {
 		slog.Info("starting server", "port", port, "version", version, "service", serviceName)
+		if dbLogger != nil {
+			dbLogger.Info("MCP server started", map[string]interface{}{
+				"port":    port,
+				"version": version,
+			}, "", "")
+		}
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			slog.Error("server failed", "error", err)
+			if dbLogger != nil {
+				dbLogger.Error("MCP server failed", map[string]interface{}{
+					"error": err.Error(),
+				}, "", "")
+			}
 			os.Exit(1)
 		}
 	}()
 
 	<-ctx.Done()
 	slog.Info("shutting down server")
+	if dbLogger != nil {
+		dbLogger.Info("MCP server shutting down", nil, "", "")
+	}
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -181,11 +277,54 @@ func handleHealth(w http.ResponseWriter, _ *http.Request) {
 	})
 }
 
+// authFailureLogger is an HTTP middleware that detects 401 responses from the
+// auth middleware and logs them to the DB logger.
+func authFailureLogger(inner http.Handler, dbLogger *logging.DBLogger) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		rec := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
+		inner.ServeHTTP(rec, r)
+		if rec.status == http.StatusUnauthorized && dbLogger != nil {
+			dbLogger.Warn("Authentication failed", map[string]interface{}{
+				"remote": r.RemoteAddr,
+				"path":   r.URL.Path,
+				"method": r.Method,
+			}, "", "")
+		}
+	})
+}
+
+// statusRecorder wraps http.ResponseWriter to capture the status code.
+// It also implements http.Flusher so SSE streaming works through the wrapper.
+type statusRecorder struct {
+	http.ResponseWriter
+	status int
+}
+
+func (r *statusRecorder) WriteHeader(code int) {
+	r.status = code
+	r.ResponseWriter.WriteHeader(code)
+}
+
+// Flush implements http.Flusher, forwarding to the underlying writer.
+// This is critical for SSE connections that need to flush each event.
+func (r *statusRecorder) Flush() {
+	if f, ok := r.ResponseWriter.(http.Flusher); ok {
+		f.Flush()
+	}
+}
+
+// Unwrap returns the underlying ResponseWriter so interface type assertions
+// (e.g., http.Flusher) can reach through the wrapper chain.
+func (r *statusRecorder) Unwrap() http.ResponseWriter {
+	return r.ResponseWriter
+}
+
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Mcp-Session-Id, Mcp-Protocol-Version")
+		w.Header().Set("Access-Control-Expose-Headers", "Mcp-Session-Id")
 
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusNoContent)

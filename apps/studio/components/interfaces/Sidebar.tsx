@@ -1,5 +1,6 @@
 import { LOCAL_STORAGE_KEYS, useFlag, useIsMFAEnabled, useParams } from 'common'
 import {
+  generateOrchestraRoutes,
   generateOtherRoutes,
   generateProductRoutes,
   generateSettingsRoutes,
@@ -258,6 +259,7 @@ const ProjectLinks = () => {
     showReports,
     apiDocsSidePanel: isNewAPIDocsEnabled,
   })
+  const orchestraRoutes = generateOrchestraRoutes(ref, project)
   const settingsRoutes = generateSettingsRoutes(ref)
 
   return (
@@ -287,6 +289,16 @@ const ProjectLinks = () => {
         {productRoutes.map((route, i) => (
           <SideBarNavLink
             key={`product-routes-${i}`}
+            route={route}
+            active={activeRoute === route.key}
+          />
+        ))}
+      </SidebarGroup>
+      <Separator className="w-[calc(100%-1rem)] mx-auto" />
+      <SidebarGroup className="gap-0.5">
+        {orchestraRoutes.map((route, i) => (
+          <SideBarNavLink
+            key={`orchestra-routes-${i}`}
             route={route}
             active={activeRoute === route.key}
           />

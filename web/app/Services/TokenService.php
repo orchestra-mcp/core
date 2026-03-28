@@ -28,7 +28,7 @@ class TokenService
             'token_hash' => $tokenHash,
             'token_prefix' => $tokenPrefix,
             'name' => $name,
-            'scopes' => $scopes,
+            'scopes' => '{' . implode(',', $scopes) . '}',
         ]);
 
         return [

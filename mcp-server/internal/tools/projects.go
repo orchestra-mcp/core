@@ -34,11 +34,7 @@ var projectGetSchema = json.RawMessage(`{
 	"properties": {
 		"id":   {"type": "string", "format": "uuid", "description": "Project UUID"},
 		"slug": {"type": "string", "description": "Project slug"}
-	},
-	"oneOf": [
-		{"required": ["id"]},
-		{"required": ["slug"]}
-	]
+	}
 }`)
 
 var projectListSchema = json.RawMessage(`{

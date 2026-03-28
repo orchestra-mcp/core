@@ -11,6 +11,7 @@ import { AppLayout } from 'components/layouts/AppLayout/AppLayout'
 import { DefaultLayout } from 'components/layouts/DefaultLayout'
 import { AlertError } from 'components/ui/AlertError'
 import { useIsFeatureEnabled } from 'hooks/misc/useIsFeatureEnabled'
+import { IS_PLATFORM } from 'lib/constants'
 import { useProfile } from 'lib/profile'
 import type { NextPageWithLayout } from 'types'
 import { Card, CardContent } from 'ui'
@@ -91,9 +92,9 @@ const ProfileCard = () => {
 
         <InlineEditorSettings />
 
-        {profileShowAnalyticsAndMarketing && <AnalyticsSettings />}
+        {IS_PLATFORM && profileShowAnalyticsAndMarketing && <AnalyticsSettings />}
 
-        {profileShowAccountDeletion && <AccountDeletion />}
+        {IS_PLATFORM && profileShowAccountDeletion && <AccountDeletion />}
       </PageContainer>
     </>
   )

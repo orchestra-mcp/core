@@ -136,16 +136,24 @@ export function OrchAuthProvider({ children }: PropsWithChildren) {
   const [session, setSession] = useState<Session | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
 
-  // Initialize auth state
+  // Initialize auth state — only on the client side.
+  // During SSR, localStorage is unavailable so getSession() would return null,
+  // causing a false redirect to login before hydration can read the real session.
+  // We keep isLoading=true during SSR so no redirect logic fires.
   useEffect(() => {
     if (!ORCH_AUTH_ENABLED) {
       setIsLoading(false)
       return
     }
 
+    // Skip auth initialization during SSR — wait for client hydration
+    if (typeof window === 'undefined') {
+      return
+    }
+
     const supabase = getOrchSupabaseClient()
 
-    // Check existing session
+    // Check existing session from localStorage (only available on client)
     supabase.auth.getSession().then(async ({ data: { session: existingSession } }) => {
       if (existingSession?.user) {
         setSession(existingSession)
