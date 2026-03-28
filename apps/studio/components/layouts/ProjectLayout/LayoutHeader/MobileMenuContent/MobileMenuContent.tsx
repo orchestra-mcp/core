@@ -7,6 +7,7 @@ import {
 } from 'components/interfaces/App/FeaturePreview/FeaturePreviewContext'
 import { ICON_SIZE, ICON_STROKE_WIDTH } from 'components/interfaces/Sidebar'
 import {
+  generateOrchestraRoutes,
   generateOtherRoutes,
   generateProductRoutes,
   generateSettingsRoutes,
@@ -99,6 +100,7 @@ export function MobileMenuContent({
       }),
     [ref, project, isUnifiedLogsEnabled, showReports, isNewAPIDocsEnabled]
   )
+  const orchestraRoutes = useMemo(() => generateOrchestraRoutes(ref, project), [ref, project])
   const settingsRoutes = useMemo(() => generateSettingsRoutes(ref), [ref])
 
   const homeRoute: Route = useMemo(
@@ -112,8 +114,8 @@ export function MobileMenuContent({
   )
 
   const allTopLevelRoutes = useMemo(
-    () => [homeRoute, ...toolRoutes, ...productRoutes, ...otherRoutes, ...settingsRoutes],
-    [homeRoute, toolRoutes, productRoutes, otherRoutes, settingsRoutes]
+    () => [homeRoute, ...toolRoutes, ...productRoutes, ...orchestraRoutes, ...otherRoutes, ...settingsRoutes],
+    [homeRoute, toolRoutes, productRoutes, orchestraRoutes, otherRoutes, settingsRoutes]
   )
 
   const { sectionKey: sectionKeyToShow, sectionLabel } = resolveSectionDisplay({
@@ -173,6 +175,10 @@ export function MobileMenuContent({
               <Separator className="mx-2 w-auto bg-sidebar-border" />
               <SidebarGroup className="gap-0.5">
                 {productRoutes.map((route) => renderRoute(route, activeRoute === route.key))}
+              </SidebarGroup>
+              <Separator className="mx-2 w-auto bg-sidebar-border" />
+              <SidebarGroup className="gap-0.5">
+                {orchestraRoutes.map((route) => renderRoute(route, activeRoute === route.key))}
               </SidebarGroup>
               <Separator className="mx-2 w-auto bg-sidebar-border" />
               <SidebarGroup className="gap-0.5">

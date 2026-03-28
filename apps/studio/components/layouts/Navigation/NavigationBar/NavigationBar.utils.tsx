@@ -4,7 +4,7 @@ import { EditorIndexPageLink } from 'data/prefetchers/project.$ref.editor'
 import type { Project } from 'data/projects/project-detail-query'
 import { Auth, Database, EdgeFunctions, Realtime, SqlEditor, Storage, TableEditor } from 'icons'
 import { IS_PLATFORM, PROJECT_STATUS } from 'lib/constants'
-import { Blocks, FileText, Lightbulb, List, Settings, Telescope } from 'lucide-react'
+import { Blocks, FileText, Lightbulb, List, Settings, Telescope, Workflow } from 'lucide-react'
 
 interface RouteContext {
   ref?: string
@@ -201,6 +201,20 @@ export const generateOtherRoutes = (
       disabled: !isProjectActive,
       icon: <Blocks size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
       link: ref && (isProjectBuilding ? buildingUrl : `/project/${ref}/integrations`),
+    },
+  ]
+}
+
+export const generateOrchestraRoutes = (ref?: string, project?: Project): Route[] => {
+  const { isProjectActive, isProjectBuilding, buildingUrl } = getRouteContext(ref, project)
+
+  return [
+    {
+      key: 'orchestra',
+      label: 'Orchestra',
+      disabled: !isProjectActive,
+      icon: <Workflow size={ICON_SIZE} strokeWidth={ICON_STROKE_WIDTH} />,
+      link: ref && (isProjectBuilding ? buildingUrl : `/project/${ref}/orchestra`),
     },
   ]
 }
