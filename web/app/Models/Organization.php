@@ -76,6 +76,14 @@ class Organization extends Model
     }
 
     /**
+     * The AI agents belonging to this organization.
+     */
+    public function agents(): HasMany
+    {
+        return $this->hasMany(Agent::class);
+    }
+
+    /**
      * The MCP tokens scoped to this organization.
      */
     public function mcpTokens(): HasMany

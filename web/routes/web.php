@@ -46,6 +46,8 @@ Route::middleware(['auth', 'onboarded'])->prefix('dashboard')->group(function ()
     Route::get('/', fn () => view('dashboard.index'))->name('dashboard');
     Route::get('/tokens', fn () => view('dashboard.tokens'))->name('dashboard.tokens');
     Route::get('/team', fn () => view('dashboard.team'))->name('dashboard.team');
+    Route::get('/agents', fn () => view('dashboard.agents'))->name('dashboard.agents');
+    Route::get('/agents/{id}', fn ($id) => view('dashboard.agent-profile', ['agentId' => $id]))->name('dashboard.agent-profile');
     Route::get('/usage', fn () => view('dashboard.usage'))->name('dashboard.usage');
     Route::get('/connections', fn () => view('dashboard.connections'))->name('dashboard.connections');
     Route::get('/notifications', fn () => view('dashboard.notifications'))->name('dashboard.notifications');
