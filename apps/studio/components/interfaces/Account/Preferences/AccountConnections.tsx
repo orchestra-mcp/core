@@ -69,7 +69,7 @@ export const AccountConnections = () => {
         <PageSectionSummary>
           <PageSectionTitle>Connections</PageSectionTitle>
           <PageSectionDescription>
-            Connect your Supabase account with other services.
+            Connect your Orchestra account with other services.
           </PageSectionDescription>
         </PageSectionSummary>
       </PageSectionMeta>

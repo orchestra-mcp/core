@@ -4,7 +4,7 @@
 CREATE TABLE IF NOT EXISTS public.notes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     organization_id UUID REFERENCES public.organizations(id) ON DELETE CASCADE,
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL,
     project_id UUID REFERENCES public.projects(id) ON DELETE SET NULL,
     title TEXT NOT NULL,
     body TEXT,
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS public.specs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     organization_id UUID NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
     project_id UUID REFERENCES public.projects(id) ON DELETE CASCADE,
-    created_by UUID NOT NULL REFERENCES auth.users(id),
+    created_by UUID NOT NULL,
     title TEXT NOT NULL,
     slug TEXT NOT NULL,
     content TEXT NOT NULL,
@@ -56,7 +56,7 @@ CREATE INDEX IF NOT EXISTS idx_specs_embedding ON public.specs USING ivfflat (em
 CREATE TABLE IF NOT EXISTS public.github_connections (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     organization_id UUID NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL,
     github_user_id TEXT NOT NULL,
     github_username TEXT,
     access_token_encrypted TEXT NOT NULL,

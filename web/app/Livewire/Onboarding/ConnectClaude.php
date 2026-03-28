@@ -14,9 +14,10 @@ class ConnectClaude extends Component
     public function mount(TokenService $tokenService): void
     {
         $user = auth()->user();
+        $userId = $user->supabase_user_id ?? (string) \Illuminate\Support\Str::uuid();
 
         $result = $tokenService->generate(
-            userId: $user->id,
+            userId: $userId,
             organizationId: $user->organization_id,
             name: 'Onboarding Token',
             scopes: ['read', 'write'],
