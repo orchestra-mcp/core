@@ -55,7 +55,7 @@ class UsageStats extends Component
             ->whereNull('revoked_at')
             ->count();
 
-        $this->agentsUsed = $user->teamMemberships()->count();
+        $this->agentsUsed = \App\Models\TeamMember::where('user_id', $user->orchestraId())->count();
 
         $this->tasksUsed = McpToken::where('user_id', $user->orchestraId())
             ->whereNull('revoked_at')
