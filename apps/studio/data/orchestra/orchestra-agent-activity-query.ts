@@ -7,9 +7,8 @@ import { orchestraKeys } from './keys'
 export interface OrchestraAgentActivityEntry {
   id: string
   action: string
-  entity_type: string
-  entity_id: string
-  metadata: Record<string, unknown> | null
+  summary: string
+  details: Record<string, unknown> | null
   created_at: string
 }
 
@@ -18,9 +17,9 @@ export async function getOrchestraAgentActivity(
   signal?: AbortSignal
 ) {
   const sql = `
-    SELECT id, action, entity_type, entity_id, metadata, created_at
+    SELECT id, action, summary, details, created_at
     FROM activity_log
-    WHERE entity_type = 'agent' AND entity_id = '${agentId}'
+    WHERE agent_id = '${agentId}'
     ORDER BY created_at DESC
     LIMIT 50
   `

@@ -62,11 +62,13 @@ const TASK_STATUS_STYLES: Record<
   string,
   { variant: 'default' | 'success' | 'warning' | 'destructive'; label: string }
 > = {
-  pending: { variant: 'default', label: 'Pending' },
+  backlog: { variant: 'default', label: 'Backlog' },
+  todo: { variant: 'default', label: 'To Do' },
   in_progress: { variant: 'warning', label: 'In Progress' },
-  completed: { variant: 'success', label: 'Completed' },
-  failed: { variant: 'destructive', label: 'Failed' },
+  in_review: { variant: 'warning', label: 'In Review' },
   blocked: { variant: 'destructive', label: 'Blocked' },
+  done: { variant: 'success', label: 'Done' },
+  cancelled: { variant: 'destructive', label: 'Cancelled' },
 }
 
 function getStatusConfig(status: string) {
@@ -252,7 +254,7 @@ function ActivityTab({ agentId }: { agentId: string }) {
         <TableHeader>
           <TableRow>
             <TableHead>Action</TableHead>
-            <TableHead>Entity</TableHead>
+            <TableHead>Summary</TableHead>
             <TableHead className="text-right">Time</TableHead>
           </TableRow>
         </TableHeader>
@@ -263,7 +265,7 @@ function ActivityTab({ agentId }: { agentId: string }) {
                 {formatAction(entry.action)}
               </TableCell>
               <TableCell className="text-xs text-foreground-lighter">
-                {entry.entity_type}:{entry.entity_id}
+                {entry.summary}
               </TableCell>
               <TableCell className="text-xs text-foreground-lighter text-right whitespace-nowrap">
                 {dayjs(entry.created_at).fromNow()}
@@ -310,7 +312,7 @@ function TasksTab({ agentId }: { agentId: string }) {
             <TableHead>Title</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Priority</TableHead>
-            <TableHead>Feature</TableHead>
+            <TableHead>Project</TableHead>
             <TableHead className="text-right">Created</TableHead>
           </TableRow>
         </TableHeader>
@@ -327,7 +329,7 @@ function TasksTab({ agentId }: { agentId: string }) {
                   {task.priority ?? '--'}
                 </TableCell>
                 <TableCell className="text-xs text-foreground-lighter">
-                  {task.feature_name ?? '--'}
+                  {task.project_name ?? '--'}
                 </TableCell>
                 <TableCell className="text-xs text-foreground-lighter text-right whitespace-nowrap">
                   {dayjs(task.created_at).fromNow()}

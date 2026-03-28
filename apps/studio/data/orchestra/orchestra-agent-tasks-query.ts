@@ -9,8 +9,8 @@ export interface OrchestraAgentTask {
   title: string
   status: string
   priority: string | null
-  feature_id: string | null
-  feature_name: string | null
+  project_id: string | null
+  project_name: string | null
   created_at: string
   completed_at: string | null
 }
@@ -23,15 +23,15 @@ export async function getOrchestraAgentTasks(
     SELECT
       t.id,
       t.title,
-      COALESCE(t.status, 'pending') AS status,
-      t.priority,
-      t.feature_id,
-      f.name AS feature_name,
+      COALESCE(t.status::text, 'backlog') AS status,
+      t.priority::text,
+      t.project_id,
+      p.name AS project_name,
       t.created_at,
       t.completed_at
     FROM tasks t
-    LEFT JOIN features f ON f.id = t.feature_id
-    WHERE t.assignee_id = '${agentId}'
+    LEFT JOIN projects p ON p.id = t.project_id
+    WHERE t.assigned_agent_id = '${agentId}'
     ORDER BY t.created_at DESC
     LIMIT 50
   `

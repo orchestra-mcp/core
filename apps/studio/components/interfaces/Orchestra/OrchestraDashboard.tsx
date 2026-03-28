@@ -119,7 +119,7 @@ export const OrchestraDashboard = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Action</TableHead>
-                    <TableHead>Entity</TableHead>
+                    <TableHead>Summary</TableHead>
                     <TableHead className="text-right">Time</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -130,7 +130,7 @@ export const OrchestraDashboard = () => {
                         {formatAction(entry.action)}
                       </TableCell>
                       <TableCell className="text-xs text-foreground-lighter">
-                        {entry.entity_type}:{entry.entity_id}
+                        {entry.summary}
                       </TableCell>
                       <TableCell className="text-xs text-foreground-lighter text-right whitespace-nowrap">
                         {dayjs(entry.created_at).fromNow()}

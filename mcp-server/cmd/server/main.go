@@ -194,6 +194,18 @@ func main() {
 		tools.RegisterUsageTools(registry, dbClient)
 		slog.Info("registered usage tools")
 
+		tools.RegisterExportTools(registry, dbClient)
+		slog.Info("registered export tools")
+
+		tools.RegisterDiagramExportTools(registry, dbClient)
+		slog.Info("registered diagram export tools")
+
+		tools.RegisterOfficeExportTools(registry, dbClient)
+		slog.Info("registered office export tools (docx, pptx)")
+
+		tools.RegisterReportTools(registry, dbClient)
+		slog.Info("registered report tools")
+
 		// Memory and decision tools accept an optional embedding client.
 		// They degrade gracefully (no semantic search) when embClient is nil.
 		tools.RegisterMemoryTools(registry, dbClient, embClient)
