@@ -196,17 +196,14 @@ func main() {
 	// Health check — no auth required.
 	mux.HandleFunc("GET /mcp/health", handleHealth)
 
-	// MCP SSE + POST endpoint — auth required when middleware is available,
-	// rate limiting applied after auth. The authFailureLogger wraps the whole
-	// chain to detect and log 401 responses from the auth middleware.
+	// MCP unified endpoint — handles GET (SSE streams), POST (JSON-RPC), and
+	// DELETE (session termination) for both the new Streamable HTTP transport
+	// (2025-11-25) and the legacy SSE transport (2024-11-05).
 	if authMiddleware != nil {
-		sseHandler := authMiddleware.Middleware(rateLimiter.Middleware(http.HandlerFunc(server.HandleSSE)))
-		postHandler := authMiddleware.Middleware(rateLimiter.Middleware(http.HandlerFunc(server.HandleMessage)))
-		mux.Handle("GET /mcp", authFailureLogger(sseHandler, dbLogger))
-		mux.Handle("POST /mcp", authFailureLogger(postHandler, dbLogger))
+		mcpHandler := authMiddleware.Middleware(rateLimiter.Middleware(http.HandlerFunc(server.HandleMCP)))
+		mux.Handle("/mcp", authFailureLogger(mcpHandler, dbLogger))
 	} else {
-		mux.HandleFunc("GET /mcp", server.HandleSSE)
-		mux.HandleFunc("POST /mcp", server.HandleMessage)
+		mux.HandleFunc("/mcp", server.HandleMCP)
 	}
 
 	// WebSocket endpoint (placeholder).
@@ -319,7 +316,8 @@ func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Mcp-Session-Id, Mcp-Protocol-Version")
+		w.Header().Set("Access-Control-Expose-Headers", "Mcp-Session-Id")
 
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusNoContent)

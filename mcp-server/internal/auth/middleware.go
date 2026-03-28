@@ -36,6 +36,11 @@ func FromContext(ctx context.Context) (*UserContext, bool) {
 	return uc, ok
 }
 
+// WithUserContext returns a new context with the given UserContext attached.
+func WithUserContext(ctx context.Context, uc *UserContext) context.Context {
+	return context.WithValue(ctx, userContextKey, uc)
+}
+
 // UserContextFromContext extracts the UserContext from ctx.
 // Unlike FromContext it returns only the UserContext (nil when absent).
 func UserContextFromContext(ctx context.Context) *UserContext {
