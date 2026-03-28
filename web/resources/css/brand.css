@@ -3,13 +3,15 @@
     --color-brand-purple: #A900FF;
     --color-brand-gradient: linear-gradient(135deg, #00E5FF, #A900FF);
     --color-brand-gradient-text: linear-gradient(135deg, #00E5FF, #A900FF);
-    --color-bg-dark: #0f0f23;
-    --color-bg-surface: #1a1a2e;
-    --color-bg-card: #16213e;
-    --color-bg-card-hover: #1e2a4a;
-    --color-text-primary: #e0e0e0;
-    --color-text-secondary: #a0a0b0;
-    --color-border: #2a2a4a;
+    --color-bg-dark: #1c1c1c;
+    --color-bg-surface: #1c1c1c;
+    --color-bg-card: #252525;
+    --color-bg-card-hover: #2a2a2a;
+    --color-text-primary: #ededed;
+    --color-text-secondary: #999999;
+    --color-border: #333333;
+    --color-bg-overlay: #171717;
+    --color-bg-input: #202020;
 }
 
 .gradient-text {
@@ -25,4 +27,36 @@
 
 .gradient-border {
     border-image: var(--color-brand-gradient) 1;
+}
+
+/* Supabase Studio-style input focus ring */
+.studio-input {
+    background-color: var(--color-bg-input);
+    border-color: var(--color-border);
+    color: var(--color-text-primary);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.studio-input:focus {
+    border-color: #00E5FF;
+    box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.25);
+    outline: none;
+}
+.studio-input::placeholder {
+    color: #555555;
+}
+
+/* Studio-style scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: #333333;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #444444;
 }

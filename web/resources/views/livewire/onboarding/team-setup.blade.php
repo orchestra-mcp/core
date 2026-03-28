@@ -2,8 +2,8 @@
     <x-step-indicator :current="2" />
 
     <div class="text-center">
-        <h2 class="text-2xl font-bold gradient-text">Invite Your Team</h2>
-        <p class="text-brand-text-secondary mt-2 text-sm">Add team members to collaborate on your projects. You can always do this later.</p>
+        <h2 class="text-xl font-semibold gradient-text">Invite Your Team</h2>
+        <p class="text-[#999999] mt-2 text-sm">Add team members to collaborate on your projects. You can always do this later.</p>
     </div>
 
     {{-- Add Email Form --}}
@@ -14,13 +14,13 @@
                     wire:model="email"
                     type="email"
                     placeholder="colleague@company.com"
-                    class="w-full rounded-lg bg-brand-surface border border-brand-border px-4 py-2.5 text-brand-text placeholder-brand-text-secondary focus:outline-none focus:ring-2 focus:ring-brand-cyan/50 focus:border-brand-cyan transition"
+                    class="w-full px-3 py-2 bg-[#202020] border border-[#333333] rounded-md text-sm text-[#ededed] placeholder-[#555555] focus:outline-none focus:ring-1 focus:ring-[#00E5FF]/40 focus:border-[#00E5FF] transition-colors"
                     wire:keydown.enter="addEmail"
                 >
             </div>
             <select
                 wire:model="role"
-                class="rounded-lg bg-brand-surface border border-brand-border px-3 py-2.5 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-cyan/50 focus:border-brand-cyan transition text-sm"
+                class="px-3 py-2 bg-[#202020] border border-[#333333] rounded-md text-sm text-[#ededed] focus:outline-none focus:ring-1 focus:ring-[#00E5FF]/40 focus:border-[#00E5FF] transition-colors"
             >
                 <option value="admin">Admin</option>
                 <option value="member">Member</option>
@@ -29,36 +29,36 @@
             <button
                 wire:click="addEmail"
                 type="button"
-                class="gradient-bg text-white font-semibold px-4 py-2.5 rounded-lg hover:opacity-90 transition text-sm"
+                class="gradient-bg text-white font-medium px-4 py-2 rounded-md hover:opacity-90 transition text-sm cursor-pointer"
             >
                 Add
             </button>
         </div>
         @error('email')
-            <p class="text-sm text-red-400">{{ $message }}</p>
+            <p class="text-xs text-red-400">{{ $message }}</p>
         @enderror
     </div>
 
     {{-- Invite List --}}
     @if(count($invites) > 0)
         <div class="space-y-2">
-            <h3 class="text-sm font-medium text-brand-text">Pending Invites ({{ count($invites) }})</h3>
-            <div class="space-y-2 max-h-48 overflow-y-auto">
+            <h3 class="text-[13px] font-medium text-[#ededed]">Pending Invites ({{ count($invites) }})</h3>
+            <div class="space-y-1.5 max-h-48 overflow-y-auto">
                 @foreach($invites as $index => $invite)
-                    <div class="flex items-center justify-between bg-brand-surface rounded-lg px-4 py-2.5 border border-brand-border">
+                    <div class="flex items-center justify-between bg-[#202020] rounded-md px-4 py-2.5 border border-[#333333]">
                         <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full gradient-bg flex items-center justify-center text-white text-xs font-bold">
+                            <div class="w-7 h-7 rounded-full gradient-bg flex items-center justify-center text-white text-xs font-bold">
                                 {{ strtoupper(substr($invite['email'], 0, 1)) }}
                             </div>
                             <div>
-                                <p class="text-brand-text text-sm">{{ $invite['email'] }}</p>
-                                <p class="text-brand-text-secondary text-xs capitalize">{{ $invite['role'] }}</p>
+                                <p class="text-[#ededed] text-[13px]">{{ $invite['email'] }}</p>
+                                <p class="text-[#666666] text-xs capitalize">{{ $invite['role'] }}</p>
                             </div>
                         </div>
                         <button
                             wire:click="removeEmail({{ $index }})"
                             type="button"
-                            class="text-brand-text-secondary hover:text-red-400 transition"
+                            class="text-[#666666] hover:text-red-400 transition cursor-pointer"
                             title="Remove"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -76,14 +76,14 @@
         <button
             wire:click="skip"
             type="button"
-            class="flex-1 border border-brand-border text-brand-text font-semibold py-2.5 px-4 rounded-lg hover:bg-brand-surface transition focus:outline-none"
+            class="flex-1 py-2 bg-[#202020] border border-[#333333] text-[#999999] font-medium text-sm rounded-md hover:bg-[#2a2a2a] hover:text-[#ededed] transition focus:outline-none cursor-pointer"
         >
             Skip
         </button>
         <button
             wire:click="save"
             type="button"
-            class="flex-1 gradient-bg text-white font-semibold py-2.5 px-4 rounded-lg hover:opacity-90 transition focus:outline-none focus:ring-2 focus:ring-brand-cyan/50"
+            class="flex-1 py-2 gradient-bg text-white font-medium text-sm rounded-md hover:opacity-90 transition focus:outline-none cursor-pointer"
         >
             Continue
         </button>
