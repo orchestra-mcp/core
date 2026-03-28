@@ -81,7 +81,6 @@ func makeWorkflowCreate(dbClient *db.Client) mcp.ToolHandler {
 		row := map[string]interface{}{
 			"organization_id": userCtx.OrgID,
 			"name":            input.Name,
-			"created_by":      userCtx.UserID,
 			"created_at":      time.Now().UTC().Format(time.RFC3339),
 		}
 		setIfNotEmpty(row, "slug", input.Slug)

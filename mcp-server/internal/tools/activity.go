@@ -89,10 +89,10 @@ func makeActivityLog(dbClient *db.Client) mcp.ToolHandler {
 		}
 
 		payload := map[string]interface{}{
-			"action":  p.Action,
-			"summary": p.Summary,
-			"org_id":  userCtx.OrgID,
-			"user_id": userCtx.UserID,
+			"action":          p.Action,
+			"summary":         p.Summary,
+			"organization_id": userCtx.OrgID,
+			"user_id":         userCtx.UserID,
 		}
 		if p.Details != nil {
 			payload["details"] = json.RawMessage(p.Details)
@@ -142,7 +142,7 @@ func makeActivityList(dbClient *db.Client) mcp.ToolHandler {
 			p.Limit = 20
 		}
 
-		query := fmt.Sprintf("org_id=eq.%s&order=created_at.desc&limit=%d", userCtx.OrgID, p.Limit)
+		query := fmt.Sprintf("organization_id=eq.%s&order=created_at.desc&limit=%d", userCtx.OrgID, p.Limit)
 		if p.ProjectID != "" {
 			query += "&project_id=eq." + p.ProjectID
 		}

@@ -113,7 +113,7 @@ func makeNoteCreate(dbClient *db.Client) mcp.ToolHandler {
 		row := map[string]interface{}{
 			"title":           input.Title,
 			"organization_id": userCtx.OrgID,
-			"created_by":      userCtx.UserID,
+			"user_id":         userCtx.UserID,
 			"created_at":      time.Now().UTC().Format(time.RFC3339),
 		}
 		setIfNotEmpty(row, "body", input.Body)

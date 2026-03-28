@@ -103,9 +103,9 @@ func makeMemoryStore(dbClient *db.Client, embedder *embedding.Client) mcp.ToolHa
 		}
 
 		payload := map[string]interface{}{
-			"content": p.Content,
-			"org_id":  userCtx.OrgID,
-			"user_id": userCtx.UserID,
+			"content":         p.Content,
+			"organization_id": userCtx.OrgID,
+			"user_id":         userCtx.UserID,
 		}
 		if p.Title != "" {
 			payload["title"] = p.Title
@@ -224,7 +224,7 @@ func makeMemoryList(dbClient *db.Client) mcp.ToolHandler {
 			p.Limit = 20
 		}
 
-		query := fmt.Sprintf("org_id=eq.%s&order=created_at.desc&limit=%d", userCtx.OrgID, p.Limit)
+		query := fmt.Sprintf("organization_id=eq.%s&order=created_at.desc&limit=%d", userCtx.OrgID, p.Limit)
 		if p.AgentID != "" {
 			query += "&agent_id=eq." + p.AgentID
 		}
@@ -262,7 +262,7 @@ func makeMemoryDelete(dbClient *db.Client) mcp.ToolHandler {
 			return errorResult("id is required"), nil
 		}
 
-		query := fmt.Sprintf("id=eq.%s&org_id=eq.%s", p.ID, userCtx.OrgID)
+		query := fmt.Sprintf("id=eq.%s&organization_id=eq.%s", p.ID, userCtx.OrgID)
 		_, err := dbClient.Delete(ctx, "memories", query)
 		if err != nil {
 			return errorResult("failed to delete memory: " + err.Error()), nil

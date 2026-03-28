@@ -250,7 +250,7 @@ func makeTaskList(dbClient *db.Client) mcp.ToolHandler {
 
 		q := url.Values{}
 		q.Set("organization_id", "eq."+userCtx.OrgID)
-		q.Set("order", "priority_order.asc,created_at.desc")
+		q.Set("order", "priority.asc,created_at.desc")
 		q.Set("limit", strconv.Itoa(limit))
 
 		if input.ProjectID != "" {
@@ -438,7 +438,7 @@ func makeTaskBlock(dbClient *db.Client) mcp.ToolHandler {
 			"updated_at": time.Now().UTC().Format(time.RFC3339),
 		}
 		if input.Reason != "" {
-			patch["blocked_reason"] = input.Reason
+			patch["metadata"] = map[string]interface{}{"blocked_reason": input.Reason}
 		}
 
 		q := fmt.Sprintf("id=eq.%s&organization_id=eq.%s", url.QueryEscape(input.ID), url.QueryEscape(userCtx.OrgID))
@@ -467,7 +467,7 @@ func makeTaskGetNext(dbClient *db.Client) mcp.ToolHandler {
 		}
 
 		rpcParams := map[string]interface{}{
-			"p_organization_id": userCtx.OrgID,
+			"p_org_id": userCtx.OrgID,
 		}
 		if input.ProjectID != "" {
 			rpcParams["p_project_id"] = input.ProjectID

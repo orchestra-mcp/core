@@ -91,10 +91,10 @@ func makeDecisionLog(dbClient *db.Client, embedder *embedding.Client) mcp.ToolHa
 		}
 
 		payload := map[string]interface{}{
-			"title":    p.Title,
-			"decision": p.Decision,
-			"org_id":   userCtx.OrgID,
-			"user_id":  userCtx.UserID,
+			"title":           p.Title,
+			"decision":        p.Decision,
+			"organization_id": userCtx.OrgID,
+			"made_by":         userCtx.UserID,
 		}
 		if p.Context != "" {
 			payload["context"] = p.Context
@@ -202,12 +202,12 @@ func makeDecisionList(dbClient *db.Client) mcp.ToolHandler {
 			p.Limit = 10
 		}
 
-		query := fmt.Sprintf("org_id=eq.%s&order=created_at.desc&limit=%d", userCtx.OrgID, p.Limit)
+		query := fmt.Sprintf("organization_id=eq.%s&order=created_at.desc&limit=%d", userCtx.OrgID, p.Limit)
 		if p.ProjectID != "" {
 			query += "&project_id=eq." + p.ProjectID
 		}
 		// Exclude embedding from response.
-		query += "&select=id,title,decision,context,alternatives,outcome,project_id,task_id,tags,user_id,created_at,updated_at"
+		query += "&select=id,title,decision,context,alternatives,outcome,project_id,task_id,tags,made_by,created_at,updated_at"
 
 		raw, err := dbClient.Get(ctx, "decisions", query)
 		if err != nil {
