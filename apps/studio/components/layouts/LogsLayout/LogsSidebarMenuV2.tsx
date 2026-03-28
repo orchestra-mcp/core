@@ -12,7 +12,7 @@ import { useContentQuery } from 'data/content/content-query'
 import { useReplicationSourcesQuery } from 'data/replication/sources-query'
 import { useCheckEntitlements } from 'hooks/misc/useCheckEntitlements'
 import { useIsFeatureEnabled } from 'hooks/misc/useIsFeatureEnabled'
-import { ChevronRight, CircleHelpIcon, Plus } from 'lucide-react'
+import { ChevronRight, CircleHelpIcon, Music, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import React, { useState } from 'react'
@@ -223,10 +223,22 @@ export function LogsSidebarMenuV2() {
       ]
     : []
 
+  const ORCHESTRA_COLLECTIONS = [
+    {
+      name: 'Orchestra',
+      key: 'orchestra-logs',
+      url: `/project/${ref}/logs/orchestra-logs`,
+      items: [],
+    },
+  ]
+
   const filteredLogs = BASE_COLLECTIONS.filter((collection) => {
     return collection?.name.toLowerCase().includes(searchText.toLowerCase())
   })
   const filteredOperationalLogs = OPERATIONAL_COLLECTIONS.filter((collection) => {
+    return collection?.name.toLowerCase().includes(searchText.toLowerCase())
+  })
+  const filteredOrchestraLogs = ORCHESTRA_COLLECTIONS.filter((collection) => {
     return collection?.name.toLowerCase().includes(searchText.toLowerCase())
   })
 
@@ -345,6 +357,22 @@ export function LogsSidebarMenuV2() {
               </SidebarCollapsible>
             </>
           )}
+          <Separator className="my-4" />
+        </>
+      )}
+      {filteredOrchestraLogs.length > 0 && (
+        <>
+          <SidebarCollapsible title="Orchestra" defaultOpen={true}>
+            {filteredOrchestraLogs.map((collection) => (
+              <LogsSidebarItem
+                key={collection.key}
+                isActive={isActive(collection.url)}
+                href={collection.url}
+                icon={<Music size={15} className="text-foreground-light" />}
+                label={collection.name}
+              />
+            ))}
+          </SidebarCollapsible>
           <Separator className="my-4" />
         </>
       )}

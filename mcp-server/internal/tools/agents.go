@@ -120,6 +120,7 @@ func makeAgentCreate(dbClient *db.Client) mcp.ToolHandler {
 			"name":            input.Name,
 			"type":            agentType,
 			"status":          "active",
+			"created_by":      userCtx.UserID,
 			"created_at":      time.Now().UTC().Format(time.RFC3339),
 		}
 		setIfNotEmpty(row, "slug", input.Slug)

@@ -218,12 +218,9 @@ func makeSkillAssign(dbClient *db.Client) mcp.ToolHandler {
 		}
 
 		row := map[string]interface{}{
-			"organization_id": userCtx.OrgID,
-			"agent_id":        input.AgentID,
-			"skill_id":        input.SkillID,
-			"proficiency":     proficiency,
-			"assigned_by":     userCtx.UserID,
-			"assigned_at":     time.Now().UTC().Format(time.RFC3339),
+			"agent_id":    input.AgentID,
+			"skill_id":    input.SkillID,
+			"proficiency": proficiency,
 		}
 
 		result, err := dbClient.Post(ctx, "agent_skills", row)

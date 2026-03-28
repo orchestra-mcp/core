@@ -195,8 +195,7 @@ func makeProjectProgress(dbClient *db.Client) mcp.ToolHandler {
 		}
 
 		rpcParams := map[string]interface{}{
-			"p_project_id":      input.ID,
-			"p_organization_id": userCtx.OrgID,
+			"p_project_id": input.ID,
 		}
 
 		result, err := dbClient.RPC(ctx, "get_project_progress", rpcParams)

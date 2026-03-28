@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"strings"
 
 	"github.com/orchestra-mcp/server/internal/auth"
 	"github.com/orchestra-mcp/server/internal/db"
@@ -103,9 +104,9 @@ func makeMemoryStore(dbClient *db.Client, embedder *embedding.Client) mcp.ToolHa
 		}
 
 		payload := map[string]interface{}{
-			"content": p.Content,
-			"org_id":  userCtx.OrgID,
-			"user_id": userCtx.UserID,
+			"content":         p.Content,
+			"organization_id": userCtx.OrgID,
+			"user_id":         userCtx.UserID,
 		}
 		if p.Title != "" {
 			payload["title"] = p.Title
@@ -178,25 +179,17 @@ func makeMemorySearch(dbClient *db.Client, embedder *embedding.Client) mcp.ToolH
 			p.MatchThreshold = 0.7
 		}
 
-		vec, err := embedder.Embed(ctx, p.Query)
-		if err != nil {
-			return errorResult("embedding service unavailable: " + err.Error()), nil
-		}
-
-		rpcParams := map[string]interface{}{
-			"query_embedding": floats32ToAny(vec),
-			"match_count":     p.MatchCount,
-			"match_threshold": p.MatchThreshold,
-			"p_org_id":        userCtx.OrgID,
-		}
+		// Use PostgreSQL text search instead of vector embeddings
+		searchQ := strings.ReplaceAll(p.Query, " ", "%20")
+		qstr := fmt.Sprintf("organization_id=eq.%s&order=created_at.desc&limit=%d&select=id,title,content,summary,source,tags,created_at&or=(title.ilike.*%s*,content.ilike.*%s*)", userCtx.OrgID, p.MatchCount, searchQ, searchQ)
 		if p.AgentID != "" {
-			rpcParams["p_agent_id"] = p.AgentID
+			qstr += "&agent_id=eq." + p.AgentID
 		}
 		if p.ProjectID != "" {
-			rpcParams["p_project_id"] = p.ProjectID
+			qstr += "&project_id=eq." + p.ProjectID
 		}
 
-		raw, err := dbClient.RPC(ctx, "search_memory", rpcParams)
+		raw, err := dbClient.Get(ctx, "memories", qstr)
 		if err != nil {
 			return errorResult("search failed: " + err.Error()), nil
 		}
@@ -224,7 +217,7 @@ func makeMemoryList(dbClient *db.Client) mcp.ToolHandler {
 			p.Limit = 20
 		}
 
-		query := fmt.Sprintf("org_id=eq.%s&order=created_at.desc&limit=%d", userCtx.OrgID, p.Limit)
+		query := fmt.Sprintf("organization_id=eq.%s&order=created_at.desc&limit=%d", userCtx.OrgID, p.Limit)
 		if p.AgentID != "" {
 			query += "&agent_id=eq." + p.AgentID
 		}
@@ -262,7 +255,7 @@ func makeMemoryDelete(dbClient *db.Client) mcp.ToolHandler {
 			return errorResult("id is required"), nil
 		}
 
-		query := fmt.Sprintf("id=eq.%s&org_id=eq.%s", p.ID, userCtx.OrgID)
+		query := fmt.Sprintf("id=eq.%s&organization_id=eq.%s", p.ID, userCtx.OrgID)
 		_, err := dbClient.Delete(ctx, "memories", query)
 		if err != nil {
 			return errorResult("failed to delete memory: " + err.Error()), nil

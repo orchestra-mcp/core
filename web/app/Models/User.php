@@ -52,6 +52,8 @@ class User extends Authenticatable
         'onboarding_completed',
         'timezone',
         'language',
+        'notification_preferences',
+        'connected_accounts',
     ];
 
     /**
@@ -75,6 +77,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'onboarding_completed' => 'boolean',
+            'notification_preferences' => 'array',
+            'connected_accounts' => 'array',
         ];
     }
 

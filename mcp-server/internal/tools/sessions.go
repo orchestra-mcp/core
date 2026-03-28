@@ -89,12 +89,12 @@ func makeSessionStart(dbClient *db.Client) mcp.ToolHandler {
 
 		now := time.Now().UTC().Format(time.RFC3339)
 		payload := map[string]interface{}{
-			"machine_id":   p.MachineID,
-			"org_id":       userCtx.OrgID,
-			"user_id":      userCtx.UserID,
-			"status":       "active",
-			"started_at":   now,
-			"last_seen_at": now,
+			"machine_id":      p.MachineID,
+			"organization_id": userCtx.OrgID,
+			"user_id":         userCtx.UserID,
+			"status":          "active",
+			"started_at":      now,
+			"last_heartbeat":  now,
 		}
 		if p.AgentID != "" {
 			payload["agent_id"] = p.AgentID
@@ -106,7 +106,7 @@ func makeSessionStart(dbClient *db.Client) mcp.ToolHandler {
 			payload["current_task_id"] = p.CurrentTaskID
 		}
 
-		raw, err := dbClient.Post(ctx, "sessions", payload)
+		raw, err := dbClient.Post(ctx, "agent_sessions", payload)
 		if err != nil {
 			return errorResult("failed to start session: " + err.Error()), nil
 		}
@@ -133,14 +133,14 @@ func makeSessionHeartbeat(dbClient *db.Client) mcp.ToolHandler {
 		}
 
 		payload := map[string]interface{}{
-			"last_seen_at": time.Now().UTC().Format(time.RFC3339),
+			"last_heartbeat": time.Now().UTC().Format(time.RFC3339),
 		}
 		if p.CurrentTaskID != "" {
 			payload["current_task_id"] = p.CurrentTaskID
 		}
 
-		query := fmt.Sprintf("id=eq.%s&org_id=eq.%s", p.SessionID, userCtx.OrgID)
-		raw, err := dbClient.Patch(ctx, "sessions", query, payload)
+		query := fmt.Sprintf("id=eq.%s&organization_id=eq.%s", p.SessionID, userCtx.OrgID)
+		raw, err := dbClient.Patch(ctx, "agent_sessions", query, payload)
 		if err != nil {
 			return errorResult("failed to update heartbeat: " + err.Error()), nil
 		}
@@ -167,13 +167,13 @@ func makeSessionEnd(dbClient *db.Client) mcp.ToolHandler {
 
 		now := time.Now().UTC().Format(time.RFC3339)
 		payload := map[string]interface{}{
-			"status":       "ended",
-			"ended_at":     now,
-			"last_seen_at": now,
+			"status":         "offline",
+			"ended_at":       now,
+			"last_heartbeat": now,
 		}
 
-		query := fmt.Sprintf("id=eq.%s&org_id=eq.%s", p.SessionID, userCtx.OrgID)
-		raw, err := dbClient.Patch(ctx, "sessions", query, payload)
+		query := fmt.Sprintf("id=eq.%s&organization_id=eq.%s", p.SessionID, userCtx.OrgID)
+		raw, err := dbClient.Patch(ctx, "agent_sessions", query, payload)
 		if err != nil {
 			return errorResult("failed to end session: " + err.Error()), nil
 		}
@@ -188,9 +188,9 @@ func makeSessionList(dbClient *db.Client) mcp.ToolHandler {
 			return errorResult("authentication required"), nil
 		}
 
-		query := fmt.Sprintf("org_id=eq.%s&status=eq.active&order=last_seen_at.desc", userCtx.OrgID)
+		query := fmt.Sprintf("organization_id=eq.%s&status=eq.active&order=last_heartbeat.desc", userCtx.OrgID)
 
-		raw, err := dbClient.Get(ctx, "sessions", query)
+		raw, err := dbClient.Get(ctx, "agent_sessions", query)
 		if err != nil {
 			return errorResult("failed to list sessions: " + err.Error()), nil
 		}
