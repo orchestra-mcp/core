@@ -36,6 +36,7 @@ class RegisterController extends Controller
             'email' => $validated['email'],
             'password' => $validated['password'],
             'onboarding_completed' => false,
+            'supabase_user_id' => (string) \Illuminate\Support\Str::uuid(),
         ]);
 
         Auth::login($user);

@@ -20,7 +20,11 @@ class User extends Authenticatable
      */
     public function orchestraId(): string
     {
-        return $this->supabase_user_id ?? (string) \Illuminate\Support\Str::uuid();
+        if (!$this->supabase_user_id) {
+            $this->supabase_user_id = (string) \Illuminate\Support\Str::uuid();
+            $this->saveQuietly();
+        }
+        return $this->supabase_user_id;
     }
 
     /**
