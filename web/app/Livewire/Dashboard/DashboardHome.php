@@ -27,7 +27,7 @@ class DashboardHome extends Component
             ->count();
 
         // Agent count — count team members as proxy for agents
-        $this->totalAgents = $user->teamMemberships()->count();
+        $this->totalAgents = \App\Models\TeamMember::where('user_id', $user->orchestraId())->count();
 
         // Tasks this month — use token usage as proxy
         $this->totalTasks = McpToken::where('user_id', $user->orchestraId())
