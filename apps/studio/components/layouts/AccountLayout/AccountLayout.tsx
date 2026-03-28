@@ -104,11 +104,7 @@ const AccountLayout = ({ children, title }: PropsWithChildren<AccountLayoutProps
     return unregister
   }, [registerOpenMenu, setMobileSheetContent, sections])
 
-  useEffect(() => {
-    if (!IS_PLATFORM) {
-      router.push('/project/default')
-    }
-  }, [router])
+  // Orchestra: allow account pages in self-hosted mode
 
   return (
     <>
