@@ -17,6 +17,6 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 }
 
 const handleGet = async (_req: NextApiRequest, res: NextApiResponse) => {
-  // Self-hosted: no project limits.
-  return res.status(200).json({ reached: false })
+  // Self-hosted: no project limits. Return empty array (members who exceeded).
+  return res.status(200).json([])
 }
