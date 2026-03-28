@@ -35,7 +35,7 @@ const OrchestraTokensPage: NextPageWithLayout = () => {
       <PageContainer size="large">
         <PageSection>
           <PageSectionContent className="gap-y-4">
-            <div className="flex items-center justify-between gap-x-2">
+            <div className="flex items-center justify-between gap-x-2 mb-2">
               <Input
                 size="tiny"
                 autoComplete="off"
@@ -45,6 +45,7 @@ const OrchestraTokensPage: NextPageWithLayout = () => {
                 name="search"
                 id="search"
                 placeholder="Filter tokens"
+                className="w-64"
               />
               <div className="flex items-center gap-x-2">
                 <Button asChild type="default" icon={<ExternalLink />}>

@@ -527,33 +527,41 @@ export const OrchestraAgentDetail = () => {
 
       {/* Tabs */}
       <Tabs_Shadcn_ value={activeTab} onValueChange={setActiveTab}>
-        <TabsList_Shadcn_ className="bg-transparent border-b border-default gap-2">
-          <TabsTrigger_Shadcn_ value="overview">Overview</TabsTrigger_Shadcn_>
-          <TabsTrigger_Shadcn_ value="activity">Activity</TabsTrigger_Shadcn_>
-          <TabsTrigger_Shadcn_ value="tasks">Tasks</TabsTrigger_Shadcn_>
-          <TabsTrigger_Shadcn_ value="skills">
-            Skills{agent.skills.length > 0 ? ` (${agent.skills.length})` : ''}
-          </TabsTrigger_Shadcn_>
-          <TabsTrigger_Shadcn_ value="sessions">Sessions</TabsTrigger_Shadcn_>
+        <TabsList_Shadcn_ className="bg-transparent border-b border-default w-full justify-start rounded-none h-auto p-0 gap-0">
+          {[
+            { value: 'overview', label: 'Overview' },
+            { value: 'activity', label: 'Activity' },
+            { value: 'tasks', label: 'Tasks' },
+            { value: 'skills', label: `Skills${agent.skills.length > 0 ? ` (${agent.skills.length})` : ''}` },
+            { value: 'sessions', label: 'Sessions' },
+          ].map((tab) => (
+            <TabsTrigger_Shadcn_
+              key={tab.value}
+              value={tab.value}
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-3 pt-2 text-sm text-foreground-lighter data-[state=active]:text-foreground"
+            >
+              {tab.label}
+            </TabsTrigger_Shadcn_>
+          ))}
         </TabsList_Shadcn_>
 
-        <TabsContent_Shadcn_ value="overview" className="mt-4">
+        <TabsContent_Shadcn_ value="overview" className="mt-6">
           <OverviewTab agent={agent} isLoading={isLoading} />
         </TabsContent_Shadcn_>
 
-        <TabsContent_Shadcn_ value="activity" className="mt-4">
+        <TabsContent_Shadcn_ value="activity" className="mt-6">
           <ActivityTab agentId={agent.id} />
         </TabsContent_Shadcn_>
 
-        <TabsContent_Shadcn_ value="tasks" className="mt-4">
+        <TabsContent_Shadcn_ value="tasks" className="mt-6">
           <TasksTab agentId={agent.id} />
         </TabsContent_Shadcn_>
 
-        <TabsContent_Shadcn_ value="skills" className="mt-4">
+        <TabsContent_Shadcn_ value="skills" className="mt-6">
           <SkillsTab skills={agent.skills} />
         </TabsContent_Shadcn_>
 
-        <TabsContent_Shadcn_ value="sessions" className="mt-4">
+        <TabsContent_Shadcn_ value="sessions" className="mt-6">
           <SessionsTab agentId={agent.id} />
         </TabsContent_Shadcn_>
       </Tabs_Shadcn_>
