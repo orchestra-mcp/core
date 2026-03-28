@@ -29,10 +29,13 @@ class CompanySetup extends Component
         ]);
 
         // Create organization
+        // owner_id must be UUID (references auth.users). Use supabase_user_id or generate one.
+        $ownerId = auth()->user()->supabase_user_id ?? (string) \Illuminate\Support\Str::uuid();
+
         $org = Organization::create([
             'name' => $this->name,
             'slug' => $this->slug,
-            'owner_id' => auth()->id(),
+            'owner_id' => $ownerId,
             'description' => $this->description,
             'plan' => 'free',
             'limits' => [
@@ -55,7 +58,7 @@ class CompanySetup extends Component
         // Add owner as team member
         TeamMember::create([
             'team_id' => $team->id,
-            'user_id' => auth()->id(),
+            'user_id' => $ownerId,
             'role' => 'owner',
         ]);
 
