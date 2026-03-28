@@ -12,8 +12,10 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   switch (method) {
     case 'GET':
       return handleGetAll(req, res)
+    case 'PATCH':
+      return handlePatch(req, res)
     default:
-      res.setHeader('Allow', ['GET'])
+      res.setHeader('Allow', ['GET', 'PATCH'])
       res.status(405).json({ data: null, error: { message: `Method ${method} Not Allowed` } })
   }
 }
@@ -56,5 +58,47 @@ const handleGetAll = async (req: NextApiRequest, res: NextApiResponse) => {
       },
     ],
   }
+  return res.status(200).json(response)
+}
+
+const handlePatch = async (req: NextApiRequest, res: NextApiResponse) => {
+  const { first_name, last_name, username, primary_email } = req.body || {}
+
+  const fullName = [first_name, last_name].filter(Boolean).join(' ') || null
+
+  // Update the admin profile in the database
+  const { data, error } = await executeQuery<{
+    id: string
+    full_name: string | null
+    username: string | null
+    email: string | null
+  }>({
+    query: `UPDATE public.profiles
+            SET full_name = COALESCE($1, full_name),
+                username = COALESCE($2, username),
+                updated_at = NOW()
+            WHERE is_admin = true
+            RETURNING id, full_name, username,
+              (SELECT email FROM auth.users WHERE id = profiles.id) as email`,
+    parameters: [fullName, username || null],
+  })
+
+  if (error) {
+    console.error('Profile update error:', error.message)
+    return res.status(500).json({ error: { message: 'Failed to update profile' } })
+  }
+
+  const updated = data?.[0]
+  const nameParts = (updated?.full_name || '').split(' ')
+
+  const response = {
+    id: updated?.id || 1,
+    primary_email: updated?.email || primary_email || 'admin@orchestra-mcp.dev',
+    username: updated?.username || username || 'admin',
+    first_name: nameParts[0] || first_name || '',
+    last_name: nameParts.slice(1).join(' ') || last_name || '',
+    disabled_features: [] as string[],
+  }
+
   return res.status(200).json(response)
 }

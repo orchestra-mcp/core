@@ -18,6 +18,12 @@ export function generateOrchestraMenu(ref?: string): ProductMenuGroup[] {
         { name: 'Tokens', key: 'tokens', url: `${baseUrl}/tokens`, items: [] },
       ],
     },
+    {
+      title: 'Observability',
+      items: [
+        { name: 'Logs', key: 'logs', url: `${baseUrl}/logs`, items: [] },
+      ],
+    },
   ]
 }
 

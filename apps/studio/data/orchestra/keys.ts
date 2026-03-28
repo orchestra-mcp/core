@@ -9,4 +9,11 @@ export const orchestraKeys = {
     ['projects', projectRef, 'orchestra', 'activity-log'] as const,
   activeSessions: (projectRef: string | undefined) =>
     ['projects', projectRef, 'orchestra', 'active-sessions'] as const,
+  serviceLogs: (
+    projectRef: string | undefined,
+    service: string,
+    level: string | undefined,
+    hours: number
+  ) =>
+    ['projects', projectRef, 'orchestra', 'service-logs', service, level, hours] as const,
 }
