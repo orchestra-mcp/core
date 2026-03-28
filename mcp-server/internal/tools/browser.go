@@ -4,8 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
+	"net"
+	"net/http"
+	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"time"
 
 	"github.com/chromedp/cdproto/page"
@@ -20,41 +26,232 @@ import (
 // BrowserClient — shared CDP connection to an existing Chrome instance
 // ---------------------------------------------------------------------------
 
-// BrowserClient holds the remote allocator context for connecting to an
-// existing Chrome instance via Chrome DevTools Protocol (CDP).
+// BrowserClient holds the remote allocator context for connecting to a
+// Chrome instance via Chrome DevTools Protocol (CDP). If no existing Chrome
+// is running, it auto-launches one with CDP enabled.
 type BrowserClient struct {
 	allocCtx context.Context
 	cancel   context.CancelFunc
 	cdpURL   string
+	managed  bool     // true if we launched Chrome ourselves
+	cmd      *exec.Cmd // process handle for managed Chrome
 }
 
 // NewBrowserClient connects to a running Chrome instance at the given CDP URL.
-// The URL should be an HTTP endpoint like "http://localhost:9222" — chromedp
-// handles the WebSocket upgrade internally.
+// If no Chrome is available, it auto-launches one with the appropriate flags.
+// The URL should be an HTTP endpoint like "http://localhost:9222".
 func NewBrowserClient(cdpURL string) (*BrowserClient, error) {
+	// Step 1: Try to connect to an existing Chrome instance.
+	if isChromeCDPAvailable(cdpURL) {
+		slog.Info("connecting to existing Chrome CDP", "url", cdpURL)
+		allocCtx, cancel := chromedp.NewRemoteAllocator(context.Background(), cdpURL)
+
+		// Verify the connection by listing targets with a short timeout.
+		testCtx, testCancel := context.WithTimeout(allocCtx, 5*time.Second)
+		defer testCancel()
+
+		if _, err := chromedp.Targets(testCtx); err != nil {
+			cancel()
+			return nil, fmt.Errorf("Chrome CDP responded but target listing failed at %s: %w", cdpURL, err)
+		}
+
+		return &BrowserClient{
+			allocCtx: allocCtx,
+			cancel:   cancel,
+			cdpURL:   cdpURL,
+			managed:  false,
+		}, nil
+	}
+
+	// Step 2: Auto-launch Chrome with CDP.
+	slog.Info("no existing Chrome CDP found, auto-launching", "url", cdpURL)
+	cmd, err := launchChrome(cdpURL)
+	if err != nil {
+		return nil, fmt.Errorf("no Chrome CDP available at %s and auto-launch failed: %w", cdpURL, err)
+	}
+
+	// Step 3: Wait for Chrome to be ready.
+	if err := waitForCDP(cdpURL, 10*time.Second); err != nil {
+		cmd.Process.Kill()
+		cmd.Wait()
+		return nil, fmt.Errorf("Chrome launched but CDP not responding at %s: %w", cdpURL, err)
+	}
+
+	// Step 4: Connect via chromedp remote allocator.
 	allocCtx, cancel := chromedp.NewRemoteAllocator(context.Background(), cdpURL)
 
-	// Verify the connection by listing targets with a short timeout.
+	// Verify the connection.
 	testCtx, testCancel := context.WithTimeout(allocCtx, 5*time.Second)
 	defer testCancel()
 
 	if _, err := chromedp.Targets(testCtx); err != nil {
 		cancel()
-		return nil, fmt.Errorf("cannot connect to Chrome at %s: %w", cdpURL, err)
+		cmd.Process.Kill()
+		cmd.Wait()
+		return nil, fmt.Errorf("Chrome launched and CDP responded, but target listing failed: %w", err)
 	}
+
+	slog.Info("auto-launched Chrome with CDP", "url", cdpURL, "pid", cmd.Process.Pid)
 
 	return &BrowserClient{
 		allocCtx: allocCtx,
 		cancel:   cancel,
 		cdpURL:   cdpURL,
+		managed:  true,
+		cmd:      cmd,
 	}, nil
 }
 
-// Close releases the allocator resources.
+// Close releases the allocator resources and kills a managed Chrome process.
 func (bc *BrowserClient) Close() {
 	if bc.cancel != nil {
 		bc.cancel()
 	}
+	if bc.managed && bc.cmd != nil && bc.cmd.Process != nil {
+		slog.Info("shutting down managed Chrome", "pid", bc.cmd.Process.Pid)
+		bc.cmd.Process.Kill()
+		bc.cmd.Wait()
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Chrome auto-launch helpers
+// ---------------------------------------------------------------------------
+
+// isChromeCDPAvailable checks whether a Chrome CDP endpoint is reachable by
+// making an HTTP GET to /json/version.
+func isChromeCDPAvailable(cdpURL string) bool {
+	client := &http.Client{Timeout: 2 * time.Second}
+	resp, err := client.Get(cdpURL + "/json/version")
+	if err != nil {
+		return false
+	}
+	resp.Body.Close()
+	return resp.StatusCode == http.StatusOK
+}
+
+// findChromeBinary locates the Chrome executable on the current platform.
+func findChromeBinary() (string, error) {
+	switch runtime.GOOS {
+	case "darwin":
+		// macOS: check standard application paths.
+		candidates := []string{
+			"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+			"/Applications/Chromium.app/Contents/MacOS/Chromium",
+		}
+		for _, p := range candidates {
+			if _, err := os.Stat(p); err == nil {
+				return p, nil
+			}
+		}
+		// Also check PATH.
+		if p, err := exec.LookPath("google-chrome"); err == nil {
+			return p, nil
+		}
+		return "", fmt.Errorf("Chrome not found — install Google Chrome or set CHROME_CDP_URL to a running instance")
+
+	case "linux":
+		candidates := []string{
+			"google-chrome",
+			"google-chrome-stable",
+			"chromium-browser",
+			"chromium",
+		}
+		for _, name := range candidates {
+			if p, err := exec.LookPath(name); err == nil {
+				return p, nil
+			}
+		}
+		return "", fmt.Errorf("Chrome/Chromium not found on PATH — install google-chrome or chromium-browser")
+
+	default:
+		return "", fmt.Errorf("auto-launch not supported on %s — start Chrome manually with --remote-debugging-port", runtime.GOOS)
+	}
+}
+
+// launchChrome starts a Chrome process with CDP enabled on the port extracted
+// from cdpURL. It respects the CHROME_HEADLESS env var (default "false" — visible browser).
+func launchChrome(cdpURL string) (*exec.Cmd, error) {
+	binary, err := findChromeBinary()
+	if err != nil {
+		return nil, err
+	}
+
+	// Extract port from the CDP URL.
+	port, err := extractPort(cdpURL)
+	if err != nil {
+		return nil, fmt.Errorf("invalid CDP URL %q: %w", cdpURL, err)
+	}
+
+	// Determine headless mode from env var. Default is VISIBLE (not headless).
+	headless := false
+	if v := os.Getenv("CHROME_HEADLESS"); v == "true" || v == "1" {
+		headless = true
+	}
+
+	args := []string{
+		"--remote-debugging-port=" + port,
+		"--no-first-run",
+		"--no-default-browser-check",
+		"--disable-gpu",
+		"--no-sandbox",
+		"--disable-dev-shm-usage",
+		"--disable-background-timer-throttling",
+		"--user-data-dir=/tmp/orchestra-chrome-profile",
+	}
+
+	if headless {
+		args = append(args, "--headless=new")
+	}
+
+	slog.Info("launching Chrome", "binary", binary, "port", port, "headless", headless)
+
+	cmd := exec.Command(binary, args...)
+	cmd.Stdout = nil // discard Chrome stdout
+	cmd.Stderr = nil // discard Chrome stderr
+
+	if err := cmd.Start(); err != nil {
+		return nil, fmt.Errorf("failed to start Chrome at %s: %w", binary, err)
+	}
+
+	return cmd, nil
+}
+
+// waitForCDP polls the CDP /json/version endpoint until it responds with 200
+// or the timeout expires.
+func waitForCDP(cdpURL string, timeout time.Duration) error {
+	deadline := time.Now().Add(timeout)
+	client := &http.Client{Timeout: 1 * time.Second}
+	versionURL := cdpURL + "/json/version"
+
+	for time.Now().Before(deadline) {
+		resp, err := client.Get(versionURL)
+		if err == nil {
+			resp.Body.Close()
+			if resp.StatusCode == http.StatusOK {
+				return nil
+			}
+		}
+		time.Sleep(250 * time.Millisecond)
+	}
+	return fmt.Errorf("CDP endpoint %s did not respond within %s", cdpURL, timeout)
+}
+
+// extractPort parses the port from a CDP URL like "http://localhost:9222".
+func extractPort(cdpURL string) (string, error) {
+	u, err := url.Parse(cdpURL)
+	if err != nil {
+		return "", err
+	}
+	_, port, err := net.SplitHostPort(u.Host)
+	if err != nil {
+		// If no port in the URL, default to 9222.
+		return "9222", nil
+	}
+	if port == "" {
+		return "9222", nil
+	}
+	return port, nil
 }
 
 // ---------------------------------------------------------------------------
@@ -132,7 +329,7 @@ func RegisterBrowserTools(registry *mcp.ToolRegistry, bc *BrowserClient) {
 // Helpers
 // ---------------------------------------------------------------------------
 
-const browserNotConnected = "Browser not connected. Start Chrome with --remote-debugging-port=9222"
+const browserNotConnected = "Browser not connected. Chrome auto-launch may have failed — check logs or set CHROME_CDP_URL"
 const defaultBrowserTimeout = 5 * time.Second
 
 // findPageTarget returns the target ID for a specific tab, or the first page

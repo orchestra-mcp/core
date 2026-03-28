@@ -206,6 +206,10 @@ func main() {
 		tools.RegisterReportTools(registry, dbClient)
 		slog.Info("registered report tools")
 
+		tools.RegisterInitTools(registry, dbClient)
+		tools.RegisterNotificationControlTools(registry)
+		slog.Info("registered init + notification control tools")
+
 		// Memory and decision tools accept an optional embedding client.
 		// They degrade gracefully (no semantic search) when embClient is nil.
 		tools.RegisterMemoryTools(registry, dbClient, embClient)
@@ -223,7 +227,7 @@ func main() {
 	tools.RegisterNotifyTools(registry, notifyRouter)
 	slog.Info("registered notification tools (notify, discord_notify, telegram_notify)")
 
-	// --- Initialize browser CDP client (optional) ---
+	// --- Initialize browser CDP client (auto-launches Chrome if needed) ---
 	chromeCDPURL := os.Getenv("CHROME_CDP_URL")
 	if chromeCDPURL == "" {
 		chromeCDPURL = "http://localhost:9222"
@@ -231,11 +235,11 @@ func main() {
 
 	browserClient, err := tools.NewBrowserClient(chromeCDPURL)
 	if err != nil {
-		slog.Warn("Chrome CDP not available — browser tools disabled", "url", chromeCDPURL, "error", err)
+		slog.Info("browser tools disabled", "url", chromeCDPURL, "error", err)
 	} else {
 		defer browserClient.Close()
 		tools.RegisterBrowserTools(registry, browserClient)
-		slog.Info("registered browser tools", "cdp_url", chromeCDPURL)
+		slog.Info("browser bridge connected", "cdp_url", chromeCDPURL)
 	}
 
 	// --- Create MCP server (with DB client for audit logging) ---
