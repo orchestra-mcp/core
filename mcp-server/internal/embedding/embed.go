@@ -70,6 +70,9 @@ func (c *Client) endpointURL() string {
 
 // Embed generates a vector embedding for the given text.
 func (c *Client) Embed(ctx context.Context, text string) ([]float32, error) {
+	if c == nil {
+		return nil, fmt.Errorf("embedding: client not initialized (set EMBEDDING_API_KEY)")
+	}
 	if c.APIKey == "" {
 		return nil, fmt.Errorf("embedding: API key not configured (set EMBEDDING_API_KEY)")
 	}
