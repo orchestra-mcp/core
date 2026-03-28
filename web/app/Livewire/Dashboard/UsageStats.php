@@ -51,13 +51,13 @@ class UsageStats extends Component
         $this->memoryMaxMb = $limits['memory'] ?? $planLimits['memory'];
 
         // Calculate current usage
-        $this->tokensUsed = McpToken::where('user_id', $user->id)
+        $this->tokensUsed = McpToken::where('user_id', $user->orchestraId())
             ->whereNull('revoked_at')
             ->count();
 
         $this->agentsUsed = $user->teamMemberships()->count();
 
-        $this->tasksUsed = McpToken::where('user_id', $user->id)
+        $this->tasksUsed = McpToken::where('user_id', $user->orchestraId())
             ->whereNull('revoked_at')
             ->sum('usage_count') ?? 0;
 

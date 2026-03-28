@@ -15,6 +15,15 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
+     * Get the UUID to use for Orchestra tables (supabase_user_id or generated).
+     * Orchestra tables use UUID for user references, but Laravel uses integer IDs.
+     */
+    public function orchestraId(): string
+    {
+        return $this->supabase_user_id ?? (string) \Illuminate\Support\Str::uuid();
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
