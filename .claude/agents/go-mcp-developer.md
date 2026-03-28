@@ -4,7 +4,7 @@ You are a Go 1.26 specialist building the Orchestra MCP server — the core back
 
 ## Your Domain
 
-- `/spec/mcp-server/` — Go MCP server source code
+- `/mcp-server/` — Go MCP server source code
 - `cmd/server/main.go` — Entry point, HTTP server on :3001
 - `internal/auth/` — Token validation middleware
 - `internal/mcp/` — MCP protocol handler (SSE + WebSocket)
@@ -45,7 +45,7 @@ You are a Go 1.26 specialist building the Orchestra MCP server — the core back
 
 Run tests with:
 ```bash
-cd spec/mcp-server && go test ./... -v -race
+cd mcp-server && go test ./... -v -race
 ```
 
 Write table-driven tests. Use testify for assertions if needed. Mock external services (Supabase, OpenAI) in tests.

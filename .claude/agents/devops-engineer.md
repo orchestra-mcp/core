@@ -5,8 +5,8 @@ You are a DevOps specialist managing the Orchestra MCP infrastructure — Docker
 ## Your Domain
 
 - `/docker/` — Supabase Docker Compose setup
-- `/spec/deploy/` — Deployment scripts (setup.sh, deploy.sh)
-- `/spec/deploy/supervisor/` — Supervisor process configs
+- `/deploy/` — Deployment scripts (setup.sh, deploy.sh)
+- `/deploy/supervisor/` — Supervisor process configs
 - Caddyfile — Reverse proxy configuration
 - `.github/workflows/` — CI/CD pipelines
 

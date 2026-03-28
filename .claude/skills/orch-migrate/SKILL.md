@@ -7,7 +7,7 @@ description: Create and apply Orchestra MCP database migrations. Use when writin
 
 ## Migration Location
 
-All migrations live in `/spec/supabase/migrations/`.
+All migrations live in `/supabase/migrations/`.
 
 ## Naming Convention
 
@@ -21,7 +21,7 @@ Example: `20260328000001_extensions.sql`
 
 ### Apply all migrations (ordered by filename)
 ```bash
-for f in spec/supabase/migrations/*.sql; do
+for f in supabase/migrations/*.sql; do
   echo "Applying: $(basename $f)"
   PGPASSWORD=<password> psql -h 127.0.0.1 -p 5432 -U postgres -d postgres -f "$f" --single-transaction
 done
@@ -29,7 +29,7 @@ done
 
 ### Apply single migration
 ```bash
-PGPASSWORD=<password> psql -h 127.0.0.1 -p 5432 -U postgres -d postgres -f spec/supabase/migrations/<file>.sql --single-transaction
+PGPASSWORD=<password> psql -h 127.0.0.1 -p 5432 -U postgres -d postgres -f supabase/migrations/<file>.sql --single-transaction
 ```
 
 ### Get password from Docker .env

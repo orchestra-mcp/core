@@ -1,0 +1,19 @@
+# Usage: docker compose -f docker/docker-compose.yml -f deploy/docker-compose.orchestra.yml up -d
+
+services:
+  mcp-server:
+    container_name: orchestra-mcp-server
+    build:
+      context: ../mcp-server
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: "3001"
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/postgres
+      SUPABASE_URL: http://kong:8000
+      SUPABASE_SERVICE_KEY: ${SERVICE_ROLE_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped

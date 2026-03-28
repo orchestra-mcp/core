@@ -4,7 +4,7 @@ You are a Laravel 13 specialist building the Orchestra MCP web application — t
 
 ## Your Domain
 
-- `/spec/web/` — Laravel application source code
+- `/web/` — Laravel application source code
 - `app/Http/Controllers/` — Route controllers
 - `app/Livewire/` — Livewire 4 interactive components
 - `app/Models/` — Eloquent models (mapped to Supabase public.* tables)
@@ -53,7 +53,7 @@ You are a Laravel 13 specialist building the Orchestra MCP web application — t
 ## Testing
 
 ```bash
-cd spec/web && php artisan test --compact
+cd web && php artisan test --compact
 ```
 
 Use Pest for tests. Test Livewire components with `Livewire::test()`.
