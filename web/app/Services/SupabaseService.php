@@ -2,60 +2,64 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Http;
+use Saeedvir\Supabase\Facades\Supabase;
+use Saeedvir\Supabase\Services\DatabaseService;
 
+/**
+ * Thin wrapper around the Supabase SDK (saeedvir/supabase).
+ *
+ * Legacy code can continue to call get/post/patch/delete on this service.
+ * Internally all calls delegate to the SDK's DatabaseService.
+ */
 class SupabaseService
 {
-    private string $baseUrl;
-    private string $serviceKey;
+    private ?DatabaseService $db = null;
 
-    public function __construct()
+    /**
+     * Lazily resolve the SDK's DatabaseService to avoid boot-order issues.
+     */
+    private function db(): DatabaseService
     {
-        $this->baseUrl = config('services.supabase.url', 'http://localhost:54321');
-        $this->serviceKey = config('services.supabase.service_key', '');
+        return $this->db ??= Supabase::db();
     }
 
     /**
-     * Make authenticated request to Supabase REST API.
+     * Select rows from a Supabase table.
      */
-    public function request(string $method, string $path, array $data = [], array $headers = [])
+    public function get(string $table, array $filters = [], array $options = []): array
     {
-        $url = rtrim($this->baseUrl, '/') . '/rest/v1/' . ltrim($path, '/');
-
-        $defaultHeaders = [
-            'apikey' => $this->serviceKey,
-            'Authorization' => 'Bearer ' . $this->serviceKey,
-            'Content-Type' => 'application/json',
-            'Prefer' => 'return=representation',
-        ];
-
-        $response = Http::withHeaders(array_merge($defaultHeaders, $headers))
-            ->$method($url, $data);
-
-        if ($response->failed()) {
-            throw new \RuntimeException("Supabase API error: " . $response->body());
-        }
-
-        return $response->json();
+        return $this->db()->select($table, '*', $filters, $options);
     }
 
-    public function get(string $path, array $query = [])
+    /**
+     * Insert a row into a Supabase table.
+     */
+    public function post(string $table, array $data): array
     {
-        return $this->request('get', $path . '?' . http_build_query($query));
+        return $this->db()->insert($table, $data);
     }
 
-    public function post(string $path, array $data)
+    /**
+     * Update rows in a Supabase table.
+     */
+    public function patch(string $table, array $filters, array $data): array
     {
-        return $this->request('post', $path, $data);
+        return $this->db()->update($table, $filters, $data);
     }
 
-    public function patch(string $path, array $data)
+    /**
+     * Delete rows from a Supabase table.
+     */
+    public function delete(string $table, array $filters): array
     {
-        return $this->request('patch', $path, $data);
+        return $this->db()->delete($table, $filters);
     }
 
-    public function delete(string $path)
+    /**
+     * Execute a Supabase RPC function.
+     */
+    public function rpc(string $functionName, array $params = []): array
     {
-        return $this->request('delete', $path);
+        return $this->db()->rpc($functionName, $params);
     }
 }

@@ -42,10 +42,13 @@ return [
     ],
 
     'supabase' => [
-        'url' => env('SUPABASE_URL', 'http://localhost:54321'),
+        'url' => env('SUPABASE_URL', 'http://localhost:8000'),
         'anon_key' => env('SUPABASE_ANON_KEY', ''),
         'service_key' => env('SUPABASE_SERVICE_KEY', ''),
         'jwt_secret' => env('SUPABASE_JWT_SECRET', ''),
+        // SDK aliases (saeedvir/supabase reads from config('supabase.*'))
+        'key' => env('SUPABASE_KEY', env('SUPABASE_SERVICE_KEY', '')),
+        'secret' => env('SUPABASE_SECRET', env('SUPABASE_SERVICE_KEY', '')),
     ],
 
 ];
