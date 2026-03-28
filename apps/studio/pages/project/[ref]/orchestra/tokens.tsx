@@ -15,6 +15,7 @@ import {
   PageHeaderSummary,
   PageHeaderTitle,
 } from 'ui-patterns/PageHeader'
+import { PageSection, PageSectionContent } from 'ui-patterns/PageSection'
 
 const OrchestraTokensPage: NextPageWithLayout = () => {
   const [searchString, setSearchString] = useState('')
@@ -32,36 +33,38 @@ const OrchestraTokensPage: NextPageWithLayout = () => {
         </PageHeaderMeta>
       </PageHeader>
       <PageContainer size="large">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between gap-x-2">
-            <Input
-              size="tiny"
-              autoComplete="off"
-              icon={<Search size={12} />}
-              value={searchString}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchString(e.target.value)}
-              name="search"
-              id="search"
-              placeholder="Filter tokens"
-            />
-            <div className="flex items-center gap-x-2">
-              <Button asChild type="default" icon={<ExternalLink />}>
-                <a href={`${DOCS_URL}/guides/orchestra/api`} target="_blank" rel="noreferrer">
-                  API Docs
-                </a>
-              </Button>
-              <Button asChild type="default" icon={<ExternalLink />}>
-                <a href={`${DOCS_URL}/guides/orchestra/cli`} target="_blank" rel="noreferrer">
-                  CLI Docs
-                </a>
-              </Button>
-              <Button type="primary" icon={<Plus size={14} />}>
-                Generate new token
-              </Button>
+        <PageSection>
+          <PageSectionContent className="gap-y-4">
+            <div className="flex items-center justify-between gap-x-2">
+              <Input
+                size="tiny"
+                autoComplete="off"
+                icon={<Search size={12} />}
+                value={searchString}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchString(e.target.value)}
+                name="search"
+                id="search"
+                placeholder="Filter tokens"
+              />
+              <div className="flex items-center gap-x-2">
+                <Button asChild type="default" icon={<ExternalLink />}>
+                  <a href={`${DOCS_URL}/guides/orchestra/api`} target="_blank" rel="noreferrer">
+                    API Docs
+                  </a>
+                </Button>
+                <Button asChild type="default" icon={<ExternalLink />}>
+                  <a href={`${DOCS_URL}/guides/orchestra/cli`} target="_blank" rel="noreferrer">
+                    CLI Docs
+                  </a>
+                </Button>
+                <Button type="primary" icon={<Plus size={14} />}>
+                  Generate new token
+                </Button>
+              </div>
             </div>
-          </div>
-          <OrchestraTokens searchString={searchString} />
-        </div>
+            <OrchestraTokens searchString={searchString} />
+          </PageSectionContent>
+        </PageSection>
       </PageContainer>
     </>
   )
