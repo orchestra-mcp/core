@@ -9,7 +9,7 @@
         </button>
     </div>
 
-    <div class="mt-8 bg-white rounded-xl border border-gray-200 p-12 text-center">
+    <div class="mt-8 bg-brand-card rounded-xl border border-brand-border p-12 text-center">
         <p class="text-gray-500">No team members yet. Invite your first team member.</p>
     </div>
 </x-layouts.app>
