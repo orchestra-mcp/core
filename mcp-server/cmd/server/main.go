@@ -110,12 +110,22 @@ func main() {
 	_ = hub // available for tool handlers to broadcast changes
 	slog.Info("realtime hub initialized")
 
-	// --- Initialize Slack client ---
-	slackClient := notifications.NewSlackClient()
-	if slackClient.Enabled() {
+	// --- Initialize notification router (Slack, Discord, Telegram) ---
+	notifyRouter := notifications.NewRouter()
+	if notifyRouter.Slack.Enabled() {
 		slog.Info("slack client initialized")
 	} else {
 		slog.Warn("SLACK_BOT_TOKEN not set — Slack notifications disabled")
+	}
+	if notifyRouter.Discord.Enabled() {
+		slog.Info("discord client initialized")
+	} else {
+		slog.Warn("DISCORD_WEBHOOK_URL/DISCORD_BOT_TOKEN not set — Discord notifications disabled")
+	}
+	if notifyRouter.Telegram.Enabled() {
+		slog.Info("telegram client initialized")
+	} else {
+		slog.Warn("TELEGRAM_BOT_TOKEN not set — Telegram notifications disabled")
 	}
 
 	// --- Build tool registry ---
@@ -184,8 +194,13 @@ func main() {
 		slog.Info("registered decision tools")
 	}
 
-	tools.RegisterSlackTools(registry, slackClient)
+	// Keep slack_notify for backwards compatibility.
+	tools.RegisterSlackTools(registry, notifyRouter.Slack)
 	slog.Info("registered Slack tools")
+
+	// Register unified notify + per-provider tools (discord_notify, telegram_notify).
+	tools.RegisterNotifyTools(registry, notifyRouter)
+	slog.Info("registered notification tools (notify, discord_notify, telegram_notify)")
 
 	// --- Create MCP server (with DB client for audit logging) ---
 	server := mcp.NewServer(registry, dbLogger, dbClient)
