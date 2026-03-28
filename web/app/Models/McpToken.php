@@ -64,7 +64,7 @@ class McpToken extends Model
     protected function casts(): array
     {
         return [
-            'scopes' => 'array',
+            // scopes is PostgreSQL TEXT[] — don't cast as array (use {read,write} format)
             'last_used_at' => 'datetime',
             'expires_at' => 'datetime',
             'revoked_at' => 'datetime',
