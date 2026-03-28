@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"strings"
 
 	"github.com/orchestra-mcp/server/internal/auth"
 	"github.com/orchestra-mcp/server/internal/db"
@@ -163,7 +164,8 @@ func makeDecisionSearch(dbClient *db.Client, embedder *embedding.Client) mcp.Too
 		}
 
 		// Use PostgreSQL text search instead of vector embeddings
-		qstr := fmt.Sprintf("organization_id=eq.%s&order=created_at.desc&limit=%d&select=id,title,decision,context,alternatives,outcome,tags,created_at&or=(title.wfts.%s,decision.wfts.%s)", userCtx.OrgID, p.MatchCount, p.Query, p.Query)
+		searchQ := strings.ReplaceAll(p.Query, " ", "%20")
+		qstr := fmt.Sprintf("organization_id=eq.%s&order=created_at.desc&limit=%d&select=id,title,decision,context,alternatives,outcome,tags,created_at&or=(title.ilike.*%s*,decision.ilike.*%s*)", userCtx.OrgID, p.MatchCount, searchQ, searchQ)
 		if p.ProjectID != "" {
 			qstr += "&project_id=eq." + p.ProjectID
 		}
