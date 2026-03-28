@@ -1,8 +1,7 @@
 {
-  "mcpServers": {
-    "supabase": {
-      "type": "http",
-      "url": "https://mcp.supabase.com/mcp"
-    }
+  "orchestra": {
+    "type": "sse",
+    "url": "http://localhost:3001/mcp",
+    "note": "Start the Go server first: cd mcp-server && go run ./cmd/server"
   }
 }
