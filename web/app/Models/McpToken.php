@@ -16,6 +16,11 @@ class McpToken extends Model
     protected $table = 'mcp_tokens';
 
     /**
+     * mcp_tokens has created_at but no updated_at.
+     */
+    const UPDATED_AT = null;
+
+    /**
      * The primary key type.
      */
     protected $keyType = 'string';
