@@ -167,7 +167,7 @@ func makeSessionEnd(dbClient *db.Client) mcp.ToolHandler {
 
 		now := time.Now().UTC().Format(time.RFC3339)
 		payload := map[string]interface{}{
-			"status":         "ended",
+			"status":         "offline",
 			"ended_at":       now,
 			"last_heartbeat": now,
 		}
