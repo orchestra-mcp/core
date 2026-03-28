@@ -209,6 +209,13 @@ func main() {
 	// WebSocket endpoint (placeholder).
 	mux.HandleFunc("/mcp/ws", server.HandleWebSocket)
 
+	// Catch-all: return JSON 404 instead of plain text (Claude Code expects JSON)
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(map[string]string{"error": "not found", "path": r.URL.Path})
+	})
+
 	handler := corsMiddleware(mux)
 
 	srv := &http.Server{

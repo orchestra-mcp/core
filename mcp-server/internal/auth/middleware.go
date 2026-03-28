@@ -154,7 +154,9 @@ func (m *TokenMiddleware) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rawToken := ExtractToken(r)
 		if rawToken == "" {
-			http.Error(w, `{"error":"missing authentication token"}`, http.StatusUnauthorized)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(map[string]string{"error": "missing authentication token"})
 			return
 		}
 
@@ -163,7 +165,9 @@ func (m *TokenMiddleware) Middleware(next http.Handler) http.Handler {
 		uc, err := m.Validate(tokenHash)
 		if err != nil {
 			slog.Warn("auth: token validation failed", "error", err, "remote", r.RemoteAddr)
-			http.Error(w, `{"error":"invalid or expired token"}`, http.StatusUnauthorized)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(map[string]string{"error": "invalid or expired token"})
 			return
 		}
 
