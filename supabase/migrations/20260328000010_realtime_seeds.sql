@@ -1,12 +1,35 @@
 -- 20260328000010_realtime_seeds.sql
 
 -- Enable Supabase Realtime on sync-critical tables
-ALTER PUBLICATION supabase_realtime ADD TABLE public.tasks;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.activity_log;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.agent_sessions;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.notes;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.specs;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.agents;
+DO $$ BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.tasks;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN insufficient_privilege THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.activity_log;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN insufficient_privilege THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.agent_sessions;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN insufficient_privilege THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.notes;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN insufficient_privilege THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.specs;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN insufficient_privilege THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.agents;
+EXCEPTION WHEN duplicate_object THEN NULL; WHEN insufficient_privilege THEN NULL;
+END $$;
 
 -- ── Seed: Default workflow template ──
 -- This gets created per-org during onboarding, but we store a template

@@ -20,8 +20,29 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     updated_at TIMESTAMPTZ DEFAULT now()
 );
 
-CREATE TRIGGER on_profiles_updated BEFORE UPDATE ON public.profiles
-    FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+-- Ensure all expected columns exist (profiles may have been created by GoTrue with fewer columns)
+DO $$ BEGIN
+    ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS full_name TEXT;
+    ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS cover_url TEXT;
+    ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS bio TEXT;
+    ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS phone TEXT;
+    ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS position TEXT;
+    ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS timezone TEXT DEFAULT 'UTC';
+    ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS language TEXT DEFAULT 'en';
+    ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT false;
+    ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS onboarding_completed BOOLEAN DEFAULT false;
+    ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS settings JSONB DEFAULT '{}';
+    ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}';
+    ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
+EXCEPTION WHEN insufficient_privilege THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    DROP TRIGGER IF EXISTS on_profiles_updated ON public.profiles;
+    CREATE TRIGGER on_profiles_updated BEFORE UPDATE ON public.profiles
+        FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+EXCEPTION WHEN insufficient_privilege THEN NULL;
+END $$;
 
 -- Auto-create profile on signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -38,6 +59,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE OR REPLACE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
@@ -67,6 +89,7 @@ CREATE TABLE IF NOT EXISTS public.organizations (
     updated_at TIMESTAMPTZ DEFAULT now()
 );
 
+DROP TRIGGER IF EXISTS on_organizations_updated ON public.organizations;
 CREATE TRIGGER on_organizations_updated BEFORE UPDATE ON public.organizations
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
@@ -83,9 +106,10 @@ CREATE TABLE IF NOT EXISTS public.teams (
     UNIQUE(organization_id, slug)
 );
 
+DROP TRIGGER IF EXISTS on_teams_updated ON public.teams;
 CREATE TRIGGER on_teams_updated BEFORE UPDATE ON public.teams
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
-CREATE INDEX idx_teams_org ON public.teams(organization_id);
+CREATE INDEX IF NOT EXISTS idx_teams_org ON public.teams(organization_id);
 
 -- ── Team Members ──
 CREATE TABLE IF NOT EXISTS public.team_members (
@@ -99,5 +123,5 @@ CREATE TABLE IF NOT EXISTS public.team_members (
     UNIQUE(team_id, user_id)
 );
 
-CREATE INDEX idx_team_members_user ON public.team_members(user_id);
-CREATE INDEX idx_team_members_team ON public.team_members(team_id);
+CREATE INDEX IF NOT EXISTS idx_team_members_user ON public.team_members(user_id);
+CREATE INDEX IF NOT EXISTS idx_team_members_team ON public.team_members(team_id);

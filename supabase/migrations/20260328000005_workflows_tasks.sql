@@ -31,9 +31,10 @@ CREATE TABLE IF NOT EXISTS public.workflows (
     UNIQUE(organization_id, slug)
 );
 
+DROP TRIGGER IF EXISTS on_workflows_updated ON public.workflows;
 CREATE TRIGGER on_workflows_updated BEFORE UPDATE ON public.workflows
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
-CREATE UNIQUE INDEX idx_workflows_default ON public.workflows(organization_id) WHERE is_default = true;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_workflows_default ON public.workflows(organization_id) WHERE is_default = true;
 
 -- ── Tasks ──
 CREATE TABLE IF NOT EXISTS public.tasks (
@@ -61,15 +62,16 @@ CREATE TABLE IF NOT EXISTS public.tasks (
     updated_at TIMESTAMPTZ DEFAULT now()
 );
 
+DROP TRIGGER IF EXISTS on_tasks_updated ON public.tasks;
 CREATE TRIGGER on_tasks_updated BEFORE UPDATE ON public.tasks
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
-CREATE INDEX idx_tasks_project_status ON public.tasks(project_id, status);
-CREATE INDEX idx_tasks_agent ON public.tasks(assigned_agent_id, status);
-CREATE INDEX idx_tasks_user ON public.tasks(assigned_user_id, status);
-CREATE INDEX idx_tasks_org ON public.tasks(organization_id);
-CREATE INDEX idx_tasks_parent ON public.tasks(parent_task_id) WHERE parent_task_id IS NOT NULL;
-CREATE INDEX idx_tasks_labels ON public.tasks USING gin(labels);
-CREATE INDEX idx_tasks_priority ON public.tasks(priority, created_at);
+CREATE INDEX IF NOT EXISTS idx_tasks_project_status ON public.tasks(project_id, status);
+CREATE INDEX IF NOT EXISTS idx_tasks_agent ON public.tasks(assigned_agent_id, status);
+CREATE INDEX IF NOT EXISTS idx_tasks_user ON public.tasks(assigned_user_id, status);
+CREATE INDEX IF NOT EXISTS idx_tasks_org ON public.tasks(organization_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_parent ON public.tasks(parent_task_id) WHERE parent_task_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_tasks_labels ON public.tasks USING gin(labels);
+CREATE INDEX IF NOT EXISTS idx_tasks_priority ON public.tasks(priority, created_at);
 
 -- Auto-set started_at / completed_at on status change
 CREATE OR REPLACE FUNCTION public.handle_task_status_change()
@@ -85,6 +87,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS on_task_status_change ON public.tasks;
 CREATE TRIGGER on_task_status_change BEFORE UPDATE OF status ON public.tasks
     FOR EACH ROW EXECUTE FUNCTION public.handle_task_status_change();
 
@@ -99,5 +102,5 @@ CREATE TABLE IF NOT EXISTS public.task_dependencies (
     CHECK (task_id != depends_on_id)
 );
 
-CREATE INDEX idx_task_deps_task ON public.task_dependencies(task_id);
-CREATE INDEX idx_task_deps_depends ON public.task_dependencies(depends_on_id);
+CREATE INDEX IF NOT EXISTS idx_task_deps_task ON public.task_dependencies(task_id);
+CREATE INDEX IF NOT EXISTS idx_task_deps_depends ON public.task_dependencies(depends_on_id);

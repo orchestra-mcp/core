@@ -20,10 +20,11 @@ CREATE TABLE IF NOT EXISTS public.projects (
     UNIQUE(organization_id, slug)
 );
 
+DROP TRIGGER IF EXISTS on_projects_updated ON public.projects;
 CREATE TRIGGER on_projects_updated BEFORE UPDATE ON public.projects
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
-CREATE INDEX idx_projects_org ON public.projects(organization_id);
-CREATE INDEX idx_projects_team ON public.projects(team_id);
+CREATE INDEX IF NOT EXISTS idx_projects_org ON public.projects(organization_id);
+CREATE INDEX IF NOT EXISTS idx_projects_team ON public.projects(team_id);
 
 -- ── Skills ──
 CREATE TABLE IF NOT EXISTS public.skills (
@@ -41,10 +42,11 @@ CREATE TABLE IF NOT EXISTS public.skills (
     updated_at TIMESTAMPTZ DEFAULT now()
 );
 
+DROP TRIGGER IF EXISTS on_skills_updated ON public.skills;
 CREATE TRIGGER on_skills_updated BEFORE UPDATE ON public.skills
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
-CREATE INDEX idx_skills_org ON public.skills(organization_id);
-CREATE INDEX idx_skills_public ON public.skills(is_public) WHERE is_public = true;
+CREATE INDEX IF NOT EXISTS idx_skills_org ON public.skills(organization_id);
+CREATE INDEX IF NOT EXISTS idx_skills_public ON public.skills(is_public) WHERE is_public = true;
 
 -- ── Agents ──
 CREATE TABLE IF NOT EXISTS public.agents (
@@ -68,11 +70,12 @@ CREATE TABLE IF NOT EXISTS public.agents (
     UNIQUE(organization_id, slug)
 );
 
+DROP TRIGGER IF EXISTS on_agents_updated ON public.agents;
 CREATE TRIGGER on_agents_updated BEFORE UPDATE ON public.agents
     FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
-CREATE INDEX idx_agents_org ON public.agents(organization_id);
-CREATE INDEX idx_agents_team ON public.agents(team_id);
-CREATE INDEX idx_agents_linked ON public.agents(linked_user_id) WHERE linked_user_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_agents_org ON public.agents(organization_id);
+CREATE INDEX IF NOT EXISTS idx_agents_team ON public.agents(team_id);
+CREATE INDEX IF NOT EXISTS idx_agents_linked ON public.agents(linked_user_id) WHERE linked_user_id IS NOT NULL;
 
 -- ── Agent Skills (M2M) ──
 CREATE TABLE IF NOT EXISTS public.agent_skills (
@@ -84,5 +87,5 @@ CREATE TABLE IF NOT EXISTS public.agent_skills (
     UNIQUE(agent_id, skill_id)
 );
 
-CREATE INDEX idx_agent_skills_agent ON public.agent_skills(agent_id);
-CREATE INDEX idx_agent_skills_skill ON public.agent_skills(skill_id);
+CREATE INDEX IF NOT EXISTS idx_agent_skills_agent ON public.agent_skills(agent_id);
+CREATE INDEX IF NOT EXISTS idx_agent_skills_skill ON public.agent_skills(skill_id);

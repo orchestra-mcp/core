@@ -16,9 +16,9 @@ CREATE TABLE IF NOT EXISTS public.mcp_tokens (
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
-CREATE INDEX idx_mcp_tokens_hash ON public.mcp_tokens(token_hash) WHERE revoked_at IS NULL;
-CREATE INDEX idx_mcp_tokens_user ON public.mcp_tokens(user_id);
-CREATE INDEX idx_mcp_tokens_org ON public.mcp_tokens(organization_id);
+CREATE INDEX IF NOT EXISTS idx_mcp_tokens_hash ON public.mcp_tokens(token_hash) WHERE revoked_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_mcp_tokens_user ON public.mcp_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_mcp_tokens_org ON public.mcp_tokens(organization_id);
 
 -- Validate token and return user context
 CREATE OR REPLACE FUNCTION public.validate_mcp_token(p_token_hash TEXT)
