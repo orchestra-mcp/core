@@ -2,7 +2,10 @@
   "mcpServers": {
     "orchestra": {
       "type": "sse",
-      "url": "http://localhost:3001/mcp"
+      "url": "http://localhost:3001/mcp",
+      "headers": {
+        "Authorization": "Bearer orch_c17dc45cceea7ffa4888775186438a4d"
+      }
     }
   }
 }
