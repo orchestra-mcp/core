@@ -66,18 +66,26 @@ export async function checkIsAdmin(
   userId: string
 ): Promise<boolean> {
   try {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('is_admin')
-      .eq('id', userId)
-      .single()
+    // Use server-side API endpoint which has service key (bypasses RLS)
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.access_token) return false
 
-    if (error) {
-      console.error('[Orchestra Auth] Error checking admin status:', error.message)
+    const res = await fetch('/api/orch-auth/verify-admin', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ userId }),
+    })
+
+    if (!res.ok) {
+      console.error('[Orchestra Auth] Admin check failed:', res.status)
       return false
     }
 
-    return data?.is_admin === true
+    const result = await res.json()
+    return result.isAdmin === true
   } catch (err) {
     console.error('[Orchestra Auth] Exception checking admin status:', err)
     return false

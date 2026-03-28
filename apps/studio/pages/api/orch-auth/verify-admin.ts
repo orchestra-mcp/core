@@ -2,10 +2,14 @@
  * API Route: POST /api/orch-auth/verify-admin
  *
  * Verifies that a Supabase user is an admin by checking profiles.is_admin.
- * Used server-side to validate admin status without exposing service key to client.
+ * Uses service key server-side to bypass RLS.
  *
- * Request body: { access_token: string }
- * Response: { is_admin: boolean } or { error: string }
+ * Accepts either:
+ * - Authorization: Bearer <access_token> header
+ * - { access_token } in request body
+ * - { userId } in request body (with Authorization header)
+ *
+ * Response: { isAdmin: boolean } or { error: string }
  */
 
 import { createClient } from '@supabase/supabase-js'
@@ -19,10 +23,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { access_token } = req.body
+  // Extract token from header or body
+  const authHeader = req.headers.authorization
+  const accessToken =
+    (authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null) ||
+    req.body?.access_token
 
-  if (!access_token || typeof access_token !== 'string') {
-    return res.status(400).json({ error: 'Missing access_token' })
+  if (!accessToken) {
+    return res.status(400).json({ error: 'Missing access token' })
   }
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
@@ -30,25 +38,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Use service key to verify the token and get user
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
+      auth: { autoRefreshToken: false, persistSession: false },
     })
 
-    // Verify the JWT and get user info
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser(access_token)
+    // Verify JWT and get user
+    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken)
 
     if (authError || !user) {
       return res.status(401).json({ error: 'Invalid or expired token' })
     }
 
-    // Check admin status
+    // Check admin status (service key bypasses RLS)
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('is_admin')
@@ -57,10 +58,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (profileError) {
       console.error('[Orchestra Auth] Profile query error:', profileError.message)
-      return res.status(500).json({ error: 'Failed to check admin status' })
+      // If profile not found, user is not admin
+      return res.status(200).json({ isAdmin: false })
     }
 
-    return res.status(200).json({ is_admin: profile?.is_admin === true })
+    return res.status(200).json({ isAdmin: profile?.is_admin === true })
   } catch (err: any) {
     console.error('[Orchestra Auth] Verify admin error:', err)
     return res.status(500).json({ error: 'Internal server error' })
