@@ -63,43 +63,15 @@ func NewBrowserClient(cdpURL string) (*BrowserClient, error) {
 		}, nil
 	}
 
-	// Step 2: Auto-launch Chrome with CDP.
-	slog.Info("no existing Chrome CDP found, auto-launching", "url", cdpURL)
-	cmd, err := launchChrome(cdpURL)
-	if err != nil {
-		return nil, fmt.Errorf("no Chrome CDP available at %s and auto-launch failed: %w", cdpURL, err)
-	}
-
-	// Step 3: Wait for Chrome to be ready.
-	if err := waitForCDP(cdpURL, 10*time.Second); err != nil {
-		cmd.Process.Kill()
-		cmd.Wait()
-		return nil, fmt.Errorf("Chrome launched but CDP not responding at %s: %w", cdpURL, err)
-	}
-
-	// Step 4: Connect via chromedp remote allocator.
-	allocCtx, cancel := chromedp.NewRemoteAllocator(context.Background(), cdpURL)
-
-	// Verify the connection.
-	testCtx, testCancel := context.WithTimeout(allocCtx, 5*time.Second)
-	defer testCancel()
-
-	if _, err := chromedp.Targets(testCtx); err != nil {
-		cancel()
-		cmd.Process.Kill()
-		cmd.Wait()
-		return nil, fmt.Errorf("Chrome launched and CDP responded, but target listing failed: %w", err)
-	}
-
-	slog.Info("auto-launched Chrome with CDP", "url", cdpURL, "pid", cmd.Process.Pid)
-
-	return &BrowserClient{
-		allocCtx: allocCtx,
-		cancel:   cancel,
-		cdpURL:   cdpURL,
-		managed:  true,
-		cmd:      cmd,
-	}, nil
+	// Step 2: Chrome not available with CDP — return clear instructions.
+	// We NEVER launch a new Chrome. The user must restart their existing Chrome
+	// with --remote-debugging-port to preserve their cookies, sessions, and tabs.
+	slog.Warn("Chrome CDP not available — browser tools will not be registered", "url", cdpURL)
+	return nil, fmt.Errorf(
+		"Chrome is not running with CDP enabled at %s. "+
+			"Quit Chrome and relaunch with: open -a 'Google Chrome' --args --remote-debugging-port=9222 "+
+			"— this preserves all your tabs, cookies, and sessions",
+		cdpURL)
 }
 
 // Close releases the allocator resources and kills a managed Chrome process.
