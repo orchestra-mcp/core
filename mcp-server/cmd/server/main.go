@@ -14,6 +14,8 @@ import (
 	"github.com/orchestra-mcp/server/internal/db"
 	"github.com/orchestra-mcp/server/internal/embedding"
 	"github.com/orchestra-mcp/server/internal/mcp"
+	"github.com/orchestra-mcp/server/internal/notifications"
+	"github.com/orchestra-mcp/server/internal/realtime"
 	"github.com/orchestra-mcp/server/internal/tools"
 )
 
@@ -82,6 +84,23 @@ func main() {
 		slog.Warn("DATABASE_URL not set — auth middleware disabled (all requests allowed)")
 	}
 
+	// --- Initialize rate limiter ---
+	rateLimiter := auth.NewRateLimiter()
+	slog.Info("rate limiter initialized")
+
+	// --- Initialize realtime hub ---
+	hub := realtime.NewHub()
+	_ = hub // available for tool handlers to broadcast changes
+	slog.Info("realtime hub initialized")
+
+	// --- Initialize Slack client ---
+	slackClient := notifications.NewSlackClient()
+	if slackClient.Enabled() {
+		slog.Info("slack client initialized")
+	} else {
+		slog.Warn("SLACK_BOT_TOKEN not set — Slack notifications disabled")
+	}
+
 	// --- Build tool registry ---
 	registry := mcp.NewToolRegistry()
 
@@ -108,7 +127,13 @@ func main() {
 	if dbClient != nil {
 		tools.RegisterGitHubTools(registry, dbClient)
 		slog.Info("registered GitHub tools")
+
+		tools.RegisterUsageTools(registry, dbClient)
+		slog.Info("registered usage tools")
 	}
+
+	tools.RegisterSlackTools(registry, slackClient)
+	slog.Info("registered Slack tools")
 
 	// Store clients in a shared context so tool handlers can access them.
 	_ = embClient
@@ -122,10 +147,11 @@ func main() {
 	// Health check — no auth required.
 	mux.HandleFunc("GET /mcp/health", handleHealth)
 
-	// MCP SSE + POST endpoint — auth required when middleware is available.
+	// MCP SSE + POST endpoint — auth required when middleware is available,
+	// rate limiting applied after auth.
 	if authMiddleware != nil {
-		mux.Handle("GET /mcp", authMiddleware.Middleware(http.HandlerFunc(server.HandleSSE)))
-		mux.Handle("POST /mcp", authMiddleware.Middleware(http.HandlerFunc(server.HandleMessage)))
+		mux.Handle("GET /mcp", authMiddleware.Middleware(rateLimiter.Middleware(http.HandlerFunc(server.HandleSSE))))
+		mux.Handle("POST /mcp", authMiddleware.Middleware(rateLimiter.Middleware(http.HandlerFunc(server.HandleMessage))))
 	} else {
 		mux.HandleFunc("GET /mcp", server.HandleSSE)
 		mux.HandleFunc("POST /mcp", server.HandleMessage)
