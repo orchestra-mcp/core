@@ -223,6 +223,21 @@ func main() {
 	tools.RegisterNotifyTools(registry, notifyRouter)
 	slog.Info("registered notification tools (notify, discord_notify, telegram_notify)")
 
+	// --- Initialize browser CDP client (optional) ---
+	chromeCDPURL := os.Getenv("CHROME_CDP_URL")
+	if chromeCDPURL == "" {
+		chromeCDPURL = "http://localhost:9222"
+	}
+
+	browserClient, err := tools.NewBrowserClient(chromeCDPURL)
+	if err != nil {
+		slog.Warn("Chrome CDP not available — browser tools disabled", "url", chromeCDPURL, "error", err)
+	} else {
+		defer browserClient.Close()
+		tools.RegisterBrowserTools(registry, browserClient)
+		slog.Info("registered browser tools", "cdp_url", chromeCDPURL)
+	}
+
 	// --- Create MCP server (with DB client for audit logging) ---
 	server := mcp.NewServer(registry, dbLogger, dbClient)
 
