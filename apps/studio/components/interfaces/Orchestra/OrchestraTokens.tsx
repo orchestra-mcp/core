@@ -1,6 +1,7 @@
 import { useParams } from 'common'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import { Key } from 'lucide-react'
 import { useState } from 'react'
 import {
   Badge,
@@ -52,8 +53,14 @@ export const OrchestraTokens = () => {
 
   if (!tokens || tokens.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 text-foreground-lighter text-sm">
-        No MCP tokens found
+      <div className="flex flex-col items-center justify-center h-64 gap-3">
+        <Key size={32} className="text-foreground-lighter" strokeWidth={1.5} />
+        <div className="flex flex-col items-center gap-1">
+          <p className="text-sm text-foreground">No MCP tokens found</p>
+          <p className="text-xs text-foreground-lighter">
+            Create a token to authenticate MCP connections
+          </p>
+        </div>
       </div>
     )
   }
@@ -78,35 +85,35 @@ export const OrchestraTokens = () => {
             const isRevoked = !!token.revoked_at
             return (
               <TableRow key={token.id} className={cn(isRevoked && 'opacity-60')}>
-                <TableCell className="font-medium">{token.name}</TableCell>
+                <TableCell className="font-medium text-foreground">{token.name}</TableCell>
                 <TableCell>
-                  <code className="text-xs bg-surface-200 px-1.5 py-0.5 rounded">
+                  <code className="font-mono text-xs bg-surface-200 px-1.5 py-0.5 rounded">
                     {token.prefix}...
                   </code>
                 </TableCell>
-                <TableCell className="text-foreground-lighter">
+                <TableCell className="text-foreground-light">
                   {token.user_email ?? token.user_id ?? '--'}
                 </TableCell>
-                <TableCell className="text-foreground-lighter">
+                <TableCell className="text-foreground-light">
                   {token.last_used_at ? dayjs(token.last_used_at).fromNow() : 'Never'}
                 </TableCell>
-                <TableCell className="text-foreground-lighter tabular-nums">
+                <TableCell className="text-foreground-light tabular-nums">
                   {token.usage_count.toLocaleString()}
                 </TableCell>
-                <TableCell className="text-foreground-lighter">
+                <TableCell className="text-foreground-light">
                   {dayjs(token.created_at).format('MMM D, YYYY')}
                 </TableCell>
                 <TableCell>
                   {isRevoked ? (
                     <Badge variant="destructive">Revoked</Badge>
                   ) : (
-                    <Badge variant="brand">Active</Badge>
+                    <Badge variant="default">Active</Badge>
                   )}
                 </TableCell>
                 <TableCell className="text-right">
                   {!isRevoked && (
                     <Button
-                      type="warning"
+                      type="danger"
                       size="tiny"
                       loading={revokingId === token.id && isRevoking}
                       onClick={() => handleRevoke(token.id)}

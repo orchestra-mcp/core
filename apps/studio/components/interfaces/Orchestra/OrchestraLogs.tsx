@@ -1,7 +1,7 @@
 import { useParams } from 'common'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { ChevronDown, ChevronRight, Pause, Play, RefreshCw } from 'lucide-react'
+import { ChevronDown, ChevronRight, FileText, Pause, Play, RefreshCw } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import {
   Badge,
@@ -34,9 +34,9 @@ dayjs.extend(relativeTime)
 
 const SERVICE_STYLES: Record<
   string,
-  { variant: 'default' | 'brand' | 'warning' | 'destructive'; label: string }
+  { variant: 'default' | 'success' | 'warning' | 'destructive'; label: string }
 > = {
-  go_mcp: { variant: 'brand', label: 'Go MCP' },
+  go_mcp: { variant: 'success', label: 'Go MCP' },
   laravel: { variant: 'default', label: 'Laravel' },
   orchestra: { variant: 'warning', label: 'Orchestra' },
   studio: { variant: 'default', label: 'Studio' },
@@ -44,12 +44,12 @@ const SERVICE_STYLES: Record<
 
 const LEVEL_STYLES: Record<
   string,
-  { variant: 'default' | 'brand' | 'warning' | 'destructive'; label: string }
+  { variant: 'default' | 'success' | 'warning' | 'destructive'; label: string }
 > = {
   fatal: { variant: 'destructive', label: 'Fatal' },
   error: { variant: 'destructive', label: 'Error' },
   warning: { variant: 'warning', label: 'Warning' },
-  info: { variant: 'brand', label: 'Info' },
+  info: { variant: 'success', label: 'Info' },
   debug: { variant: 'default', label: 'Debug' },
 }
 
@@ -143,7 +143,7 @@ export const OrchestraLogs = () => {
           value={service}
           onValueChange={(v) => setService(v as ServiceFilter)}
         >
-          <TabsList_Shadcn_>
+          <TabsList_Shadcn_ className="bg-transparent border-b border-default gap-2">
             <TabsTrigger_Shadcn_ value="all">All</TabsTrigger_Shadcn_>
             <TabsTrigger_Shadcn_ value="go_mcp">Go MCP</TabsTrigger_Shadcn_>
             <TabsTrigger_Shadcn_ value="laravel">Laravel</TabsTrigger_Shadcn_>
@@ -217,8 +217,14 @@ export const OrchestraLogs = () => {
           ))}
         </div>
       ) : !logs || logs.length === 0 ? (
-        <div className="flex items-center justify-center h-64 text-foreground-lighter text-sm">
-          No logs found for the selected filters
+        <div className="flex flex-col items-center justify-center h-64 gap-3">
+          <FileText size={32} className="text-foreground-lighter" strokeWidth={1.5} />
+          <div className="flex flex-col items-center gap-1">
+            <p className="text-sm text-foreground">No logs found</p>
+            <p className="text-xs text-foreground-lighter">
+              No log entries match the selected filters
+            </p>
+          </div>
         </div>
       ) : (
         <div className="overflow-x-auto">

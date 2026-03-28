@@ -1,6 +1,7 @@
 package mcp
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -9,6 +10,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/orchestra-mcp/server/internal/auth"
+	"github.com/orchestra-mcp/server/internal/db"
+	"github.com/orchestra-mcp/server/internal/logging"
 )
 
 const (
@@ -30,17 +34,38 @@ type session struct {
 // Server handles MCP protocol communication over SSE transport.
 type Server struct {
 	Registry *ToolRegistry
+	Logger   *logging.DBLogger
+	DBClient *db.Client
 
 	mu       sync.RWMutex
 	sessions map[string]*session
 }
 
 // NewServer creates a new MCP server with the given tool registry.
-func NewServer(registry *ToolRegistry) *Server {
+// The logger and dbClient parameters are optional — pass nil to disable
+// DB logging or audit trail recording respectively.
+func NewServer(registry *ToolRegistry, logger *logging.DBLogger, dbClient *db.Client) *Server {
 	return &Server{
 		Registry: registry,
+		Logger:   logger,
+		DBClient: dbClient,
 		sessions: make(map[string]*session),
 	}
+}
+
+// dbLog safely writes a log entry if the DB logger is configured.
+func (s *Server) dbLog(level, message string, ctx map[string]interface{}, requestID, userID string) {
+	if s.Logger != nil {
+		s.Logger.Log(level, message, ctx, requestID, userID)
+	}
+}
+
+// userIDFromRequest extracts the authenticated user ID from the request context, if present.
+func userIDFromRequest(r *http.Request) string {
+	if uc := auth.UserContextFromContext(r.Context()); uc != nil {
+		return uc.UserID
+	}
+	return ""
 }
 
 // HandleSSE handles Server-Sent Events connections for the MCP protocol.
@@ -80,6 +105,10 @@ func (s *Server) HandleSSE(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	slog.Info("MCP SSE client connected", "session", sess.id, "remote", r.RemoteAddr)
+	s.dbLog(logging.LevelInfo, "MCP client connected", map[string]interface{}{
+		"session": sess.id,
+		"remote":  r.RemoteAddr,
+	}, sess.id, userIDFromRequest(r))
 
 	// Set SSE headers.
 	w.Header().Set("Content-Type", "text/event-stream")
@@ -101,6 +130,10 @@ func (s *Server) HandleSSE(w http.ResponseWriter, r *http.Request) {
 		select {
 		case <-ctx.Done():
 			slog.Info("MCP SSE client disconnected", "session", sess.id, "remote", r.RemoteAddr)
+			s.dbLog(logging.LevelInfo, "MCP client disconnected", map[string]interface{}{
+				"session": sess.id,
+				"remote":  r.RemoteAddr,
+			}, sess.id, userIDFromRequest(r))
 			return
 
 		case msg, ok := <-sess.messages:
@@ -251,8 +284,30 @@ func (s *Server) handleToolsCall(r *http.Request, req *JSONRPCRequest) *JSONRPCR
 		return makeErrorResponse(req.ID, -32602, "invalid params: "+err.Error())
 	}
 
+	sessionID := r.URL.Query().Get("sessionId")
+	uid := userIDFromRequest(r)
+
+	// Extract org ID from auth context for audit logging.
+	var orgID string
+	if userCtx, ok := auth.FromContext(r.Context()); ok {
+		orgID = userCtx.OrgID
+	}
+
+	start := time.Now()
 	result, err := s.Registry.Call(r.Context(), params.Name, params.Arguments)
+	duration := time.Since(start)
+
 	if err != nil {
+		slog.Error("tool call failed", "tool", params.Name, "error", err, "duration", duration)
+		s.dbLog(logging.LevelError, fmt.Sprintf("Tool error: %s", params.Name), map[string]interface{}{
+			"tool":     params.Name,
+			"error":    err.Error(),
+			"duration": duration.String(),
+		}, sessionID, uid)
+
+		// Log failed tool call to the activity_log audit table.
+		s.logToolAudit(r.Context(), orgID, uid, params.Name, duration, true)
+
 		// Tool not found or execution error — return as tool error, not JSON-RPC error.
 		errResult := &ToolResult{
 			Content: []ContentBlock{{Type: "text", Text: err.Error()}},
@@ -266,6 +321,15 @@ func (s *Server) handleToolsCall(r *http.Request, req *JSONRPCRequest) *JSONRPCR
 		}
 	}
 
+	slog.Info("tool call completed", "tool", params.Name, "duration", duration)
+	s.dbLog(logging.LevelInfo, fmt.Sprintf("Tool called: %s", params.Name), map[string]interface{}{
+		"tool":     params.Name,
+		"duration": duration.String(),
+	}, sessionID, uid)
+
+	// Log successful tool call to the activity_log audit table.
+	s.logToolAudit(r.Context(), orgID, uid, params.Name, duration, false)
+
 	data, err := json.Marshal(result)
 	if err != nil {
 		return makeErrorResponse(req.ID, -32603, "internal error: "+err.Error())
@@ -276,6 +340,50 @@ func (s *Server) handleToolsCall(r *http.Request, req *JSONRPCRequest) *JSONRPCR
 		ID:      req.ID,
 		Result:  data,
 	}
+}
+
+// logToolAudit writes an audit entry to the activity_log table via the Supabase
+// REST client. This runs in a goroutine to avoid blocking the tool response.
+// It uses context.Background() because the goroutine outlives the request context.
+func (s *Server) logToolAudit(_ context.Context, orgID, userID, toolName string, duration time.Duration, isError bool) {
+	if s.DBClient == nil {
+		return
+	}
+
+	go func() {
+		details := map[string]interface{}{
+			"tool":        toolName,
+			"duration_ms": duration.Milliseconds(),
+		}
+		if isError {
+			details["status"] = "error"
+		} else {
+			details["status"] = "success"
+		}
+
+		detailsJSON, err := json.Marshal(details)
+		if err != nil {
+			slog.Error("failed to marshal audit details", "error", err)
+			return
+		}
+
+		payload := map[string]interface{}{
+			"action":  "tool_call",
+			"summary": fmt.Sprintf("Called tool: %s", toolName),
+			"details": json.RawMessage(detailsJSON),
+		}
+		if orgID != "" {
+			payload["org_id"] = orgID
+		}
+		if userID != "" {
+			payload["user_id"] = userID
+		}
+
+		_, postErr := s.DBClient.Post(context.Background(), "activity_log", payload)
+		if postErr != nil {
+			slog.Warn("failed to write audit log", "error", postErr, "tool", toolName)
+		}
+	}()
 }
 
 // HandleWebSocket handles WebSocket connections for the MCP protocol.

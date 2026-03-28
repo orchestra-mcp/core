@@ -2,7 +2,19 @@ import { useParams } from 'common'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { Activity, Bot, BrainCircuit, Plug } from 'lucide-react'
-import { Badge, Card, CardContent, cn, Skeleton } from 'ui'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Skeleton,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from 'ui'
 import {
   MetricCard,
   MetricCardContent,
@@ -92,9 +104,9 @@ export const OrchestraDashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Activity Feed */}
         <Card>
-          <div className="p-card border-b">
-            <h3 className="text-sm font-medium text-foreground">Recent Activity</h3>
-          </div>
+          <CardHeader>
+            <CardTitle>Recent Activity</CardTitle>
+          </CardHeader>
           <CardContent className="p-0">
             {isActivityLoading ? (
               <div className="p-4 flex flex-col gap-3">
@@ -103,26 +115,30 @@ export const OrchestraDashboard = () => {
                 ))}
               </div>
             ) : activityLog && activityLog.length > 0 ? (
-              <div className="divide-y divide-border">
-                {activityLog.map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="px-4 py-3 flex items-center justify-between gap-3"
-                  >
-                    <div className="flex flex-col gap-0.5 min-w-0">
-                      <span className="text-sm text-foreground truncate">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Action</TableHead>
+                    <TableHead>Entity</TableHead>
+                    <TableHead className="text-right">Time</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {activityLog.map((entry) => (
+                    <TableRow key={entry.id}>
+                      <TableCell className="text-sm text-foreground">
                         {formatAction(entry.action)}
-                      </span>
-                      <span className="text-xs text-foreground-lighter truncate">
+                      </TableCell>
+                      <TableCell className="text-xs text-foreground-lighter">
                         {entry.entity_type}:{entry.entity_id}
-                      </span>
-                    </div>
-                    <span className="text-xs text-foreground-lighter whitespace-nowrap">
-                      {dayjs(entry.created_at).fromNow()}
-                    </span>
-                  </div>
-                ))}
-              </div>
+                      </TableCell>
+                      <TableCell className="text-xs text-foreground-lighter text-right whitespace-nowrap">
+                        {dayjs(entry.created_at).fromNow()}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             ) : (
               <div className="p-6 text-center text-sm text-foreground-lighter">
                 No recent activity
@@ -133,9 +149,9 @@ export const OrchestraDashboard = () => {
 
         {/* Active Sessions */}
         <Card>
-          <div className="p-card border-b">
-            <h3 className="text-sm font-medium text-foreground">Active Sessions</h3>
-          </div>
+          <CardHeader>
+            <CardTitle>Active Sessions</CardTitle>
+          </CardHeader>
           <CardContent className="p-0">
             {isSessionsLoading ? (
               <div className="p-4 flex flex-col gap-3">
@@ -144,31 +160,35 @@ export const OrchestraDashboard = () => {
                 ))}
               </div>
             ) : activeSessions && activeSessions.length > 0 ? (
-              <div className="divide-y divide-border">
-                {activeSessions.map((session) => (
-                  <div
-                    key={session.id}
-                    className="px-4 py-3 flex items-center justify-between gap-3"
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="h-2 w-2 rounded-full bg-brand shrink-0" />
-                      <div className="flex flex-col gap-0.5 min-w-0">
-                        <span className="text-sm text-foreground truncate">
-                          {session.agent_name}
-                        </span>
-                        <span className="text-xs text-foreground-lighter truncate">
-                          Started {dayjs(session.started_at).fromNow()}
-                        </span>
-                      </div>
-                    </div>
-                    {session.last_heartbeat && (
-                      <span className="text-xs text-foreground-lighter whitespace-nowrap">
-                        Last ping {dayjs(session.last_heartbeat).fromNow()}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Agent</TableHead>
+                    <TableHead>Started</TableHead>
+                    <TableHead className="text-right">Last Ping</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {activeSessions.map((session) => (
+                    <TableRow key={session.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-2 rounded-full bg-brand shrink-0" />
+                          <span className="text-sm text-foreground">{session.agent_name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-xs text-foreground-lighter">
+                        {dayjs(session.started_at).fromNow()}
+                      </TableCell>
+                      <TableCell className="text-xs text-foreground-lighter text-right whitespace-nowrap">
+                        {session.last_heartbeat
+                          ? dayjs(session.last_heartbeat).fromNow()
+                          : '--'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             ) : (
               <div className="p-6 text-center text-sm text-foreground-lighter">
                 No active sessions
