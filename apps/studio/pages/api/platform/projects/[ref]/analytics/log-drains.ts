@@ -28,30 +28,27 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       url.search = new URLSearchParams({
         'metadata[type]': 'log-drain',
       }).toString()
-      const upstream = await fetch(url, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${process.env.LOGFLARE_PRIVATE_ACCESS_TOKEN}`,
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-      })
+      try {
+        const upstream = await fetch(url, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${process.env.LOGFLARE_PRIVATE_ACCESS_TOKEN}`,
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          signal: AbortSignal.timeout(5000),
+        })
 
-      if (!upstream.ok) {
-        return res
-          .status(500)
-          .json({ error: { message: 'Failed to fetch log drains from upstream' } })
+        if (!upstream.ok) {
+          return res.status(200).json([])
+        }
+
+        const resp = await upstream.json()
+        return res.status(200).json(Array.isArray(resp) ? resp : [])
+      } catch {
+        // Analytics service unavailable — return empty list
+        return res.status(200).json([])
       }
-
-      const resp = await upstream.json()
-
-      if (!Array.isArray(resp)) {
-        return res
-          .status(500)
-          .json({ error: { message: 'Unexpected response format from upstream' } })
-      }
-
-      return res.status(200).json(resp)
     case 'POST':
       // create the log drain
       const postUrl = new URL(baseUrl)
