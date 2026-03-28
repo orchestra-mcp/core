@@ -14,6 +14,7 @@ import (
 	"github.com/orchestra-mcp/server/internal/db"
 	"github.com/orchestra-mcp/server/internal/embedding"
 	"github.com/orchestra-mcp/server/internal/mcp"
+	"github.com/orchestra-mcp/server/internal/tools"
 )
 
 const (
@@ -103,8 +104,13 @@ func main() {
 		}, nil
 	})
 
+	// Register tool groups.
+	if dbClient != nil {
+		tools.RegisterGitHubTools(registry, dbClient)
+		slog.Info("registered GitHub tools")
+	}
+
 	// Store clients in a shared context so tool handlers can access them.
-	_ = dbClient
 	_ = embClient
 
 	// --- Create MCP server ---
