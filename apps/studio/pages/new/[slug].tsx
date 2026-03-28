@@ -78,7 +78,7 @@ const Wizard: NextPageWithLayout = () => {
   const { profile } = useProfile()
   const pageTitle = buildStudioPageTitle({
     section: 'New Project',
-    brand: appTitle || 'Supabase',
+    brand: appTitle || 'Orchestra Studio',
   })
 
   const { data: currentOrg } = useSelectedOrganizationQuery()
@@ -416,7 +416,7 @@ const Wizard: NextPageWithLayout = () => {
       {/* Wizard layouts set the visual header but not the browser tab title. */}
       <Head>
         <title>{pageTitle}</title>
-        <meta name="description" content="Supabase Studio" />
+        <meta name="description" content="Orchestra Studio" />
       </Head>
       <Form_Shadcn_ {...form}>
         <form onSubmit={form.handleSubmit(onSubmitWithComputeCostsConfirmation)}>

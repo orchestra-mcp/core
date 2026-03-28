@@ -15,21 +15,21 @@ const APIAuthorizationLayout = ({ children }: PropsWithChildren<APIAuthorization
   return (
     <>
       <Head>
-        <title>Authorize API access | {appTitle || 'Supabase'}</title>
+        <title>Authorize API access | {appTitle || 'Orchestra Studio'}</title>
       </Head>
       <main className="h-screen flex flex-col w-full h-full overflow-y-auto">
         <div>
           <div className="mx-auto px-4 sm:px-6">
             <div className="max-w-xl flex justify-between items-center mx-auto py-4">
               <div className="flex justify-start lg:w-0 lg:flex-1 items-center">
-                <span className="sr-only">Supabase</span>
+                <span className="sr-only">Orchestra</span>
                 <Image
                   src={
                     resolvedTheme?.includes('dark')
                       ? `${BASE_PATH}/img/supabase-dark.svg`
                       : `${BASE_PATH}/img/supabase-light.svg`
                   }
-                  alt="Supabase Logo"
+                  alt="Orchestra Logo"
                   height={20}
                   width={105}
                 />

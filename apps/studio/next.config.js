@@ -583,6 +583,20 @@ const nextConfig = {
     'icons',
     'libpg-query',
   ],
+  webpack: (config, { dir }) => {
+    config.module.rules.push({
+      test: /\.md$/,
+      type: 'asset/source',
+    })
+    config.module.rules.push({
+      test: /\.d\.ts$/,
+      type: 'asset/source',
+    })
+    // Resolve 'public/deno/...' imports used by Monaco editor
+    const path = require('path')
+    config.resolve.alias['public'] = path.join(dir, 'public')
+    return config
+  },
   turbopack: {
     rules: {
       '*.md': {

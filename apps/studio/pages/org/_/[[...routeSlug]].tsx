@@ -30,14 +30,14 @@ const GenericOrganizationPage: NextPage = () => {
   const pageTitle = buildStudioPageTitle({
     section: 'Select an organization',
     surface: 'Organizations',
-    brand: appTitle || 'Supabase',
+    brand: appTitle || 'Orchestra Studio',
   })
 
   return (
     <>
       <Head>
         <title>{pageTitle}</title>
-        <meta name="description" content="Supabase Studio" />
+        <meta name="description" content="Orchestra Studio" />
       </Head>
       <Header />
       <PageLayout className="flex-grow min-h-0" title="Select an organization to continue">

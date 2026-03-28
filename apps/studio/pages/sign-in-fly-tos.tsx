@@ -81,7 +81,7 @@ const SignInFlyTos = () => {
                         ? `${BASE_PATH}/img/supabase-dark.svg`
                         : `${BASE_PATH}/img/supabase-light.svg`
                     }
-                    alt=""
+                    alt="Orchestra"
                     height={24}
                     width={120}
                   />
@@ -92,7 +92,7 @@ const SignInFlyTos = () => {
         </nav>
       </div>
       <div className="flex w-[320px] flex-col items-center justify-center space-y-3">
-        <h4 className="text-lg">Continue to Supabase Dashboard</h4>
+        <h4 className="text-lg">Continue to Orchestra Studio</h4>
       </div>
       {loading ? (
         <p className="text-sm">Checking your access rights...</p>

@@ -1,3 +1,4 @@
+@import './brand.css';
 @import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -8,4 +9,14 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-brand-cyan: #00E5FF;
+    --color-brand-purple: #A900FF;
+    --color-brand-dark: #0f0f23;
+    --color-brand-surface: #1a1a2e;
+    --color-brand-card: #16213e;
+    --color-brand-card-hover: #1e2a4a;
+    --color-brand-border: #2a2a4a;
+    --color-brand-text: #e0e0e0;
+    --color-brand-text-secondary: #a0a0b0;
 }
