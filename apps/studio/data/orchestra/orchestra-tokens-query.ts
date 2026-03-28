@@ -24,14 +24,14 @@ export async function getOrchestraTokens(
     SELECT
       t.id,
       t.name,
-      t.prefix,
+      t.token_prefix AS prefix,
       t.user_id,
-      t.user_email,
+      NULL AS user_email,
       t.last_used_at,
       COALESCE(t.usage_count, 0)::int AS usage_count,
       t.created_at,
       t.revoked_at
-    FROM mcp_tokens t
+    FROM public.mcp_tokens t
     ORDER BY t.created_at DESC
   `
 

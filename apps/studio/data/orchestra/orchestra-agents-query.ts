@@ -24,10 +24,10 @@ export async function getOrchestraAgents(
       a.name,
       COALESCE(a.role, 'agent') AS role,
       COALESCE(a.status, 'active') AS status,
-      a.team,
-      a.last_active_at,
+      a.team_id AS team,
+      a.updated_at AS last_active_at,
       a.created_at
-    FROM agents a
+    FROM public.agents a
     ORDER BY a.name ASC
   `
 
