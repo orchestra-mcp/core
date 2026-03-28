@@ -178,25 +178,16 @@ func makeMemorySearch(dbClient *db.Client, embedder *embedding.Client) mcp.ToolH
 			p.MatchThreshold = 0.7
 		}
 
-		vec, err := embedder.Embed(ctx, p.Query)
-		if err != nil {
-			return errorResult("embedding service unavailable: " + err.Error()), nil
-		}
-
-		rpcParams := map[string]interface{}{
-			"query_embedding": floats32ToAny(vec),
-			"match_count":     p.MatchCount,
-			"match_threshold": p.MatchThreshold,
-			"p_org_id":        userCtx.OrgID,
-		}
+		// Use PostgreSQL text search instead of vector embeddings
+		qstr := fmt.Sprintf("organization_id=eq.%s&order=created_at.desc&limit=%d&select=id,title,content,summary,source,tags,created_at&or=(title.ilike.%%%s%%,content.ilike.%%%s%%)", userCtx.OrgID, p.MatchCount, p.Query, p.Query)
 		if p.AgentID != "" {
-			rpcParams["p_agent_id"] = p.AgentID
+			qstr += "&agent_id=eq." + p.AgentID
 		}
 		if p.ProjectID != "" {
-			rpcParams["p_project_id"] = p.ProjectID
+			qstr += "&project_id=eq." + p.ProjectID
 		}
 
-		raw, err := dbClient.RPC(ctx, "search_memory", rpcParams)
+		raw, err := dbClient.Get(ctx, "memories", qstr)
 		if err != nil {
 			return errorResult("search failed: " + err.Error()), nil
 		}

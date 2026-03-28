@@ -162,21 +162,13 @@ func makeDecisionSearch(dbClient *db.Client, embedder *embedding.Client) mcp.Too
 			p.MatchCount = 5
 		}
 
-		vec, err := embedder.Embed(ctx, p.Query)
-		if err != nil {
-			return errorResult("embedding service unavailable: " + err.Error()), nil
-		}
-
-		rpcParams := map[string]interface{}{
-			"query_embedding": floats32ToAny(vec),
-			"match_count":     p.MatchCount,
-			"p_org_id":        userCtx.OrgID,
-		}
+		// Use PostgreSQL text search instead of vector embeddings
+		qstr := fmt.Sprintf("organization_id=eq.%s&order=created_at.desc&limit=%d&select=id,title,decision,context,alternatives,outcome,tags,created_at&or=(title.ilike.%%%s%%,decision.ilike.%%%s%%)", userCtx.OrgID, p.MatchCount, p.Query, p.Query)
 		if p.ProjectID != "" {
-			rpcParams["p_project_id"] = p.ProjectID
+			qstr += "&project_id=eq." + p.ProjectID
 		}
 
-		raw, err := dbClient.RPC(ctx, "search_decisions", rpcParams)
+		raw, err := dbClient.Get(ctx, "decisions", qstr)
 		if err != nil {
 			return errorResult("search failed: " + err.Error()), nil
 		}
