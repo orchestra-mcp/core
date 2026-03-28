@@ -176,6 +176,15 @@ func main() {
 		tools.RegisterWorkflowTools(registry, dbClient)
 		slog.Info("registered workflow tools")
 
+		tools.RegisterGateTools(registry, dbClient)
+		slog.Info("registered gate tools")
+
+		tools.RegisterEvidenceTools(registry, dbClient)
+		slog.Info("registered evidence tools")
+
+		tools.RegisterTransitionTools(registry, dbClient)
+		slog.Info("registered transition tools")
+
 		tools.RegisterActivityTools(registry, dbClient)
 		slog.Info("registered activity tools")
 

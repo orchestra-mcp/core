@@ -316,6 +316,47 @@ func makeTaskUpdate(dbClient *db.Client) mcp.ToolHandler {
 			return mcp.ErrorResult("authentication required"), nil
 		}
 
+		// ADR: Block status changes when the task's project has an active
+		// workflow. Callers must use task_transition instead, which enforces
+		// gates. Projects without active workflows are unaffected.
+		if input.Status != nil {
+			// Fetch task to get project_id.
+			taskQ := url.Values{}
+			taskQ.Set("id", "eq."+input.ID)
+			taskQ.Set("organization_id", "eq."+userCtx.OrgID)
+			taskQ.Set("select", "id,project_id,status")
+
+			taskRaw, err := dbClient.GetSingle(ctx, "tasks", taskQ.Encode())
+			if err != nil {
+				return mcp.ErrorResult("failed to get task: " + err.Error()), nil
+			}
+
+			var task struct {
+				ID        string `json:"id"`
+				ProjectID string `json:"project_id"`
+				Status    string `json:"status"`
+			}
+			if err := json.Unmarshal(taskRaw, &task); err != nil {
+				return mcp.ErrorResult("failed to parse task: " + err.Error()), nil
+			}
+
+			if task.ProjectID != "" {
+				hasWorkflow, _, err := projectHasActiveWorkflow(ctx, dbClient, task.ProjectID, userCtx.OrgID)
+				if err != nil {
+					return mcp.ErrorResult("failed to check workflow: " + err.Error()), nil
+				}
+				if hasWorkflow {
+					resp := map[string]interface{}{
+						"error":          "status_change_requires_transition",
+						"message":        "This task belongs to a project with an active workflow. Use task_transition to change status.",
+						"current_status": task.Status,
+					}
+					data, _ := json.MarshalIndent(resp, "", "  ")
+					return mcp.ErrorResult(string(data)), nil
+				}
+			}
+		}
+
 		patch := map[string]interface{}{
 			"updated_at": time.Now().UTC().Format(time.RFC3339),
 		}
@@ -399,6 +440,15 @@ func makeTaskComplete(dbClient *db.Client) mcp.ToolHandler {
 			return mcp.ErrorResult("authentication required"), nil
 		}
 
+		// Block if project has active workflow — must use task_transition.
+		blocked, err := blockIfWorkflowActive(ctx, dbClient, input.ID, userCtx.OrgID)
+		if err != nil {
+			return mcp.ErrorResult("failed to check workflow: " + err.Error()), nil
+		}
+		if blocked != nil {
+			return blocked, nil
+		}
+
 		now := time.Now().UTC().Format(time.RFC3339)
 		patch := map[string]interface{}{
 			"status":       "done",
@@ -433,6 +483,15 @@ func makeTaskBlock(dbClient *db.Client) mcp.ToolHandler {
 			return mcp.ErrorResult("authentication required"), nil
 		}
 
+		// Block if project has active workflow — must use task_transition.
+		blocked, err := blockIfWorkflowActive(ctx, dbClient, input.ID, userCtx.OrgID)
+		if err != nil {
+			return mcp.ErrorResult("failed to check workflow: " + err.Error()), nil
+		}
+		if blocked != nil {
+			return blocked, nil
+		}
+
 		patch := map[string]interface{}{
 			"status":     "blocked",
 			"updated_at": time.Now().UTC().Format(time.RFC3339),
@@ -448,6 +507,51 @@ func makeTaskBlock(dbClient *db.Client) mcp.ToolHandler {
 		}
 		return mcp.TextResult(string(result)), nil
 	}
+}
+
+// blockIfWorkflowActive is a shared check for task_complete and task_block.
+// It fetches the task's project_id, checks for an active workflow, and returns
+// an error ToolResult if the project is gated. Returns (nil, nil) when the
+// caller should proceed normally.
+func blockIfWorkflowActive(ctx context.Context, dbClient *db.Client, taskID, orgID string) (*mcp.ToolResult, error) {
+	taskQ := url.Values{}
+	taskQ.Set("id", "eq."+taskID)
+	taskQ.Set("organization_id", "eq."+orgID)
+	taskQ.Set("select", "id,project_id,status")
+
+	taskRaw, err := dbClient.GetSingle(ctx, "tasks", taskQ.Encode())
+	if err != nil {
+		return nil, err
+	}
+
+	var task struct {
+		ID        string `json:"id"`
+		ProjectID string `json:"project_id"`
+		Status    string `json:"status"`
+	}
+	if err := json.Unmarshal(taskRaw, &task); err != nil {
+		return nil, err
+	}
+
+	if task.ProjectID == "" {
+		return nil, nil
+	}
+
+	hasWorkflow, _, err := projectHasActiveWorkflow(ctx, dbClient, task.ProjectID, orgID)
+	if err != nil {
+		return nil, err
+	}
+	if !hasWorkflow {
+		return nil, nil
+	}
+
+	resp := map[string]interface{}{
+		"error":          "status_change_requires_transition",
+		"message":        "This task belongs to a project with an active workflow. Use task_transition to change status.",
+		"current_status": task.Status,
+	}
+	data, _ := json.MarshalIndent(resp, "", "  ")
+	return mcp.ErrorResult(string(data)), nil
 }
 
 func makeTaskGetNext(dbClient *db.Client) mcp.ToolHandler {
