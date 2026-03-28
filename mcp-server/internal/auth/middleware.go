@@ -152,6 +152,20 @@ func ExtractToken(r *http.Request) string {
 // Middleware returns an HTTP middleware that validates the token and injects UserContext into the request context.
 func (m *TokenMiddleware) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Skip auth for POST requests with a sessionId (legacy SSE or Streamable HTTP).
+		// The session already has the auth context from the initial connection.
+		if r.Method == http.MethodPost {
+			sessionID := r.URL.Query().Get("sessionId")
+			if sessionID == "" {
+				sessionID = r.Header.Get("Mcp-Session-Id")
+			}
+			if sessionID != "" {
+				// Session-based request — let the MCP server handle auth via stored context
+				next.ServeHTTP(w, r)
+				return
+			}
+		}
+
 		rawToken := ExtractToken(r)
 		if rawToken == "" {
 			w.Header().Set("Content-Type", "application/json")

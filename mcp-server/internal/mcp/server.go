@@ -49,6 +49,7 @@ type mcpSession struct {
 type legacySession struct {
 	id       string
 	messages chan []byte
+	userCtx  *auth.UserContext
 }
 
 // Server handles MCP protocol communication over both the new Streamable HTTP
@@ -252,6 +253,10 @@ func (s *Server) handlePost(w http.ResponseWriter, r *http.Request) {
 		legSess, isLegacy := s.legacySessions[sessionID]
 		s.legacyMu.RUnlock()
 		if isLegacy {
+			// Inject the stored auth context from the SSE connection
+			if legSess.userCtx != nil {
+				r = r.WithContext(auth.WithUserContext(r.Context(), legSess.userCtx))
+			}
 			s.handleLegacyMessage(w, r, legSess, raw)
 			return
 		}
@@ -446,6 +451,7 @@ func (s *Server) handleLegacySSE(w http.ResponseWriter, r *http.Request) {
 	sess := &legacySession{
 		id:       uuid.New().String(),
 		messages: make(chan []byte, 64),
+		userCtx:  auth.UserContextFromContext(r.Context()),
 	}
 
 	s.legacyMu.Lock()
