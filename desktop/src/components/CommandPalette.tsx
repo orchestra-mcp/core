@@ -163,11 +163,11 @@ const Icons = {
 const CATEGORY_ORDER = ["Navigation", "Tasks", "Agents", "Quick Actions", "Settings"];
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Navigation: "hsl(210 100% 66%)",
-  Tasks: "hsl(263 70% 70%)",
-  Agents: "hsl(153.1 60.2% 52.7%)",
-  "Quick Actions": "hsl(38 92% 60%)",
-  Settings: "hsl(0 0% 53.7%)",
+  Navigation: "hsl(277 100% 75%)",
+  Tasks: "hsl(277 80% 65%)",
+  Agents: "hsl(277 100% 60%)",
+  "Quick Actions": "hsl(277 60% 70%)",
+  Settings: "hsl(277 30% 55%)",
 };
 
 /* ------------------------------------------------------------------ */

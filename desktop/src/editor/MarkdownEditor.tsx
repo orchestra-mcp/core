@@ -13,6 +13,27 @@ import rehypeHighlight from "rehype-highlight";
 import rehypeRaw from "rehype-raw";
 import YAML from "yaml";
 
+import ContextMenu, {
+  CopyIcon,
+  ImageIcon,
+  FileIcon,
+  MarkdownIcon,
+  TextIcon,
+  DownloadIcon,
+  TableIcon,
+} from "../components/ContextMenu";
+import type { ContextMenuItem, ContextMenuPosition } from "../components/ContextMenu";
+import {
+  copyToClipboard,
+  exportAsImage,
+  exportAsCSV,
+  exportAsFile,
+  tableToCSV,
+  tableToMarkdown,
+  tableToPlainText,
+  tableToData,
+} from "../lib/export-utils";
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -51,6 +72,61 @@ function parseFrontmatter(raw: string): ParsedFrontmatter {
 }
 
 // ---------------------------------------------------------------------------
+// Language extension map (for "Export as File")
+// ---------------------------------------------------------------------------
+
+const LANG_EXT_MAP: Record<string, string> = {
+  javascript: "js",
+  typescript: "ts",
+  python: "py",
+  ruby: "rb",
+  go: "go",
+  rust: "rs",
+  java: "java",
+  kotlin: "kt",
+  swift: "swift",
+  c: "c",
+  cpp: "cpp",
+  csharp: "cs",
+  css: "css",
+  html: "html",
+  json: "json",
+  yaml: "yaml",
+  yml: "yml",
+  toml: "toml",
+  xml: "xml",
+  sql: "sql",
+  bash: "sh",
+  shell: "sh",
+  sh: "sh",
+  zsh: "sh",
+  dockerfile: "Dockerfile",
+  markdown: "md",
+  md: "md",
+  php: "php",
+  lua: "lua",
+  dart: "dart",
+  scala: "scala",
+  r: "r",
+  perl: "pl",
+  powershell: "ps1",
+  graphql: "graphql",
+  proto: "proto",
+  protobuf: "proto",
+  makefile: "Makefile",
+  cmake: "cmake",
+  nginx: "conf",
+  ini: "ini",
+  plaintext: "txt",
+  text: "txt",
+  txt: "txt",
+};
+
+function getExtForLang(lang: string): string {
+  return LANG_EXT_MAP[lang.toLowerCase()] ?? "txt";
+}
+
+// ---------------------------------------------------------------------------
 // Frontmatter component — renders YAML frontmatter as a styled header
 // ---------------------------------------------------------------------------
 
@@ -61,17 +137,23 @@ function FrontmatterHeader({ raw }: { raw: string }) {
     if (entries.length === 0) return null;
 
     return (
-      <div className="mb-4 rounded-lg border border-zinc-700/60 bg-zinc-800/50 p-3">
-        <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+      <div
+        className="mb-4 rounded-lg p-3"
+        style={{
+          background: "var(--background-surface-200)",
+          border: "1px solid var(--border-default)",
+        }}
+      >
+        <div className="mb-2 text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--foreground-lighter)" }}>
           Frontmatter
         </div>
         <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
           {entries.map(([key, value]) => (
             <div key={key} className="contents">
-              <span className="text-xs font-medium text-violet-400">
+              <span className="text-xs font-medium" style={{ color: "var(--brand-default)" }}>
                 {key}
               </span>
-              <span className="truncate text-xs text-zinc-300">
+              <span className="truncate text-xs" style={{ color: "var(--foreground-light)" }}>
                 {typeof value === "object"
                   ? JSON.stringify(value)
                   : String(value)}
@@ -87,14 +169,18 @@ function FrontmatterHeader({ raw }: { raw: string }) {
 }
 
 // ---------------------------------------------------------------------------
-// Code block with copy button
+// Code block — VS Code / GitHub reference style with line numbers
 // ---------------------------------------------------------------------------
 
 function CodeBlock({
   children,
   className,
+  onContextMenu,
   ...props
-}: React.HTMLAttributes<HTMLElement> & { children?: React.ReactNode }) {
+}: React.HTMLAttributes<HTMLElement> & {
+  children?: React.ReactNode;
+  onContextMenu?: (e: React.MouseEvent, codeEl: HTMLElement, lang: string) => void;
+}) {
   const [copied, setCopied] = useState(false);
   const codeRef = useRef<HTMLElement>(null);
 
@@ -108,143 +194,228 @@ function CodeBlock({
     });
   }, []);
 
+  // Compute line count from rendered DOM text
+  const [lineCount, setLineCount] = useState(1);
+  useMemo(() => {
+    requestAnimationFrame(() => {
+      if (codeRef.current) {
+        const text = codeRef.current.textContent ?? "";
+        const lines = text.split("\n");
+        const count =
+          lines.length > 0 && lines[lines.length - 1] === ""
+            ? lines.length - 1
+            : lines.length;
+        setLineCount(Math.max(1, count));
+      }
+    });
+  }, [children]);
+
+  const handleRightClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (onContextMenu && codeRef.current) {
+        onContextMenu(e, codeRef.current, language);
+      }
+    },
+    [onContextMenu, language],
+  );
+
   return (
-    <div className="group relative">
-      {language && (
-        <div className="absolute left-3 top-0 -translate-y-1/2 rounded bg-zinc-700 px-2 py-0.5 text-[10px] font-medium text-zinc-400">
-          {language}
+    <div className="code-block-wrapper group" onContextMenu={handleRightClick}>
+      {/* Header bar with language label and copy button */}
+      <div className="code-block-header">
+        <div className="flex-1" />
+        {language && (
+          <span className="code-block-lang">{language}</span>
+        )}
+        <button
+          onClick={handleCopy}
+          className="code-block-copy-btn opacity-0 transition-opacity group-hover:opacity-100"
+        >
+          {copied ? "Copied!" : "Copy"}
+        </button>
+      </div>
+      {/* Code area with line numbers */}
+      <div className="code-block-body">
+        <div className="code-block-line-numbers" aria-hidden="true">
+          {Array.from({ length: lineCount }, (_, i) => (
+            <span key={i}>{i + 1}</span>
+          ))}
         </div>
-      )}
-      <button
-        onClick={handleCopy}
-        className="absolute right-2 top-2 rounded bg-zinc-700/80 px-2 py-1 text-[10px] text-zinc-400 opacity-0 transition-opacity hover:bg-zinc-600 hover:text-zinc-200 group-hover:opacity-100"
-      >
-        {copied ? "Copied!" : "Copy"}
-      </button>
-      <code ref={codeRef} className={className} {...props}>
-        {children}
-      </code>
+        <code ref={codeRef} className={className} {...props}>
+          {children}
+        </code>
+      </div>
     </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Custom components for react-markdown
+// DataTable — sortable, themed, with row count header
 // ---------------------------------------------------------------------------
 
-const markdownComponents: Record<string, React.ComponentType<any>> = {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  pre: ({ node, ...props }: any) => (
-    <pre className="md-code-block" {...props} />
-  ),
-  code: ({ inline, className, children, ...props }: any) => {
-    if (inline) {
-      return (
-        <code className="md-inline-code" {...props}>
-          {children}
-        </code>
-      );
+interface DataTableProps {
+  children: React.ReactNode;
+  onContextMenu?: (e: React.MouseEvent, tableEl: HTMLTableElement) => void;
+}
+
+/** Recursively extract plain text from React children. */
+function extractText(children: React.ReactNode): string {
+  if (typeof children === "string") return children;
+  if (typeof children === "number") return String(children);
+  if (!children) return "";
+  if (Array.isArray(children)) return children.map(extractText).join("");
+  if (typeof children === "object" && "props" in children) {
+    return extractText((children as React.ReactElement<any>).props.children);
+  }
+  return "";
+}
+
+function DataTable({ children, onContextMenu }: DataTableProps) {
+  const tableRef = useRef<HTMLTableElement>(null);
+  const [sortCol, setSortCol] = useState<number | null>(null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  // Extract header and body rows from react-markdown children
+  const { headers, bodyRows } = useMemo(() => {
+    const headers: string[] = [];
+    const bodyRows: { cells: string[]; node: React.ReactNode }[] = [];
+
+    const childArr = Array.isArray(children) ? children : [children];
+    for (const child of childArr) {
+      if (!child || typeof child !== "object" || !("type" in (child as any)))
+        continue;
+      const el = child as React.ReactElement<any>;
+
+      // thead
+      if (el.type === "thead") {
+        const trArr = Array.isArray(el.props.children)
+          ? el.props.children
+          : [el.props.children];
+        for (const tr of trArr) {
+          if (!tr || typeof tr !== "object") continue;
+          const trEl = tr as React.ReactElement<any>;
+          const thArr = Array.isArray(trEl.props?.children)
+            ? trEl.props.children
+            : [trEl.props?.children];
+          for (const th of thArr) {
+            if (!th || typeof th !== "object") continue;
+            const thEl = th as React.ReactElement<any>;
+            headers.push(extractText(thEl.props?.children ?? ""));
+          }
+        }
+      }
+
+      // tbody
+      if (el.type === "tbody") {
+        const trArr = Array.isArray(el.props.children)
+          ? el.props.children
+          : [el.props.children];
+        for (const tr of trArr) {
+          if (!tr || typeof tr !== "object") continue;
+          const trEl = tr as React.ReactElement<any>;
+          const cells: string[] = [];
+          const tdArr = Array.isArray(trEl.props?.children)
+            ? trEl.props.children
+            : [trEl.props?.children];
+          for (const td of tdArr) {
+            if (!td || typeof td !== "object") continue;
+            const tdEl = td as React.ReactElement<any>;
+            cells.push(extractText(tdEl.props?.children ?? ""));
+          }
+          bodyRows.push({ cells, node: tr });
+        }
+      }
     }
-    return (
-      <CodeBlock className={className} {...props}>
-        {children}
-      </CodeBlock>
-    );
-  },
-  table: ({ children, ...props }: any) => (
-    <table className="md-table" {...props}>
-      {children}
-    </table>
-  ),
-  blockquote: ({ children, ...props }: any) => (
-    <blockquote className="md-blockquote" {...props}>
-      {children}
-    </blockquote>
-  ),
-  h1: ({ children, ...props }: any) => (
-    <h1 className="md-h1" {...props}>
-      {children}
-    </h1>
-  ),
-  h2: ({ children, ...props }: any) => (
-    <h2 className="md-h2" {...props}>
-      {children}
-    </h2>
-  ),
-  h3: ({ children, ...props }: any) => (
-    <h3 className="md-h3" {...props}>
-      {children}
-    </h3>
-  ),
-  h4: ({ children, ...props }: any) => (
-    <h4 className="md-h4" {...props}>
-      {children}
-    </h4>
-  ),
-  h5: ({ children, ...props }: any) => (
-    <h5 className="md-h5" {...props}>
-      {children}
-    </h5>
-  ),
-  h6: ({ children, ...props }: any) => (
-    <h6 className="md-h6" {...props}>
-      {children}
-    </h6>
-  ),
-  a: ({ children, href, ...props }: any) => (
-    <a
-      className="md-link"
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      {...props}
-    >
-      {children}
-    </a>
-  ),
-  ul: ({ children, ...props }: any) => (
-    <ul className="md-ul" {...props}>
-      {children}
-    </ul>
-  ),
-  ol: ({ children, ...props }: any) => (
-    <ol className="md-ol" {...props}>
-      {children}
-    </ol>
-  ),
-  hr: (props: any) => <hr className="md-hr" {...props} />,
-  p: ({ children, ...props }: any) => (
-    <p className="md-p" {...props}>
-      {children}
-    </p>
-  ),
-  img: ({ src, alt, ...props }: any) => (
-    <img
-      src={src}
-      alt={alt ?? ""}
-      className="md-img max-w-full rounded-lg"
-      loading="lazy"
-      {...props}
-    />
-  ),
-  input: ({ type, checked, ...props }: any) => {
-    if (type === "checkbox") {
-      return (
-        <input
-          type="checkbox"
-          checked={checked}
-          readOnly
-          className="md-checkbox mr-2 accent-violet-500"
-          {...props}
-        />
-      );
-    }
-    return <input type={type} {...props} />;
-  },
-  // Suppress frontmatter YAML node from rendering (handled by FrontmatterHeader)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  yaml: (_props: any) => null,
-};
+
+    return { headers, bodyRows };
+  }, [children]);
+
+  // Sort body rows
+  const sortedBodyRows = useMemo(() => {
+    if (sortCol === null) return bodyRows;
+    const sorted = [...bodyRows].sort((a, b) => {
+      const av = a.cells[sortCol] ?? "";
+      const bv = b.cells[sortCol] ?? "";
+      const an = parseFloat(av);
+      const bn = parseFloat(bv);
+      if (!isNaN(an) && !isNaN(bn)) {
+        return sortDir === "asc" ? an - bn : bn - an;
+      }
+      return sortDir === "asc" ? av.localeCompare(bv) : bv.localeCompare(av);
+    });
+    return sorted;
+  }, [bodyRows, sortCol, sortDir]);
+
+  const handleHeaderClick = useCallback(
+    (colIndex: number) => {
+      if (sortCol === colIndex) {
+        setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+      } else {
+        setSortCol(colIndex);
+        setSortDir("asc");
+      }
+    },
+    [sortCol],
+  );
+
+  const rowCount = bodyRows.length;
+
+  const handleRightClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (onContextMenu && tableRef.current) {
+        onContextMenu(e, tableRef.current);
+      }
+    },
+    [onContextMenu],
+  );
+
+  return (
+    <div className="data-table-wrapper" onContextMenu={handleRightClick}>
+      {/* Header bar with row count */}
+      <div className="data-table-header-bar">
+        <span className="data-table-icon"><TableIcon /></span>
+        <span className="data-table-title">
+          Table &mdash; {rowCount} {rowCount === 1 ? "row" : "rows"}
+        </span>
+      </div>
+      {/* Scrollable table area */}
+      <div className="data-table-scroll">
+        <table ref={tableRef} className="data-table">
+          <thead>
+            <tr>
+              {headers.map((h, i) => (
+                <th
+                  key={i}
+                  onClick={() => handleHeaderClick(i)}
+                  className="data-table-th"
+                  title={`Sort by ${h}`}
+                >
+                  <span className="data-table-th-content">
+                    {h}
+                    {sortCol === i && (
+                      <span className="data-table-sort-arrow">
+                        {sortDir === "asc" ? "\u2191" : "\u2193"}
+                      </span>
+                    )}
+                  </span>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {sortedBodyRows.map((row, ri) => (
+              <tr key={ri} className={ri % 2 === 1 ? "data-table-row-alt" : ""}>
+                {row.node && typeof row.node === "object" && "props" in (row.node as any)
+                  ? (row.node as React.ReactElement<any>).props.children
+                  : null}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Toolbar config
@@ -372,6 +543,15 @@ export default function MarkdownEditor() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
 
+  // Context menu state
+  const [ctxMenuPos, setCtxMenuPos] = useState<ContextMenuPosition | null>(null);
+  const [ctxMenuItems, setCtxMenuItems] = useState<ContextMenuItem[]>([]);
+
+  const closeContextMenu = useCallback(() => {
+    setCtxMenuPos(null);
+    setCtxMenuItems([]);
+  }, []);
+
   // Word count + reading time
   const words = content
     .trim()
@@ -382,7 +562,7 @@ export default function MarkdownEditor() {
   // Parse frontmatter for the header display
   const hasFrontmatter = content.trimStart().startsWith("---");
 
-  // Strip frontmatter from content for react-markdown (it handles YAML nodes via remark-frontmatter)
+  // Strip frontmatter from content for react-markdown
   const markdownBody = useMemo(() => {
     if (!hasFrontmatter) return content;
     try {
@@ -392,6 +572,250 @@ export default function MarkdownEditor() {
       return content;
     }
   }, [content, hasFrontmatter]);
+
+  // ---------------------------------------------------------------------------
+  // Context menu handlers
+  // ---------------------------------------------------------------------------
+
+  const handleCodeContextMenu = useCallback(
+    (e: React.MouseEvent, codeEl: HTMLElement, lang: string) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const rawCode = codeEl.textContent ?? "";
+      const ext = getExtForLang(lang || "txt");
+      const fenceBlock = "```" + lang + "\n" + rawCode.trimEnd() + "\n```";
+
+      const items: ContextMenuItem[] = [
+        {
+          id: "copy-code",
+          label: "Copy Code",
+          icon: <CopyIcon />,
+          onClick: () => copyToClipboard(rawCode),
+        },
+        {
+          id: "copy-plain",
+          label: "Copy as Plain Text",
+          icon: <TextIcon />,
+          onClick: () => copyToClipboard(rawCode),
+        },
+        {
+          id: "export-image",
+          label: "Export as Image",
+          icon: <ImageIcon />,
+          separator: true,
+          onClick: () => {
+            const wrapper = codeEl.closest(".code-block-wrapper") as HTMLElement;
+            if (wrapper) {
+              exportAsImage(wrapper, "code-block.png");
+            }
+          },
+        },
+        {
+          id: "export-file",
+          label: `Export as File (.${ext})`,
+          icon: <FileIcon />,
+          onClick: () => exportAsFile(rawCode, "code-block", ext),
+        },
+        {
+          id: "copy-markdown",
+          label: "Copy as Markdown",
+          icon: <MarkdownIcon />,
+          separator: true,
+          onClick: () => copyToClipboard(fenceBlock),
+        },
+      ];
+
+      setCtxMenuItems(items);
+      setCtxMenuPos({ x: e.clientX, y: e.clientY });
+    },
+    [],
+  );
+
+  const handleTableContextMenu = useCallback(
+    (e: React.MouseEvent, tableEl: HTMLTableElement) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const items: ContextMenuItem[] = [
+        {
+          id: "copy-table",
+          label: "Copy Table",
+          icon: <CopyIcon />,
+          onClick: () => copyToClipboard(tableToPlainText(tableEl)),
+        },
+        {
+          id: "copy-plain",
+          label: "Copy as Plain Text",
+          icon: <TextIcon />,
+          onClick: () => copyToClipboard(tableToPlainText(tableEl)),
+        },
+        {
+          id: "export-csv",
+          label: "Export as CSV",
+          icon: <DownloadIcon />,
+          separator: true,
+          onClick: () => exportAsCSV(tableToData(tableEl), "table"),
+        },
+        {
+          id: "export-excel",
+          label: "Export as Excel",
+          icon: <DownloadIcon />,
+          onClick: () => {
+            const csv = tableToCSV(tableEl);
+            exportAsFile(csv, "table", "xlsx");
+          },
+        },
+        {
+          id: "export-image",
+          label: "Export as Image",
+          icon: <ImageIcon />,
+          onClick: () => {
+            const wrapper = tableEl.closest(".data-table-wrapper") as HTMLElement;
+            if (wrapper) {
+              exportAsImage(wrapper, "table.png");
+            }
+          },
+        },
+        {
+          id: "copy-markdown",
+          label: "Export as Markdown",
+          icon: <MarkdownIcon />,
+          separator: true,
+          onClick: () => copyToClipboard(tableToMarkdown(tableEl)),
+        },
+      ];
+
+      setCtxMenuItems(items);
+      setCtxMenuPos({ x: e.clientX, y: e.clientY });
+    },
+    [],
+  );
+
+  // ---------------------------------------------------------------------------
+  // Custom components for react-markdown
+  // ---------------------------------------------------------------------------
+
+  const markdownComponents: Record<string, React.ComponentType<any>> = useMemo(
+    () => ({
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      pre: ({ node, ...props }: any) => (
+        <pre className="md-code-block" {...props} />
+      ),
+      code: ({ inline, className, children, ...props }: any) => {
+        if (inline) {
+          return (
+            <code className="md-inline-code" {...props}>
+              {children}
+            </code>
+          );
+        }
+        return (
+          <CodeBlock
+            className={className}
+            onContextMenu={handleCodeContextMenu}
+            {...props}
+          >
+            {children}
+          </CodeBlock>
+        );
+      },
+      table: ({ children, ...props }: any) => (
+        <DataTable onContextMenu={handleTableContextMenu} {...props}>
+          {children}
+        </DataTable>
+      ),
+      blockquote: ({ children, ...props }: any) => (
+        <blockquote className="md-blockquote" {...props}>
+          {children}
+        </blockquote>
+      ),
+      h1: ({ children, ...props }: any) => (
+        <h1 className="md-h1" {...props}>
+          {children}
+        </h1>
+      ),
+      h2: ({ children, ...props }: any) => (
+        <h2 className="md-h2" {...props}>
+          {children}
+        </h2>
+      ),
+      h3: ({ children, ...props }: any) => (
+        <h3 className="md-h3" {...props}>
+          {children}
+        </h3>
+      ),
+      h4: ({ children, ...props }: any) => (
+        <h4 className="md-h4" {...props}>
+          {children}
+        </h4>
+      ),
+      h5: ({ children, ...props }: any) => (
+        <h5 className="md-h5" {...props}>
+          {children}
+        </h5>
+      ),
+      h6: ({ children, ...props }: any) => (
+        <h6 className="md-h6" {...props}>
+          {children}
+        </h6>
+      ),
+      a: ({ children, href, ...props }: any) => (
+        <a
+          className="md-link"
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          {...props}
+        >
+          {children}
+        </a>
+      ),
+      ul: ({ children, ...props }: any) => (
+        <ul className="md-ul" {...props}>
+          {children}
+        </ul>
+      ),
+      ol: ({ children, ...props }: any) => (
+        <ol className="md-ol" {...props}>
+          {children}
+        </ol>
+      ),
+      hr: (props: any) => <hr className="md-hr" {...props} />,
+      p: ({ children, ...props }: any) => (
+        <p className="md-p" {...props}>
+          {children}
+        </p>
+      ),
+      img: ({ src, alt, ...props }: any) => (
+        <img
+          src={src}
+          alt={alt ?? ""}
+          className="md-img max-w-full rounded-lg"
+          loading="lazy"
+          {...props}
+        />
+      ),
+      input: ({ type, checked, ...props }: any) => {
+        if (type === "checkbox") {
+          return (
+            <input
+              type="checkbox"
+              checked={checked}
+              readOnly
+              className="md-checkbox mr-2"
+              style={{ accentColor: "hsl(277, 100%, 60%)" }}
+              {...props}
+            />
+          );
+        }
+        return <input type={type} {...props} />;
+      },
+      // Suppress frontmatter YAML node from rendering (handled by FrontmatterHeader)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      yaml: (_props: any) => null,
+    }),
+    [handleCodeContextMenu, handleTableContextMenu],
+  );
 
   // ---------------------------------------------------------------------------
   // Content change handler
@@ -704,7 +1128,7 @@ ${markdownBody}
         </ReactMarkdown>
       </div>
     );
-  }, [markdownBody, hasFrontmatter, content]);
+  }, [markdownBody, hasFrontmatter, content, markdownComponents]);
 
   // ---------------------------------------------------------------------------
   // Filename display
@@ -720,39 +1144,55 @@ ${markdownBody}
 
   return (
     <div className="flex h-full flex-col">
-      {/* Top toolbar */}
-      <div className="flex shrink-0 items-center gap-1 border-b border-zinc-800 bg-zinc-900/80 px-3 py-2">
-        {/* File actions */}
-        <button
-          onClick={handleOpen}
-          title="Open File"
-          className="rounded px-2.5 py-1.5 text-xs font-medium text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
-        >
-          Open
-        </button>
-        <button
-          onClick={handleSaveFile}
-          title="Save File (Cmd+S)"
-          className="rounded px-2.5 py-1.5 text-xs font-medium text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
-        >
-          Save
-        </button>
-        <button
-          onClick={handleSaveAs}
-          title="Save As..."
-          className="rounded px-2.5 py-1.5 text-xs font-medium text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
-        >
-          Save As
-        </button>
+      {/* Context menu overlay */}
+      <ContextMenu
+        items={ctxMenuItems}
+        position={ctxMenuPos}
+        onClose={closeContextMenu}
+      />
 
-        <div className="mx-2 h-4 w-px bg-zinc-700" />
+      {/* Top toolbar */}
+      <div
+        className="flex shrink-0 items-center gap-1 px-3 py-2"
+        style={{
+          background: "var(--background-dash-sidebar)",
+          borderBottom: "1px solid var(--border-default)",
+        }}
+      >
+        {/* File actions */}
+        {[
+          { onClick: handleOpen, title: "Open File", label: "Open" },
+          { onClick: handleSaveFile, title: "Save File (Cmd+S)", label: "Save" },
+          { onClick: handleSaveAs, title: "Save As...", label: "Save As" },
+        ].map((btn) => (
+          <button
+            key={btn.label}
+            onClick={btn.onClick}
+            title={btn.title}
+            className="rounded px-2.5 py-1.5 text-xs font-medium transition-colors"
+            style={{ color: "var(--foreground-lighter)" }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "var(--background-surface-300)";
+              e.currentTarget.style.color = "var(--foreground-default)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "var(--foreground-lighter)";
+            }}
+          >
+            {btn.label}
+          </button>
+        ))}
+
+        <div className="mx-2 h-4 w-px" style={{ background: "var(--border-strong)" }} />
 
         {/* Mode toggle */}
         {mode === "view" ? (
           <button
             onClick={handleEdit}
             title="Edit Mode"
-            className="rounded bg-violet-600/20 px-2.5 py-1.5 text-xs font-medium text-violet-300 transition-colors hover:bg-violet-600/30"
+            className="rounded px-2.5 py-1.5 text-xs font-medium transition-colors"
+            style={{ background: "var(--brand-400)", color: "var(--brand-600)" }}
           >
             Edit
           </button>
@@ -760,7 +1200,8 @@ ${markdownBody}
           <button
             onClick={handleSaveToView}
             title="View Mode (Cmd+S)"
-            className="rounded bg-emerald-600/20 px-2.5 py-1.5 text-xs font-medium text-emerald-300 transition-colors hover:bg-emerald-600/30"
+            className="rounded px-2.5 py-1.5 text-xs font-medium transition-colors"
+            style={{ background: "var(--brand-400)", color: "var(--brand-default)" }}
           >
             Done
           </button>
@@ -769,7 +1210,7 @@ ${markdownBody}
         {/* Formatting toolbar (only in edit mode) */}
         {mode === "edit" && (
           <>
-            <div className="mx-2 h-4 w-px bg-zinc-700" />
+            <div className="mx-2 h-4 w-px" style={{ background: "var(--border-strong)" }} />
             {toolbarActions.map((action) => (
               <button
                 key={action.label}
@@ -784,7 +1225,16 @@ ${markdownBody}
                         ? " (Cmd+K)"
                         : "")
                 }
-                className="rounded px-2 py-1.5 text-xs font-medium text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
+                className="rounded px-2 py-1.5 text-xs font-medium transition-colors"
+                style={{ color: "var(--foreground-lighter)" }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "var(--background-surface-300)";
+                  e.currentTarget.style.color = "var(--foreground-default)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.color = "var(--foreground-lighter)";
+                }}
               >
                 {action.icon}
               </button>
@@ -798,11 +1248,12 @@ ${markdownBody}
         <button
           onClick={handleExportHTML}
           disabled={exporting !== null}
-          className={`rounded px-2.5 py-1.5 text-xs font-medium transition-colors ${
+          className="rounded px-2.5 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+          style={
             exporting === "html"
-              ? "bg-violet-600/30 text-violet-300"
-              : "text-zinc-500 hover:bg-violet-600/20 hover:text-violet-300"
-          } disabled:cursor-not-allowed disabled:opacity-50`}
+              ? { background: "var(--brand-400)", color: "var(--brand-default)" }
+              : { color: "var(--foreground-lighter)" }
+          }
         >
           {exporting === "html" ? "Exporting..." : "HTML"}
         </button>
@@ -811,11 +1262,12 @@ ${markdownBody}
             key={fmt}
             onClick={() => handleExportRust(fmt)}
             disabled={exporting !== null}
-            className={`rounded px-2.5 py-1.5 text-xs font-medium transition-colors ${
+            className="rounded px-2.5 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+            style={
               exporting === fmt
-                ? "bg-violet-600/30 text-violet-300"
-                : "text-zinc-500 hover:bg-violet-600/20 hover:text-violet-300"
-            } disabled:cursor-not-allowed disabled:opacity-50`}
+                ? { background: "var(--brand-400)", color: "var(--brand-default)" }
+                : { color: "var(--foreground-lighter)" }
+            }
           >
             {exporting === fmt ? "..." : fmt.toUpperCase()}
           </button>
@@ -826,13 +1278,16 @@ ${markdownBody}
       {mode === "view" ? (
         /* ────────────── VIEW MODE: full-width rendered preview ────────────── */
         <div className="flex flex-1 flex-col overflow-hidden">
-          <div className="flex shrink-0 items-center border-b border-zinc-800/50 px-3 py-1.5">
-            <span className="text-[11px] font-medium uppercase tracking-wider text-zinc-500">
+          <div
+            className="flex shrink-0 items-center px-3 py-1.5"
+            style={{ borderBottom: "1px solid var(--border-muted)" }}
+          >
+            <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: "var(--foreground-lighter)" }}>
               Preview
             </span>
-            <span className="ml-2 text-[11px] text-zinc-600">{fileName}</span>
+            <span className="ml-2 text-[11px]" style={{ color: "var(--foreground-muted)" }}>{fileName}</span>
             {dirty && (
-              <span className="ml-1.5 text-[10px] text-amber-500">
+              <span className="ml-1.5 text-[10px]" style={{ color: "var(--warning-default)" }}>
                 (unsaved)
               </span>
             )}
@@ -849,16 +1304,22 @@ ${markdownBody}
         /* ────────────── EDIT MODE: split pane (editor + preview) ────────────── */
         <div className="flex flex-1 overflow-hidden">
           {/* Left: textarea editor */}
-          <div className="flex flex-1 flex-col border-r border-zinc-800">
-            <div className="flex shrink-0 items-center border-b border-zinc-800/50 px-3 py-1.5">
-              <span className="text-[11px] font-medium uppercase tracking-wider text-zinc-500">
+          <div
+            className="flex flex-1 flex-col"
+            style={{ borderRight: "1px solid var(--border-default)" }}
+          >
+            <div
+              className="flex shrink-0 items-center px-3 py-1.5"
+              style={{ borderBottom: "1px solid var(--border-muted)" }}
+            >
+              <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: "var(--foreground-lighter)" }}>
                 Markdown
               </span>
-              <span className="ml-2 text-[11px] text-zinc-600">
+              <span className="ml-2 text-[11px]" style={{ color: "var(--foreground-muted)" }}>
                 {fileName}
               </span>
               {dirty && (
-                <span className="ml-1.5 text-[10px] text-amber-500">
+                <span className="ml-1.5 text-[10px]" style={{ color: "var(--warning-default)" }}>
                   (unsaved)
                 </span>
               )}
@@ -873,21 +1334,26 @@ ${markdownBody}
               }}
               onScroll={handleEditorScroll}
               spellCheck={false}
-              className="flex-1 resize-none bg-zinc-950 p-4 font-mono text-sm leading-relaxed text-zinc-300 placeholder:text-zinc-700 focus:outline-none"
+              className="flex-1 resize-none p-4 font-mono text-sm leading-relaxed focus:outline-none"
+              style={{
+                background: "var(--background-default)",
+                color: "var(--foreground-light)",
+              }}
               placeholder="Start writing markdown..."
             />
           </div>
 
           {/* Right: live preview */}
           <div className="flex flex-1 flex-col">
-            <div className="flex shrink-0 items-center border-b border-zinc-800/50 px-3 py-1.5">
-              <span className="text-[11px] font-medium uppercase tracking-wider text-zinc-500">
+            <div
+              className="flex shrink-0 items-center px-3 py-1.5"
+              style={{ borderBottom: "1px solid var(--border-muted)" }}
+            >
+              <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: "var(--foreground-lighter)" }}>
                 Preview
               </span>
             </div>
-            <div
-              className="flex-1 overflow-auto p-4"
-            >
+            <div className="flex-1 overflow-auto p-4">
               {RenderedPreview}
             </div>
           </div>
@@ -895,25 +1361,31 @@ ${markdownBody}
       )}
 
       {/* Bottom bar: word count + reading time */}
-      <div className="flex shrink-0 items-center justify-between border-t border-zinc-800 bg-zinc-900/80 px-4 py-1.5">
+      <div
+        className="flex shrink-0 items-center justify-between px-4 py-1.5"
+        style={{
+          background: "var(--background-dash-sidebar)",
+          borderTop: "1px solid var(--border-default)",
+        }}
+      >
         <div className="flex items-center gap-4">
-          <span className="text-[11px] text-zinc-500">
+          <span className="text-[11px]" style={{ color: "var(--foreground-lighter)" }}>
             {words} {words === 1 ? "word" : "words"}
           </span>
-          <span className="text-[11px] text-zinc-500">
+          <span className="text-[11px]" style={{ color: "var(--foreground-lighter)" }}>
             ~{readingTime} min read
           </span>
           {filePath && (
-            <span className="max-w-xs truncate text-[11px] text-zinc-600">
+            <span className="max-w-xs truncate text-[11px]" style={{ color: "var(--foreground-muted)" }}>
               {filePath}
             </span>
           )}
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-[11px] text-zinc-600">
+          <span className="text-[11px]" style={{ color: "var(--foreground-muted)" }}>
             {mode === "view" ? "Viewing" : "Editing"}
           </span>
-          <span className="text-[11px] text-zinc-600">Orchestra Editor</span>
+          <span className="text-[11px]" style={{ color: "var(--foreground-muted)" }}>Orchestra Editor</span>
         </div>
       </div>
     </div>

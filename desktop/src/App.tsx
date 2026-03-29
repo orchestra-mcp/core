@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { MarkdownEditor } from "./editor";
 import { Dashboard } from "./dashboard";
-import { SmartActionsDialog, SmartActionsGrid } from "./smart-actions";
+import { CommandPalette } from "./components";
 import { SettingsPage } from "./settings";
 import { McpConnector } from "./mcp";
 import { AuthProvider, useAuth, LoginScreen } from "./auth";
@@ -12,11 +12,66 @@ function AppShell() {
   const { user, loading: authLoading, signOut } = useAuth();
   const [version, setVersion] = useState<string>("");
   const [activeTab, setActiveTab] = useState<string>("dashboard");
-  const [smartActionsOpen, setSmartActionsOpen] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [supabaseConnected, setSupabaseConnected] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close user menu on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+    if (userMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [userMenuOpen]);
 
   useEffect(() => {
     invoke<string>("get_version").then(setVersion);
+  }, []);
+
+  /* ---- Global Cmd+K / Ctrl+K listener (in-app) ---- */
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setCommandPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  /* ---- Tauri global shortcut (works even when app is unfocused) ---- */
+  useEffect(() => {
+    let cleanup: (() => void) | null = null;
+
+    async function registerGlobal() {
+      try {
+        const { register } = await import("@tauri-apps/plugin-global-shortcut");
+        await register("CommandOrControl+K", () => {
+          setCommandPaletteOpen((prev) => !prev);
+        });
+        cleanup = () => {
+          import("@tauri-apps/plugin-global-shortcut")
+            .then(({ unregister }) => unregister("CommandOrControl+K"))
+            .catch(() => {});
+        };
+      } catch {
+        // Plugin not available or permissions not granted — in-app shortcut still works
+      }
+    }
+
+    registerGlobal();
+    return () => { if (cleanup) cleanup(); };
+  }, []);
+
+  const handleNavigate = useCallback((tab: string) => {
+    setActiveTab(tab);
   }, []);
 
   // Check Supabase connection health periodically
@@ -96,7 +151,6 @@ function AppShell() {
   const tabs = [
     { id: "dashboard", label: "Dashboard", icon: "squares" },
     { id: "editor", label: "Editor", icon: "code" },
-    { id: "smart-actions", label: "Smart Actions", icon: "zap" },
     { id: "mcp", label: "MCP Connection", icon: "mcp" },
     { id: "settings", label: "Settings", icon: "cog" },
   ];
@@ -119,12 +173,6 @@ function AppShell() {
             <path d="M5 4L2 8L5 12" />
             <path d="M11 4L14 8L11 12" />
             <path d="M9 2L7 14" />
-          </svg>
-        );
-      case "smart-actions":
-        return (
-          <svg className={cls} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 1L3 9H8L7 15L13 7H8L9 1Z" />
           </svg>
         );
       case "mcp":
@@ -159,6 +207,7 @@ function AppShell() {
         }}
         data-tauri-drag-region
       >
+        {/* Left: Logo + title + version */}
         <div className="flex items-center gap-3">
           <img
             src="/assets/logo.svg"
@@ -184,14 +233,208 @@ function AppShell() {
           )}
         </div>
 
-        {/* User info in title bar */}
-        <div className="ml-auto flex items-center gap-3">
-          <span
-            className="max-w-[200px] truncate text-xs"
-            style={{ color: "var(--foreground-lighter)" }}
+        {/* Right: Spotlight + User dropdown */}
+        <div className="ml-auto flex items-center gap-2">
+          {/* Spotlight / Command Palette trigger */}
+          <button
+            onClick={() => setCommandPaletteOpen(true)}
+            className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs transition-colors"
+            style={{
+              background: "var(--background-surface-100)",
+              border: "1px solid var(--border-default)",
+              color: "var(--foreground-lighter)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "var(--border-strong)";
+              e.currentTarget.style.color = "var(--foreground-light)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "var(--border-default)";
+              e.currentTarget.style.color = "var(--foreground-lighter)";
+            }}
           >
-            {user.email}
-          </span>
+            <svg
+              className="h-3.5 w-3.5 shrink-0"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="7" cy="7" r="4.5" />
+              <path d="M10.5 10.5L14 14" />
+            </svg>
+            <span>Actions</span>
+            <kbd
+              style={{
+                background: "var(--background-surface-300)",
+                border: "1px solid var(--border-strong)",
+                borderRadius: "var(--border-radius-sm)",
+                color: "var(--foreground-muted)",
+                padding: "1px 5px",
+                fontSize: "9px",
+                fontWeight: 500,
+              }}
+            >
+              {navigator.platform?.includes("Mac") ? "\u2318K" : "Ctrl+K"}
+            </kbd>
+          </button>
+
+          {/* User avatar dropdown */}
+          <div className="relative" ref={userMenuRef}>
+            <button
+              onClick={() => setUserMenuOpen((prev) => !prev)}
+              className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-colors"
+              style={{
+                background: "var(--brand-400)",
+                color: "var(--brand-default)",
+                border: userMenuOpen ? "2px solid var(--brand-default)" : "2px solid transparent",
+              }}
+              onMouseEnter={(e) => {
+                if (!userMenuOpen) {
+                  e.currentTarget.style.borderColor = "var(--border-stronger)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!userMenuOpen) {
+                  e.currentTarget.style.borderColor = "transparent";
+                }
+              }}
+              title={user.email ?? "User menu"}
+            >
+              {(user.email ?? "U")[0].toUpperCase()}
+            </button>
+
+            {/* Dropdown menu */}
+            {userMenuOpen && (
+              <div
+                className="absolute right-0 top-full mt-2 w-64 rounded-lg py-1 shadow-xl"
+                style={{
+                  background: "var(--background-overlay-default)",
+                  border: "1px solid var(--border-overlay)",
+                  zIndex: 50,
+                }}
+              >
+                {/* User email (display only) */}
+                <div
+                  className="px-3 py-2.5"
+                  style={{ borderBottom: "1px solid var(--border-default)" }}
+                >
+                  <p className="text-[10px] uppercase tracking-wider" style={{ color: "var(--foreground-muted)" }}>
+                    Signed in as
+                  </p>
+                  <p
+                    className="mt-0.5 truncate text-sm font-medium"
+                    style={{ color: "var(--foreground-default)" }}
+                  >
+                    {user.email}
+                  </p>
+                </div>
+
+                {/* Menu items */}
+                <div className="py-1">
+                  <button
+                    onClick={() => {
+                      setUserMenuOpen(false);
+                      setActiveTab("settings");
+                    }}
+                    className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors"
+                    style={{ color: "var(--foreground-light)" }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "var(--background-overlay-hover)";
+                      e.currentTarget.style.color = "var(--foreground-default)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "transparent";
+                      e.currentTarget.style.color = "var(--foreground-light)";
+                    }}
+                  >
+                    <svg
+                      className="h-4 w-4 shrink-0"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="8" cy="8" r="2.5" />
+                      <path d="M8 1V3M8 13V15M1 8H3M13 8H15M2.9 2.9L4.3 4.3M11.7 11.7L13.1 13.1M13.1 2.9L11.7 4.3M4.3 11.7L2.9 13.1" />
+                    </svg>
+                    Settings
+                  </button>
+                  <button
+                    onClick={() => {
+                      setUserMenuOpen(false);
+                      setActiveTab("mcp");
+                    }}
+                    className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors"
+                    style={{ color: "var(--foreground-light)" }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "var(--background-overlay-hover)";
+                      e.currentTarget.style.color = "var(--foreground-default)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "transparent";
+                      e.currentTarget.style.color = "var(--foreground-light)";
+                    }}
+                  >
+                    <svg
+                      className="h-4 w-4 shrink-0"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="4" cy="8" r="2" />
+                      <circle cx="12" cy="4" r="2" />
+                      <circle cx="12" cy="12" r="2" />
+                      <path d="M6 8L10 5M6 8L10 11" />
+                    </svg>
+                    MCP Connection
+                  </button>
+                </div>
+
+                {/* Separator + Sign out */}
+                <div style={{ borderTop: "1px solid var(--border-default)" }} className="py-1">
+                  <button
+                    onClick={() => {
+                      setUserMenuOpen(false);
+                      signOut();
+                    }}
+                    className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors"
+                    style={{ color: "var(--foreground-lighter)" }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "var(--background-overlay-hover)";
+                      e.currentTarget.style.color = "var(--destructive-default)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "transparent";
+                      e.currentTarget.style.color = "var(--foreground-lighter)";
+                    }}
+                  >
+                    <svg
+                      className="h-4 w-4 shrink-0"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3" />
+                      <path d="M10 11l3-3-3-3" />
+                      <path d="M13 8H6" />
+                    </svg>
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
@@ -240,36 +483,6 @@ function AppShell() {
             ))}
           </div>
 
-          {/* Sign out button */}
-          <button
-            onClick={signOut}
-            className="mt-3 flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm transition-colors"
-            style={{ color: "var(--foreground-lighter)" }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "var(--background-surface-100)";
-              e.currentTarget.style.color = "var(--destructive-default)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "transparent";
-              e.currentTarget.style.color = "var(--foreground-lighter)";
-            }}
-          >
-            <svg
-              className="h-4 w-4 shrink-0"
-              viewBox="0 0 16 16"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3" />
-              <path d="M10 11l3-3-3-3" />
-              <path d="M13 8H6" />
-            </svg>
-            Sign out
-          </button>
-
           {/* Connection status in sidebar */}
           <div
             className="mt-auto rounded-lg p-3"
@@ -304,53 +517,17 @@ function AppShell() {
 
           {activeTab === "editor" && <MarkdownEditor />}
 
-          {activeTab === "smart-actions" && (
-            <div className="space-y-6">
-              <div>
-                <h1 className="text-2xl font-bold" style={{ color: "var(--foreground-default)" }}>
-                  Smart Actions
-                </h1>
-                <p className="mt-1 text-sm" style={{ color: "var(--foreground-lighter)" }}>
-                  Create entities quickly. Select a type below to open the
-                  creation form.
-                </p>
-              </div>
-
-              <SmartActionsGrid
-                onSelect={() => setSmartActionsOpen(true)}
-              />
-
-              <div className="flex items-center justify-center pt-2">
-                <button
-                  onClick={() => setSmartActionsOpen(true)}
-                  className="rounded-md px-5 py-2.5 text-sm font-medium transition-all"
-                  style={{
-                    background: "var(--brand-default)",
-                    color: "var(--foreground-contrast)",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "var(--brand-600)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "var(--brand-default)";
-                  }}
-                >
-                  Open Smart Actions Dialog
-                </button>
-              </div>
-            </div>
-          )}
-
           {activeTab === "mcp" && <McpConnector />}
 
           {activeTab === "settings" && <SettingsPage />}
         </main>
       </div>
 
-      {/* Smart Actions Dialog (modal overlay) */}
-      <SmartActionsDialog
-        open={smartActionsOpen}
-        onClose={() => setSmartActionsOpen(false)}
+      {/* Command Palette overlay */}
+      <CommandPalette
+        open={commandPaletteOpen}
+        onClose={() => setCommandPaletteOpen(false)}
+        onNavigate={handleNavigate}
       />
     </div>
   );

@@ -76,42 +76,61 @@ fi
 log "Docker version: $(docker --version)"
 
 # ============================================================
-# 4. Caddy
+# 4. Go 1.22 (needed before Caddy build)
 # ============================================================
-log "Installing Caddy..."
-if ! command -v caddy &> /dev/null; then
-    apt-get install -y debian-keyring debian-archive-keyring
-    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
-    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list
-    apt-get update -qq
-    apt-get install -y -qq caddy
-    systemctl stop caddy  # We manage via supervisor
-    systemctl disable caddy
+log "Installing Go 1.22..."
+if ! command -v go &> /dev/null; then
+    GO_VERSION="1.22.5"
+    wget -q "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" -O /tmp/go.tar.gz
+    rm -rf /usr/local/go
+    tar -C /usr/local -xzf /tmp/go.tar.gz
+    rm /tmp/go.tar.gz
+    echo 'export PATH=$PATH:/usr/local/go/bin' >> /etc/profile
 fi
-mkdir -p /var/log/caddy
-log "Caddy version: $(caddy version)"
+export PATH=$PATH:/usr/local/go/bin
+log "Go version: $(go version)"
 
 # ============================================================
-# 5. PHP 8.3 + Extensions
+# 5. Caddy with Cloudflare DNS Module
 # ============================================================
-log "Installing PHP 8.3..."
-if ! command -v php &> /dev/null || ! php -v | grep -q "8.3"; then
+log "Installing Caddy with Cloudflare DNS module..."
+if ! /usr/local/bin/caddy list-modules 2>/dev/null | grep -q cloudflare; then
+    # Install xcaddy using Go
+    export GOBIN=/usr/local/bin
+    go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
+
+    # Build custom Caddy with Cloudflare DNS module
+    export PATH=$PATH:/usr/local/bin
+    xcaddy build --with github.com/caddy-dns/cloudflare --output /usr/local/bin/caddy
+
+    systemctl stop caddy 2>/dev/null || true
+    systemctl disable caddy 2>/dev/null || true
+    log "Custom Caddy with Cloudflare DNS module built successfully"
+fi
+mkdir -p /var/log/caddy
+log "Caddy version: $(/usr/local/bin/caddy version 2>/dev/null || echo 'unknown')"
+
+# ============================================================
+# 6. PHP 8.4 + Extensions
+# ============================================================
+log "Installing PHP 8.4..."
+if ! command -v php &> /dev/null || ! php -v | grep -q "8.4"; then
     add-apt-repository -y ppa:ondrej/php
     apt-get update -qq
     apt-get install -y -qq \
-        php8.3-fpm php8.3-cli \
-        php8.3-pgsql php8.3-mbstring php8.3-xml php8.3-curl \
-        php8.3-zip php8.3-bcmath php8.3-intl php8.3-gd \
-        php8.3-redis php8.3-tokenizer php8.3-fileinfo
+        php8.4-fpm php8.4-cli \
+        php8.4-pgsql php8.4-mbstring php8.4-xml php8.4-curl \
+        php8.4-zip php8.4-bcmath php8.4-intl php8.4-gd \
+        php8.4-redis php8.4-tokenizer php8.4-fileinfo
 fi
 
 # Configure PHP-FPM
-sed -i 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/' /etc/php/8.3/fpm/php.ini
-sed -i 's/upload_max_filesize = .*/upload_max_filesize = 50M/' /etc/php/8.3/fpm/php.ini
-sed -i 's/post_max_size = .*/post_max_size = 50M/' /etc/php/8.3/fpm/php.ini
-sed -i 's/memory_limit = .*/memory_limit = 256M/' /etc/php/8.3/fpm/php.ini
+sed -i 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/' /etc/php/8.4/fpm/php.ini
+sed -i 's/upload_max_filesize = .*/upload_max_filesize = 50M/' /etc/php/8.4/fpm/php.ini
+sed -i 's/post_max_size = .*/post_max_size = 50M/' /etc/php/8.4/fpm/php.ini
+sed -i 's/memory_limit = .*/memory_limit = 256M/' /etc/php/8.4/fpm/php.ini
 
-systemctl restart php8.3-fpm
+systemctl restart php8.4-fpm
 log "PHP version: $(php -v | head -1)"
 
 # ============================================================
@@ -136,22 +155,7 @@ log "Node version: $(node -v)"
 log "pnpm version: $(pnpm -v)"
 
 # ============================================================
-# 8. Go 1.22
-# ============================================================
-log "Installing Go 1.22..."
-if ! command -v go &> /dev/null; then
-    GO_VERSION="1.22.5"
-    wget -q "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" -O /tmp/go.tar.gz
-    rm -rf /usr/local/go
-    tar -C /usr/local -xzf /tmp/go.tar.gz
-    rm /tmp/go.tar.gz
-    echo 'export PATH=$PATH:/usr/local/go/bin' >> /etc/profile
-    export PATH=$PATH:/usr/local/go/bin
-fi
-log "Go version: $(go version)"
-
-# ============================================================
-# 9. Redis
+# 8. Redis
 # ============================================================
 log "Installing Redis..."
 if ! command -v redis-server &> /dev/null; then
@@ -250,8 +254,9 @@ log "Creating supervisor configs..."
 
 cat > /etc/supervisor/conf.d/caddy.conf << 'EOF'
 [program:caddy]
-command=/usr/bin/caddy run --config /opt/orchestra/caddy/Caddyfile
+command=/usr/local/bin/caddy run --config /opt/orchestra/caddy/Caddyfile
 directory=/opt/orchestra/caddy
+environment=CLOUDFLARE_API_TOKEN="%(ENV_CLOUDFLARE_API_TOKEN)s"
 autostart=true
 autorestart=true
 stdout_logfile=/var/log/caddy/stdout.log
@@ -295,100 +300,9 @@ supervisorctl update
 # ============================================================
 # 13. Create Caddyfile
 # ============================================================
-log "Creating Caddyfile..."
-cat > "$ORCHESTRA_DIR/caddy/Caddyfile" << 'CADDYFILE'
-{
-    email admin@orchestra-mcp.dev
-}
-
-orchestra-mcp.dev {
-    log {
-        output file /var/log/caddy/access.log {
-            roll_size 100mb
-            roll_keep 5
-        }
-        format json
-    }
-
-    encode gzip zstd
-
-    header {
-        X-Content-Type-Options "nosniff"
-        X-Frame-Options "SAMEORIGIN"
-        Referrer-Policy "strict-origin-when-cross-origin"
-        X-XSS-Protection "1; mode=block"
-        Strict-Transport-Security "max-age=31536000; includeSubDomains"
-        -Server
-    }
-
-    # ── Go MCP Server ──
-    handle /mcp* {
-        reverse_proxy localhost:3001
-    }
-
-    # ── Supabase API Gateway (Kong) ──
-    handle /rest/v1/* {
-        reverse_proxy localhost:54321
-    }
-
-    handle /auth/v1/* {
-        reverse_proxy localhost:54321
-    }
-
-    handle /realtime/v1/* {
-        reverse_proxy localhost:54321 {
-            header_up Upgrade {http.request.header.Upgrade}
-            header_up Connection {http.request.header.Connection}
-        }
-    }
-
-    handle /storage/v1/* {
-        reverse_proxy localhost:54321
-    }
-
-    handle /functions/v1/* {
-        reverse_proxy localhost:54321
-    }
-
-    handle /ingest/* {
-        reverse_proxy localhost:54321
-    }
-
-    # ── Supabase Studio (Deep Fork) ──
-    handle /studio* {
-        reverse_proxy localhost:54323
-    }
-
-    # ── Laravel Static Assets ──
-    handle /build/* {
-        root * /opt/orchestra/web/public
-        file_server
-        header Cache-Control "public, max-age=31536000, immutable"
-    }
-
-    handle /favicon.ico {
-        root * /opt/orchestra/web/public
-        file_server
-    }
-
-    handle /robots.txt {
-        root * /opt/orchestra/web/public
-        file_server
-    }
-
-    handle /sitemap.xml {
-        root * /opt/orchestra/web/public
-        file_server
-    }
-
-    # ── Laravel (catch-all) ──
-    handle {
-        root * /opt/orchestra/web/public
-        php_fastcgi unix//run/php/php8.3-fpm.sock
-        file_server
-    }
-}
-CADDYFILE
+log "Caddyfile will be uploaded separately (with Cloudflare DNS challenge config)..."
+# The Caddyfile is deployed from deploy/Caddyfile via scp
+# It uses Cloudflare DNS challenge for Full (Strict) SSL
 
 # ============================================================
 # Summary

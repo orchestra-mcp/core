@@ -23,7 +23,7 @@ const LoginScreen: FC = () => {
   }
 
   return (
-    <div className="flex h-full items-center justify-center bg-zinc-950">
+    <div className="flex h-full items-center justify-center" style={{ background: "var(--background-default)" }}>
       <div className="w-full max-w-sm space-y-8 px-6">
         {/* Logo + branding */}
         <div className="flex flex-col items-center gap-4">
@@ -36,10 +36,10 @@ const LoginScreen: FC = () => {
             }}
           />
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-zinc-100">
+            <h1 className="text-2xl font-bold" style={{ color: "var(--foreground-default)" }}>
               Orchestra Desktop
             </h1>
-            <p className="mt-1 text-sm text-zinc-500">
+            <p className="mt-1 text-sm" style={{ color: "var(--foreground-lighter)" }}>
               Sign in to your Orchestra account
             </p>
           </div>
@@ -49,8 +49,14 @@ const LoginScreen: FC = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Error message */}
           {error && (
-            <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3">
-              <p className="text-sm text-red-400">{error}</p>
+            <div
+              className="rounded-md px-4 py-3"
+              style={{
+                background: "var(--destructive-200)",
+                border: "1px solid hsla(10.2, 77.9%, 53.9%, 0.3)",
+              }}
+            >
+              <p className="text-sm" style={{ color: "var(--destructive-600)" }}>{error}</p>
             </div>
           )}
 
@@ -58,7 +64,8 @@ const LoginScreen: FC = () => {
           <div className="space-y-1.5">
             <label
               htmlFor="email"
-              className="block text-xs font-medium text-zinc-400"
+              className="block text-xs font-medium"
+              style={{ color: "var(--foreground-lighter)" }}
             >
               Email
             </label>
@@ -71,7 +78,20 @@ const LoginScreen: FC = () => {
               required
               autoFocus
               disabled={loading}
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3.5 py-2.5 text-sm text-zinc-100 placeholder-zinc-600 outline-none transition-colors focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30 disabled:opacity-50"
+              className="w-full rounded-md px-3.5 py-2.5 text-sm outline-none transition-colors disabled:opacity-50"
+              style={{
+                background: "var(--background-control)",
+                border: "1px solid var(--border-control)",
+                color: "var(--foreground-default)",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "var(--brand-default)";
+                e.currentTarget.style.boxShadow = "0 0 0 1px hsla(153.1, 60.2%, 52.7%, 0.3)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "var(--border-control)";
+                e.currentTarget.style.boxShadow = "none";
+              }}
             />
           </div>
 
@@ -79,7 +99,8 @@ const LoginScreen: FC = () => {
           <div className="space-y-1.5">
             <label
               htmlFor="password"
-              className="block text-xs font-medium text-zinc-400"
+              className="block text-xs font-medium"
+              style={{ color: "var(--foreground-lighter)" }}
             >
               Password
             </label>
@@ -91,7 +112,20 @@ const LoginScreen: FC = () => {
               placeholder="Enter your password"
               required
               disabled={loading}
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3.5 py-2.5 text-sm text-zinc-100 placeholder-zinc-600 outline-none transition-colors focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30 disabled:opacity-50"
+              className="w-full rounded-md px-3.5 py-2.5 text-sm outline-none transition-colors disabled:opacity-50"
+              style={{
+                background: "var(--background-control)",
+                border: "1px solid var(--border-control)",
+                color: "var(--foreground-default)",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "var(--brand-default)";
+                e.currentTarget.style.boxShadow = "0 0 0 1px hsla(153.1, 60.2%, 52.7%, 0.3)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "var(--border-control)";
+                e.currentTarget.style.boxShadow = "none";
+              }}
             />
           </div>
 
@@ -99,7 +133,17 @@ const LoginScreen: FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-violet-600 to-violet-500 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-violet-500/20 transition-all hover:from-violet-500 hover:to-violet-400 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50"
+            style={{
+              background: "var(--brand-default)",
+              color: "var(--foreground-contrast)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "var(--brand-600)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "var(--brand-default)";
+            }}
           >
             {loading ? (
               <>
@@ -133,7 +177,7 @@ const LoginScreen: FC = () => {
         </form>
 
         {/* Footer */}
-        <p className="text-center text-xs text-zinc-600">
+        <p className="text-center text-xs" style={{ color: "var(--foreground-muted)" }}>
           Connecting to local Supabase at localhost:8000
         </p>
       </div>

@@ -51,22 +51,6 @@
   "plugins": {
     "shell": {
       "open": true
-    },
-    "store": {},
-    "dialog": {
-      "open": true,
-      "save": true
-    },
-    "fs": {
-      "scope": {
-        "allow": [
-          { "path": "$HOME/**" },
-          { "path": "$DESKTOP/**" },
-          { "path": "$DOCUMENT/**" },
-          { "path": "$DOWNLOAD/**" },
-          { "path": "/tmp/**" }
-        ]
-      }
     }
   }
 }
