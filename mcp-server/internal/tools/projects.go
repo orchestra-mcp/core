@@ -71,12 +71,12 @@ func RegisterProjectTools(registry *mcp.ToolRegistry, dbClient *db.Client) {
 func makeProjectCreate(dbClient *db.Client) mcp.ToolHandler {
 	return func(ctx context.Context, params json.RawMessage) (*mcp.ToolResult, error) {
 		var input struct {
-			Name             string `json:"name"`
-			Slug             string `json:"slug"`
-			Description      string `json:"description"`
-			RepoURL          string `json:"repo_url"`
+			Name              string `json:"name"`
+			Slug              string `json:"slug"`
+			Description       string `json:"description"`
+			RepoURL           string `json:"repo_url"`
 			RepoDefaultBranch string `json:"repo_default_branch"`
-			TeamID           string `json:"team_id"`
+			TeamID            string `json:"team_id"`
 		}
 		if err := json.Unmarshal(params, &input); err != nil {
 			return mcp.ErrorResult("invalid params: " + err.Error()), nil

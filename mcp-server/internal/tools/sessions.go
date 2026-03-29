@@ -60,7 +60,7 @@ func RegisterSessionTools(registry *mcp.ToolRegistry, dbClient *db.Client) {
 		"session_list",
 		"List all active sessions for the organization",
 		mustSchema(map[string]interface{}{
-			"type": "object",
+			"type":       "object",
 			"properties": map[string]interface{}{},
 		}),
 		makeSessionList(dbClient),

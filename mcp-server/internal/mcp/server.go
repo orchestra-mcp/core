@@ -63,7 +63,7 @@ type Server struct {
 	sessions map[string]*mcpSession
 
 	legacyMu       sync.RWMutex
-	legacySessions  map[string]*legacySession
+	legacySessions map[string]*legacySession
 }
 
 // NewServer creates a new MCP server with the given tool registry.

@@ -100,10 +100,10 @@ func makeEvidenceSubmit(dbClient *db.Client) mcp.ToolHandler {
 		}
 
 		row := map[string]interface{}{
-			"organization_id":  userCtx.OrgID,
-			"task_id":          input.TaskID,
-			"gate_id":          input.GateID,
-			"evidence_type":    input.EvidenceType,
+			"organization_id":   userCtx.OrgID,
+			"task_id":           input.TaskID,
+			"gate_id":           input.GateID,
+			"evidence_type":     input.EvidenceType,
 			"submitted_by_user": userCtx.UserID,
 		}
 		if input.Content != nil && string(input.Content) != "null" {
@@ -368,14 +368,14 @@ func makeGateOverride(dbClient *db.Client) mcp.ToolHandler {
 		}
 
 		row := map[string]interface{}{
-			"organization_id":  userCtx.OrgID,
-			"task_id":          input.TaskID,
-			"gate_id":          input.GateID,
-			"evidence_type":    "override",
-			"content":          json.RawMessage(`{}`),
+			"organization_id":   userCtx.OrgID,
+			"task_id":           input.TaskID,
+			"gate_id":           input.GateID,
+			"evidence_type":     "override",
+			"content":           json.RawMessage(`{}`),
 			"submitted_by_user": userCtx.UserID,
-			"is_override":      true,
-			"override_reason":  input.OverrideReason,
+			"is_override":       true,
+			"override_reason":   input.OverrideReason,
 		}
 
 		result, err := dbClient.Post(ctx, "gate_evidence", row)

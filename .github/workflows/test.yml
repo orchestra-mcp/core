@@ -50,7 +50,7 @@ jobs:
           coverage: none
 
       - name: Install Composer dependencies
-        run: composer install --no-dev --optimize-autoloader --no-interaction
+        run: composer install --no-interaction
 
       - name: Copy environment file
         run: cp .env.example .env || true
