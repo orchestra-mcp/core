@@ -18,46 +18,58 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Verify SSH key
+        run: |
+          ssh-keygen -l -f ~/.ssh/deploy_key
+          echo "Key format OK"
+
       - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script_stop: true
-          command_timeout: 10m
-          script: |
-            set -e
-            cd /opt/orchestra
-            git pull origin master
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
+            ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << 'DEPLOY'
+          set -e
+          cd /opt/orchestra
+          git pull origin master
 
-            # Deploy Supabase stack
-            cd /opt/orchestra/supabase/docker
-            docker compose pull
-            docker compose up -d
+          # Deploy Supabase stack
+          cd /opt/orchestra/supabase/docker
+          docker compose pull
+          docker compose up -d
 
-            # Apply database migrations
-            for f in /opt/orchestra/supabase/migrations/*.sql; do
-              [ -f "$f" ] || continue
-              docker compose exec -T db psql -U supabase_admin -d postgres -f - < "$f" 2>/dev/null || true
-            done
+          # Apply database migrations
+          for f in /opt/orchestra/supabase/migrations/*.sql; do
+            [ -f "$f" ] || continue
+            docker compose exec -T db psql -U supabase_admin -d postgres -f - < "$f" 2>/dev/null || true
+          done
 
-            # Build and restart Go MCP server
-            cd /opt/orchestra/mcp-server
-            go build -o /opt/orchestra/bin/orchestra-mcp ./cmd/server
-            supervisorctl restart orchestra-mcp
+          # Build and restart Go MCP server
+          cd /opt/orchestra/mcp-server
+          go build -o /opt/orchestra/bin/orchestra-mcp ./cmd/server
+          supervisorctl restart orchestra-mcp
 
-            # Deploy Laravel
-            cd /opt/orchestra/web
-            composer install --no-dev --optimize-autoloader
-            php artisan migrate --force
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
-            npm ci && npm run build
-            supervisorctl restart orchestra-worker orchestra-scheduler
+          # Deploy Laravel
+          cd /opt/orchestra/web
+          composer install --no-dev --optimize-autoloader
+          php artisan migrate --force
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+          npm ci && npm run build
+          supervisorctl restart orchestra-worker orchestra-scheduler
 
-            # Reload Caddy
-            supervisorctl restart caddy
+          # Reload Caddy
+          supervisorctl restart caddy
 
-            echo "Deployment complete"
+          echo "Deployment complete"
+          DEPLOY
+
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
