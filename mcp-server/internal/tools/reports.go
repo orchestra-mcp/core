@@ -86,19 +86,19 @@ type reportProject struct {
 }
 
 type reportTask struct {
-	ID             string   `json:"id"`
-	Title          string   `json:"title"`
-	Type           string   `json:"type"`
-	Priority       string   `json:"priority"`
-	Status         string   `json:"status"`
-	AssignedAgent  string   `json:"assigned_agent_id"`
-	Estimate       string   `json:"estimate"`
-	Labels         []string `json:"labels"`
-	CreatedAt      string   `json:"created_at"`
-	CompletedAt    string   `json:"completed_at"`
-	BlockedReason  string   `json:"blocked_reason"`
-	Description    string   `json:"description"`
-	Metadata       json.RawMessage `json:"metadata"`
+	ID            string          `json:"id"`
+	Title         string          `json:"title"`
+	Type          string          `json:"type"`
+	Priority      string          `json:"priority"`
+	Status        string          `json:"status"`
+	AssignedAgent string          `json:"assigned_agent_id"`
+	Estimate      string          `json:"estimate"`
+	Labels        []string        `json:"labels"`
+	CreatedAt     string          `json:"created_at"`
+	CompletedAt   string          `json:"completed_at"`
+	BlockedReason string          `json:"blocked_reason"`
+	Description   string          `json:"description"`
+	Metadata      json.RawMessage `json:"metadata"`
 }
 
 type reportDecision struct {
@@ -146,9 +146,9 @@ type reportStats struct {
 }
 
 type reportFileResult struct {
-	Format   string `json:"format"`
-	FilePath string `json:"file_path"`
-	SizeBytes int64 `json:"size_bytes"`
+	Format    string `json:"format"`
+	FilePath  string `json:"file_path"`
+	SizeBytes int64  `json:"size_bytes"`
 }
 
 // ---------------------------------------------------------------------------

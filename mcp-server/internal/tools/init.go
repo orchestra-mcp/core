@@ -752,7 +752,7 @@ case "$EVENT_TYPE" in
     ;;
 esac
 `,
-			Overwrite: true,
+			Overwrite:  true,
 			Executable: true,
 		},
 		{
@@ -777,7 +777,7 @@ case "$HOOK_NAME" in
     ;;
 esac
 `,
-			Overwrite: true,
+			Overwrite:  true,
 			Executable: true,
 		},
 	}

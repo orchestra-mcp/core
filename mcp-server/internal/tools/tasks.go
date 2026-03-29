@@ -132,16 +132,16 @@ func RegisterTaskTools(registry *mcp.ToolRegistry, dbClient *db.Client) {
 func makeTaskCreate(dbClient *db.Client) mcp.ToolHandler {
 	return func(ctx context.Context, params json.RawMessage) (*mcp.ToolResult, error) {
 		var input struct {
-			Title          string   `json:"title"`
-			Description    string   `json:"description"`
-			Type           string   `json:"type"`
-			Priority       string   `json:"priority"`
-			ProjectID      string   `json:"project_id"`
-			AssignedAgent  string   `json:"assigned_agent_id"`
-			AssignedUser   string   `json:"assigned_user_id"`
-			Labels         []string `json:"labels"`
-			DueDate        string   `json:"due_date"`
-			Estimate       string   `json:"estimate"`
+			Title         string   `json:"title"`
+			Description   string   `json:"description"`
+			Type          string   `json:"type"`
+			Priority      string   `json:"priority"`
+			ProjectID     string   `json:"project_id"`
+			AssignedAgent string   `json:"assigned_agent_id"`
+			AssignedUser  string   `json:"assigned_user_id"`
+			Labels        []string `json:"labels"`
+			DueDate       string   `json:"due_date"`
+			Estimate      string   `json:"estimate"`
 		}
 		if err := json.Unmarshal(params, &input); err != nil {
 			return mcp.ErrorResult("invalid params: " + err.Error()), nil

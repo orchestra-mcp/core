@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
-	"strings"
 	"net"
 	"net/http"
 	"net/url"
@@ -13,6 +12,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/chromedp/cdproto/page"
@@ -34,10 +34,9 @@ type BrowserClient struct {
 	allocCtx context.Context
 	cancel   context.CancelFunc
 	cdpURL   string
-	managed  bool     // true if we launched Chrome ourselves
+	managed  bool      // true if we launched Chrome ourselves
 	cmd      *exec.Cmd // process handle for managed Chrome
 }
-
 
 // newCDPContext creates a fresh chromedp context from the allocator for a single operation.
 func (bc *BrowserClient) newCDPContext(timeout time.Duration) (context.Context, context.CancelFunc) {

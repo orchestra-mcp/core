@@ -72,9 +72,9 @@ func RegisterTransitionTools(registry *mcp.ToolRegistry, dbClient *db.Client) {
 func makeTaskTransition(dbClient *db.Client) mcp.ToolHandler {
 	return func(ctx context.Context, params json.RawMessage) (*mcp.ToolResult, error) {
 		var input struct {
-			TaskID  string `json:"task_id"`
-			ToState string `json:"to_state"`
-			Comment string `json:"comment"`
+			TaskID   string `json:"task_id"`
+			ToState  string `json:"to_state"`
+			Comment  string `json:"comment"`
 			Override *struct {
 				GateIDs []string `json:"gate_ids"`
 				Reason  string   `json:"reason"`
@@ -147,12 +147,12 @@ func makeTaskTransition(dbClient *db.Client) mcp.ToolHandler {
 			}
 
 			resp := map[string]interface{}{
-				"task_id":        input.TaskID,
-				"from_state":     fromState,
-				"to_state":       input.ToState,
+				"task_id":         input.TaskID,
+				"from_state":      fromState,
+				"to_state":        input.ToState,
 				"gates_evaluated": []interface{}{},
 				"transitioned_at": time.Now().UTC().Format(time.RFC3339),
-				"task":           json.RawMessage(result),
+				"task":            json.RawMessage(result),
 			}
 			return marshalJSONResult(resp)
 		}
@@ -174,14 +174,14 @@ func makeTaskTransition(dbClient *db.Client) mcp.ToolHandler {
 			for i, gr := range gateResult.Gates {
 				if !gr.Satisfied && gr.IsRequired && overrideSet[gr.GateID] {
 					overrideRow := map[string]interface{}{
-						"organization_id":  userCtx.OrgID,
-						"task_id":          input.TaskID,
-						"gate_id":          gr.GateID,
-						"evidence_type":    "override",
-						"content":          json.RawMessage(fmt.Sprintf(`{"reason":%q}`, input.Override.Reason)),
+						"organization_id":   userCtx.OrgID,
+						"task_id":           input.TaskID,
+						"gate_id":           gr.GateID,
+						"evidence_type":     "override",
+						"content":           json.RawMessage(fmt.Sprintf(`{"reason":%q}`, input.Override.Reason)),
 						"submitted_by_user": userCtx.UserID,
-						"is_override":      true,
-						"override_reason":  input.Override.Reason,
+						"is_override":       true,
+						"override_reason":   input.Override.Reason,
 					}
 					_, err := dbClient.Post(ctx, "gate_evidence", overrideRow)
 					if err != nil {
@@ -283,10 +283,10 @@ func makeWorkflowApply(dbClient *db.Client) mcp.ToolHandler {
 		row := map[string]interface{}{
 			"organization_id": userCtx.OrgID,
 			"workflow_id":     input.WorkflowID,
-			"project_id":     input.ProjectID,
-			"is_active":      true,
-			"applied_by":     userCtx.UserID,
-			"applied_at":     time.Now().UTC().Format(time.RFC3339),
+			"project_id":      input.ProjectID,
+			"is_active":       true,
+			"applied_by":      userCtx.UserID,
+			"applied_at":      time.Now().UTC().Format(time.RFC3339),
 		}
 
 		result, err := dbClient.Post(ctx, "workflow_instances", row)
