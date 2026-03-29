@@ -1,0 +1,7 @@
+/Users/fadymondy/Sites/orchestra-desktop/src-tauri/target/debug/deps/num_conv-56efe1bdf7efdd5f.d: /Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/num-conv-0.2.1/src/lib.rs
+
+/Users/fadymondy/Sites/orchestra-desktop/src-tauri/target/debug/deps/libnum_conv-56efe1bdf7efdd5f.rlib: /Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/num-conv-0.2.1/src/lib.rs
+
+/Users/fadymondy/Sites/orchestra-desktop/src-tauri/target/debug/deps/libnum_conv-56efe1bdf7efdd5f.rmeta: /Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/num-conv-0.2.1/src/lib.rs
+
+/Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/num-conv-0.2.1/src/lib.rs:
