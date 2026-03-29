@@ -1,0 +1,63 @@
+name: Deploy
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script_stop: true
+          command_timeout: 10m
+          script: |
+            set -e
+            cd /opt/orchestra
+            git pull origin master
+
+            # Deploy Supabase stack
+            cd /opt/orchestra/supabase/docker
+            docker compose pull
+            docker compose up -d
+
+            # Apply database migrations
+            for f in /opt/orchestra/supabase/migrations/*.sql; do
+              [ -f "$f" ] || continue
+              docker compose exec -T db psql -U supabase_admin -d postgres -f - < "$f" 2>/dev/null || true
+            done
+
+            # Build and restart Go MCP server
+            cd /opt/orchestra/mcp-server
+            go build -o /opt/orchestra/bin/orchestra-mcp ./cmd/server
+            supervisorctl restart orchestra-mcp
+
+            # Deploy Laravel
+            cd /opt/orchestra/web
+            composer install --no-dev --optimize-autoloader
+            php artisan migrate --force
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            npm ci && npm run build
+            supervisorctl restart orchestra-worker orchestra-scheduler
+
+            # Reload Caddy
+            supervisorctl restart caddy
+
+            echo "Deployment complete"
