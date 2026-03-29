@@ -1,103 +1,172 @@
-# Orchestra MCP
+<p align="center">
+  <img src="arts/logo.svg" width="120" alt="Orchestra MCP">
+</p>
 
-**Turn Claude AI into your 24/7 autonomous company operating system.**
+<h1 align="center">Orchestra MCP</h1>
+
+<p align="center">
+  <strong>Turn Claude AI into a 24/7 autonomous company operating system.</strong>
+</p>
+
+<p align="center">
+  <a href="https://orchestra-mcp.dev">Website</a> &bull;
+  <a href="#features">Features</a> &bull;
+  <a href="#quick-start">Quick Start</a> &bull;
+  <a href="#architecture">Architecture</a> &bull;
+  <a href="LICENSE">MIT License</a>
+</p>
 
 ---
 
 ## What is Orchestra MCP?
 
-Orchestra MCP is an MCP token platform that gives Claude persistent memory, team synchronization, task management, and autonomous workflows. Users register, receive an MCP token during onboarding, and connect it to Claude Code or Claude.ai to unlock a full suite of agent capabilities.
+Orchestra MCP is an MCP (Model Context Protocol) platform that gives Claude AI persistent memory, team coordination, task management, and 91+ tools — turning it into an autonomous operating system for your company.
 
-The platform is built on four pillars:
+Connect your Claude Code, Claude Desktop, or Claude.ai to Orchestra and get:
 
-- **Self-hosted Supabase** -- PostgreSQL database, authentication, realtime subscriptions, and file storage
-- **Forked Supabase Studio** -- Admin panel for managing the platform (this repository)
-- **Go MCP server** -- Implements the MCP protocol, exposes agent tools, handles token auth
-- **Laravel web app** -- User registration, dashboard, billing, and onboarding
+- **Persistent Agent Memory** — agents remember across conversations
+- **Team Sync** — multiple agents coordinate on shared projects
+- **Task Management** — create, assign, track, and complete tasks
+- **Project Boards** — Kanban-style project tracking with gates and reviews
+- **Activity Logging** — full audit trail of all agent actions
+- **Decision Records** — track architectural and business decisions
+- **91+ MCP Tools** — agents, tasks, projects, memory, sessions, skills, workflows, exports, browser control, and more
+
+## Features
+
+### 91+ MCP Tools
+
+Organized across 15 domains: agents, tasks, projects, memory, activity, decisions, sessions, notes, skills, workflows, specs, GitHub integration, notifications, exports, and browser control.
+
+### Self-Hosted Supabase Stack
+
+Full Supabase infrastructure: PostgreSQL, GoTrue auth, PostgREST, Realtime WebSockets, Storage, Edge Functions — all self-hosted via Docker.
+
+### Orchestra Desktop (Tauri)
+
+Native desktop app with:
+- Real-time dashboard connected to Supabase
+- Markdown editor with GFM support and native file dialogs
+- Spotlight command palette (Cmd+K)
+- MCP connection manager for Claude Desktop/Code
+- macOS liquid glass app icon
+
+### Orchestra Studio (Supabase Fork)
+
+Branded admin panel with:
+- User management and authentication
+- Database table editor and SQL editor
+- Storage, Edge Functions, and Realtime management
+- Orchestra-specific pages
+
+### Laravel Web App
+
+Registration, onboarding, billing dashboard with Supabase SDK integration.
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| MCP Server | Go 1.26 |
+| Web App | Laravel 13 + Livewire + Blade |
+| Desktop | Tauri 2.x (Rust + React) |
+| Admin Panel | Next.js (Supabase Studio fork) |
+| Database | PostgreSQL 18 + pgvector |
+| Auth | Supabase GoTrue |
+| Realtime | Supabase Realtime (WebSockets) |
+| Reverse Proxy | Caddy 2.11 |
+| Cache/Queue | Redis |
+
+## Quick Start
+
+### Prerequisites
+
+- Docker & Docker Compose
+- Go 1.22+
+- PHP 8.4+ & Composer
+- Node.js 20+ & pnpm
+
+### Local Development
+
+```bash
+# Clone
+git clone https://github.com/orchestra-mcp/core.git
+cd core
+
+# Start Supabase stack
+cd docker && cp .env.example .env && docker compose up -d
+
+# Start Go MCP server
+cd ../mcp-server && go run ./cmd/server
+
+# Start Laravel web app
+cd ../web && composer install && php artisan serve
+
+# Start Studio
+cd .. && pnpm install && pnpm dev:studio
+```
+
+### Connect Claude
+
+Add to your `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "orchestra": {
+      "type": "streamableHttp",
+      "url": "http://localhost:9999/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_MCP_TOKEN"
+      }
+    }
+  }
+}
+```
 
 ## Architecture
 
 ```
-                          +---------------------------+
-                          |       Caddy (2.11)        |
-                          |     Reverse Proxy         |
-                          |   Single Domain Routing   |
-                          +--+------+------+------+---+
-                             |      |      |      |
-              /--------------+      |      |      +--------------\
-              |                     |      |                     |
-    +---------v--------+  +--------v------v--------+  +---------v--------+
-    |   Laravel Web    |  |    Supabase Services   |  |   Go MCP Server  |
-    |                  |  |                        |  |                  |
-    |  Registration    |  |  Kong (API Gateway)    |  |  MCP Protocol    |
-    |  Dashboard       |  |  GoTrue (Auth)         |  |  Agent Tools     |
-    |  Billing         |  |  PostgREST (REST API)  |  |  Token Auth      |
-    |  Onboarding      |  |  Realtime (WebSocket)  |  |  Workflows       |
-    |                  |  |  Storage (S3)          |  |                  |
-    +------------------+  |  Studio (Admin Panel)  |  +------------------+
-                          +------------------------+
-                                     |
-                          +----------v-----------+
-                          |   PostgreSQL 18      |
-                          |   + pgvector 0.8.2   |
-                          +----------------------+
+┌─────────────────────────────────────────────┐
+│               Caddy (TLS)                    │
+└──────────────────┬──────────────────────────┘
+       ┌───────────┼───────────┬──────────────┐
+       ↓           ↓           ↓              ↓
+   Go MCP      Supabase    Studio      Laravel
+   Server      (Kong)      (Next.js)   (PHP-FPM)
+   :9999       :8000       :3000       :8000
+       └───────────┴───────────┴──────────────┘
+                   ↓
+            PostgreSQL + Redis
 ```
 
-All services sit behind a single domain with path-based routing managed by Caddy.
-
-## Tech Stack
-
-| Layer | Technology | Version |
-|-------|-----------|---------|
-| Web App | Laravel + Livewire + Blade | 13 / 4 / PHP 8.5 |
-| MCP Server | Go | 1.26 |
-| Database | PostgreSQL + pgvector | 18 / 0.8.2 |
-| Auth | Supabase GoTrue | via Docker |
-| API | Supabase PostgREST | via Docker |
-| Realtime | Supabase Realtime | via Docker |
-| Storage | Supabase Storage | via Docker |
-| Admin Panel | Supabase Studio (this fork) | Next.js |
-| Reverse Proxy | Caddy | 2.11 |
-| Frontend | Tailwind CSS + Vite | 4.2 / 8 |
-| Cache / Queues | Redis | 8.6 |
-
-## Quick Start (Local Development)
+## Production Deployment
 
 ```bash
-pnpm install
-cd docker && cp .env.example .env && docker compose up -d
-cd .. && pnpm setup:cli
-pnpm dev:studio
-# Studio at http://localhost:8082
+# On a fresh Ubuntu 24.04 server
+scp deploy/setup.sh root@your-server:/root/
+ssh root@your-server "bash /root/setup.sh"
+
+# Deploy
+ssh root@your-server "cd /opt/orchestra && bash deploy/deploy.sh"
 ```
+
+See `deploy/` for full deployment scripts and Caddyfile.
 
 ## Project Structure
 
 ```
-/
-├── apps/studio/           Next.js Studio app (Orchestra Studio)
-├── packages/              Shared monorepo packages (ui, common, icons)
-├── docker/                Supabase Docker Compose (all services)
-├── spec/                  Orchestra specifications and source code
-│   ├── mcp-server/        Go MCP server
-│   ├── web/               Laravel web application
-│   ├── supabase/          Migrations and Edge Functions
-│   ├── plans/             Implementation plans (6 phases)
-│   └── deploy/            Server setup and deployment scripts
-├── arts/                  Brand assets (logo, colors, fonts)
-└── e2e/                   End-to-end tests
+├── mcp-server/          # Go MCP server (91+ tools)
+├── web/                 # Laravel web app
+├── desktop/             # Tauri desktop app
+├── apps/studio/         # Supabase Studio fork
+├── docker/              # Supabase Docker Compose
+├── deploy/              # Server setup & deploy scripts
+├── supabase/migrations/ # Database migrations
+├── arts/                # Brand assets
+├── spec/                # Product specs & plans
+└── .github/workflows/   # CI/CD (test, lint, deploy)
 ```
-
-## Implementation Phases
-
-| Phase | Focus | Days | Plan |
-|-------|-------|------|------|
-| 1 | Infrastructure | 1--3 | `spec/plans/01-infrastructure.md` |
-| 2 | Auth and Onboarding | 4--7 | `spec/plans/02-auth-onboarding.md` |
-| 3 | Go MCP Server | 8--14 | `spec/plans/03-go-mcp-server.md` |
-| 4 | GitHub and Specs | 15--18 | `spec/plans/04-github-specs.md` |
-| 5 | Dashboard and Polish | 19--24 | `spec/plans/05-dashboard-polish.md` |
-| 6 | Team Sync | 25--30 | `spec/plans/06-team-sync-notifications.md` |
 
 ## Contributing
 
@@ -106,8 +175,6 @@ pnpm dev:studio
 3. Open a pull request against `master` at `github.com/orchestra-mcp/core`.
 4. Update any relevant plan files (check off completed tasks) as part of the PR.
 
-See [DEVELOPERS.md](./DEVELOPERS.md) for detailed setup and contribution guidelines.
-
 ## License
 
-This project is a derivative work of [Supabase](https://github.com/supabase/supabase), licensed under the [Apache License 2.0](./LICENSE).
+[MIT](LICENSE) &copy; 2026 Orchestra MCP
