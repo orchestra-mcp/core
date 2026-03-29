@@ -2,6 +2,7 @@
 
 pub mod bridge;
 pub mod cloud;
+pub mod commands;
 pub mod vision;
 
 use tauri::Manager;
@@ -29,7 +30,23 @@ pub fn run() {
             log::info!("Window label: {}", window.label());
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![greet, get_version])
+        .invoke_handler(tauri::generate_handler![
+            // Core
+            greet,
+            get_version,
+            // Vision
+            commands::screen_capture,
+            commands::mouse_click,
+            commands::keyboard_type,
+            commands::keyboard_press,
+            commands::list_windows,
+            commands::get_screen_size,
+            // Data
+            commands::get_stats,
+            commands::get_agents,
+            commands::get_recent_activity,
+            commands::create_entity,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running Orchestra Desktop");
 }

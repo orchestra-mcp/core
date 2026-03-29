@@ -21,18 +21,16 @@ pub struct CaptureResult {
 #[cfg(target_os = "macos")]
 pub mod macos {
     use super::*;
-    use core_graphics::display::{
-        kCGWindowListOptionOnScreenOnly, CGDisplay, CGWindowListCopyWindowInfo,
-    };
+    use core_graphics::display::CGDisplay;
     use core_graphics::geometry::CGRect;
     use core_graphics::image::CGImage;
-    use core_graphics::window::kCGWindowListOptionAll;
+    use foreign_types::ForeignType;
     use std::io::Cursor;
 
     /// Capture the full main display as PNG bytes
     pub fn capture_screen() -> Result<CaptureResult, String> {
         let display = CGDisplay::main();
-        let image = CGDisplay::image(display)
+        let image = CGDisplay::image(&display)
             .ok_or_else(|| "Failed to capture screen via CGDisplay::image".to_string())?;
         encode_cg_image(&image)
     }
@@ -52,7 +50,7 @@ pub mod macos {
             if img_ref.is_null() {
                 return Err("Failed to capture region".to_string());
             }
-            CGImage::from_ptr(img_ref)
+            CGImage::from_ptr(img_ref as *mut _)
         };
 
         encode_cg_image(&image)
@@ -83,7 +81,7 @@ pub mod macos {
         // Encode as PNG
         let mut png_bytes = Vec::new();
         {
-            let mut encoder = image::codecs::png::PngEncoder::new(Cursor::new(&mut png_bytes));
+            let encoder = image::codecs::png::PngEncoder::new(Cursor::new(&mut png_bytes));
             use image::ImageEncoder;
             encoder
                 .write_image(&rgba, width, height, image::ExtendedColorType::Rgba8)

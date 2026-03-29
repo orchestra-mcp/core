@@ -56,4 +56,4 @@ ARFLAGS_aarch64_apple_darwin = None
 cargo:rerun-if-env-changed=ARFLAGS_aarch64-apple-darwin
 ARFLAGS_aarch64-apple-darwin = None
 cargo:rustc-link-lib=static=objc2_exception_helper_0_1
-cargo:rustc-link-search=native=/Users/fadymondy/Sites/orchestra-desktop/src-tauri/target/debug/build/objc2-exception-helper-e7cccf900c97e1c4/out
+cargo:rustc-link-search=native=/Users/fadymondy/Sites/orch/desktop/src-tauri/target/debug/build/objc2-exception-helper-e7cccf900c97e1c4/out

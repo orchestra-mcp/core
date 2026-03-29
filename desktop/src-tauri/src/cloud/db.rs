@@ -41,7 +41,7 @@ impl SupabaseDB {
     fn request_headers(&self) -> Vec<(&str, String)> {
         let mut headers: Vec<(&str, String)> = vec![
             ("apikey", self.key.clone()),
-            ("Content-Type", "application/json"),
+            ("Content-Type", "application/json".to_string()),
         ];
 
         // If we have a user access token, use it for Authorization (RLS).
