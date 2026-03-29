@@ -494,7 +494,7 @@ export const SettingsPage: FC = () => {
                 patchAppearance("fontSize", Number(e.target.value))
               }
               className="mt-1 w-full"
-              style={{ accentColor: "hsl(277, 100%, 60%)" }}
+              style={{ accentColor: "hsl(153.1, 60.2%, 52.7%)" }}
             />
             <div className="flex justify-between text-[10px]" style={{ color: "var(--foreground-muted)" }}>
               <span>12px</span>

@@ -803,7 +803,7 @@ export default function MarkdownEditor() {
               checked={checked}
               readOnly
               className="md-checkbox mr-2"
-              style={{ accentColor: "hsl(277, 100%, 60%)" }}
+              style={{ accentColor: "hsl(153.1, 60.2%, 52.7%)" }}
               {...props}
             />
           );

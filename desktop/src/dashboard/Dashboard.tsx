@@ -27,15 +27,14 @@ interface ActivityEntry {
 interface StatItem {
   key: keyof Stats;
   label: string;
-  accentColor: string;
   icon: string;
 }
 
 const STAT_CONFIG: StatItem[] = [
-  { key: "active_tasks", label: "Active Tasks", accentColor: "var(--brand-default)", icon: "checkCircle" },
-  { key: "agents_online", label: "Agents Online", accentColor: "var(--brand-default)", icon: "users" },
-  { key: "sessions", label: "Sessions", accentColor: "var(--brand-600)", icon: "terminal" },
-  { key: "memories", label: "Memories", accentColor: "var(--brand-link)", icon: "brain" },
+  { key: "active_tasks", label: "Active Tasks", icon: "checkCircle" },
+  { key: "agents_online", label: "Agents Online", icon: "users" },
+  { key: "sessions", label: "Sessions", icon: "terminal" },
+  { key: "memories", label: "Memories", icon: "brain" },
 ];
 
 const STATUS_STYLES: Record<string, { color: string; label: string }> = {
@@ -44,12 +43,12 @@ const STATUS_STYLES: Record<string, { color: string; label: string }> = {
   offline: { color: "var(--foreground-muted)", label: "Offline" },
 };
 
-/** Brand-derived avatar palette for team member initials */
+/** Neutral gray avatar backgrounds -- monochromatic, matching Studio dark theme */
 const AVATAR_COLORS: readonly string[] = [
-  "var(--brand-default)",
-  "var(--brand-600)",
-  "var(--brand-link)",
-  "var(--brand-500)",
+  "var(--background-surface-300)",
+  "var(--background-surface-400)",
+  "var(--background-overlay-default)",
+  "var(--background-muted)",
 ] as const;
 
 /** Format an ISO timestamp into a relative time string */
@@ -261,13 +260,12 @@ const Dashboard: FC = () => {
           return (
             <div
               key={stat.key}
-              className="relative overflow-hidden rounded-lg"
+              className="rounded-lg"
               style={{
                 background: "var(--background-surface-100)",
                 border: "1px solid var(--border-default)",
               }}
             >
-              <div className="h-0.5" style={{ background: stat.accentColor }} />
               <div className="p-4">
                 <p className="text-xs font-medium" style={{ color: "var(--foreground-lighter)" }}>
                   {stat.label}
