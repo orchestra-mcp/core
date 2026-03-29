@@ -33,6 +33,17 @@ export const useGenerateSettingsMenu = () => {
           },
         ],
       },
+      {
+        title: 'Platform',
+        items: [
+          {
+            name: 'Orchestra Settings',
+            key: 'orchestra',
+            url: `/project/${ref}/settings/orchestra`,
+            items: [],
+          },
+        ],
+      },
     ]
   }
 
@@ -146,6 +157,17 @@ export const useGenerateSettingsMenu = () => {
           rightIcon: <ArrowUpRight strokeWidth={1} className="h-4 w-4" />,
           label: 'Beta',
           disabled: !isProjectActive,
+        },
+      ],
+    },
+    {
+      title: 'Platform',
+      items: [
+        {
+          name: 'Orchestra Settings',
+          key: 'orchestra',
+          url: `/project/${ref}/settings/orchestra`,
+          items: [],
         },
       ],
     },
