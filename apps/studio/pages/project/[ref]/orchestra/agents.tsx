@@ -10,6 +10,7 @@ import {
   PageHeaderSummary,
   PageHeaderTitle,
 } from 'ui-patterns/PageHeader'
+import { PageSection, PageSectionContent } from 'ui-patterns/PageSection'
 
 const OrchestraAgentsPage: NextPageWithLayout = () => {
   return (
@@ -25,7 +26,11 @@ const OrchestraAgentsPage: NextPageWithLayout = () => {
         </PageHeaderMeta>
       </PageHeader>
       <PageContainer size="large">
-        <OrchestraAgents />
+        <PageSection>
+          <PageSectionContent className="gap-y-4">
+            <OrchestraAgents />
+          </PageSectionContent>
+        </PageSection>
       </PageContainer>
     </>
   )

@@ -17,8 +17,8 @@ export async function getOrchestraDashboardMetrics(
 ) {
   const sql = `
     SELECT
-      (SELECT count(*)::int FROM agent_sessions WHERE ended_at IS NULL) AS active_connections,
-      (SELECT count(*)::int FROM activity_log WHERE action IN ('task_created', 'task_started', 'task_completed', 'task_failed') AND created_at >= CURRENT_DATE) AS tasks_today,
+      (SELECT count(*)::int FROM agent_sessions WHERE status = 'active') AS active_connections,
+      (SELECT count(*)::int FROM tasks WHERE created_at >= CURRENT_DATE) AS tasks_today,
       (SELECT count(*)::int FROM agents) AS total_agents,
       (SELECT count(*)::int FROM memories) AS total_memories
   `

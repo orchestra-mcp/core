@@ -44,10 +44,10 @@ export async function getOrchestraAgentDetail(
       t.name AS team_name,
       a.created_at,
       a.updated_at,
-      COALESCE((SELECT count(*)::int FROM tasks WHERE assignee_id = a.id AND status = 'completed'), 0) AS tasks_completed,
+      COALESCE((SELECT count(*)::int FROM tasks WHERE assigned_agent_id = a.id AND status = 'done'), 0) AS tasks_completed,
       COALESCE((SELECT count(*)::int FROM agent_sessions WHERE agent_id = a.id AND ended_at IS NULL), 0) AS active_sessions,
       COALESCE((SELECT count(*)::int FROM memories WHERE agent_id = a.id), 0) AS memories_stored,
-      COALESCE((SELECT count(*)::int FROM activity_log WHERE entity_type = 'agent' AND entity_id = a.id::text AND action = 'decision_made'), 0) AS decisions_made,
+      COALESCE((SELECT count(*)::int FROM decisions WHERE made_by_agent = a.id), 0) AS decisions_made,
       COALESCE(
         (SELECT array_agg(s.name) FROM agent_skills ags JOIN skills s ON s.id = ags.skill_id WHERE ags.agent_id = a.id),
         ARRAY[]::text[]

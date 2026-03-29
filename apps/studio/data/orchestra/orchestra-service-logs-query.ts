@@ -47,8 +47,8 @@ export async function getOrchestraServiceLogs(
   // Query activity_log table as secondary source (only when viewing all or orchestra)
   const activityLogSql = `
     SELECT id, 'orchestra' as service, 'info' as level,
-           COALESCE(action, '') || ': ' || COALESCE(entity_type, '') || ' ' || COALESCE(entity_id, '') as message,
-           metadata::text as context, NULL as request_id, created_at
+           COALESCE(action, '') || ': ' || COALESCE(summary, '') as message,
+           details::text as context, NULL as request_id, created_at
     FROM public.activity_log
     WHERE created_at > now() - interval '${hours} hours'
     ORDER BY created_at DESC

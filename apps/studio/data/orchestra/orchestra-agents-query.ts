@@ -37,7 +37,7 @@ export async function getOrchestraAgents(
       a.avatar_url,
       a.team_id AS team,
       t.name AS team_name,
-      COALESCE((SELECT count(*)::int FROM tasks WHERE assignee_id = a.id AND status = 'completed'), 0) AS tasks_completed,
+      COALESCE((SELECT count(*)::int FROM tasks WHERE assigned_agent_id = a.id AND status = 'done'), 0) AS tasks_completed,
       COALESCE((SELECT count(*)::int FROM memories WHERE agent_id = a.id), 0) AS memories_stored,
       COALESCE(
         (SELECT array_agg(s.name) FROM agent_skills ags JOIN skills s ON s.id = ags.skill_id WHERE ags.agent_id = a.id),

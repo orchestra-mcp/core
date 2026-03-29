@@ -1,40 +1,23 @@
-import { OrchestraLogs } from 'components/interfaces/Orchestra/OrchestraLogs'
-import DefaultLayout from 'components/layouts/DefaultLayout'
-import OrchestraLayout from 'components/layouts/OrchestraLayout/OrchestraLayout'
+import { useParams } from 'common'
+import { useRouter } from 'next/router'
+import { useEffect } from 'react'
 import type { NextPageWithLayout } from 'types'
-import { PageContainer } from 'ui-patterns/PageContainer'
-import {
-  PageHeader,
-  PageHeaderDescription,
-  PageHeaderMeta,
-  PageHeaderSummary,
-  PageHeaderTitle,
-} from 'ui-patterns/PageHeader'
 
-const OrchestraLogsPage: NextPageWithLayout = () => {
-  return (
-    <>
-      <PageHeader size="large">
-        <PageHeaderMeta>
-          <PageHeaderSummary>
-            <PageHeaderTitle>Service Logs</PageHeaderTitle>
-            <PageHeaderDescription>
-              View logs from Go MCP server, Laravel, and Orchestra activity
-            </PageHeaderDescription>
-          </PageHeaderSummary>
-        </PageHeaderMeta>
-      </PageHeader>
-      <PageContainer size="large">
-        <OrchestraLogs />
-      </PageContainer>
-    </>
-  )
+/**
+ * Orchestra logs now live exclusively in the Logs & Analytics section.
+ * This page redirects any old bookmarks/links to the correct location.
+ */
+const OrchestraLogsRedirect: NextPageWithLayout = () => {
+  const router = useRouter()
+  const { ref } = useParams()
+
+  useEffect(() => {
+    if (ref) {
+      router.replace(`/project/${ref}/logs/orchestra-logs`)
+    }
+  }, [ref, router])
+
+  return null
 }
 
-OrchestraLogsPage.getLayout = (page) => (
-  <DefaultLayout>
-    <OrchestraLayout title="Logs">{page}</OrchestraLayout>
-  </DefaultLayout>
-)
-
-export default OrchestraLogsPage
+export default OrchestraLogsRedirect

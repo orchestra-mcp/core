@@ -10,6 +10,7 @@ import {
   PageHeaderSummary,
   PageHeaderTitle,
 } from 'ui-patterns/PageHeader'
+import { PageSection, PageSectionContent } from 'ui-patterns/PageSection'
 
 const OrchestraDashboardPage: NextPageWithLayout = () => {
   return (
@@ -25,7 +26,11 @@ const OrchestraDashboardPage: NextPageWithLayout = () => {
         </PageHeaderMeta>
       </PageHeader>
       <PageContainer size="large">
-        <OrchestraDashboard />
+        <PageSection>
+          <PageSectionContent className="gap-y-6">
+            <OrchestraDashboard />
+          </PageSectionContent>
+        </PageSection>
       </PageContainer>
     </>
   )

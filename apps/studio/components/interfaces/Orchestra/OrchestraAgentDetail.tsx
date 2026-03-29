@@ -62,11 +62,13 @@ const TASK_STATUS_STYLES: Record<
   string,
   { variant: 'default' | 'success' | 'warning' | 'destructive'; label: string }
 > = {
-  pending: { variant: 'default', label: 'Pending' },
+  backlog: { variant: 'default', label: 'Backlog' },
+  todo: { variant: 'default', label: 'To Do' },
   in_progress: { variant: 'warning', label: 'In Progress' },
-  completed: { variant: 'success', label: 'Completed' },
-  failed: { variant: 'destructive', label: 'Failed' },
+  in_review: { variant: 'warning', label: 'In Review' },
   blocked: { variant: 'destructive', label: 'Blocked' },
+  done: { variant: 'success', label: 'Done' },
+  cancelled: { variant: 'destructive', label: 'Cancelled' },
 }
 
 function getStatusConfig(status: string) {
@@ -252,7 +254,7 @@ function ActivityTab({ agentId }: { agentId: string }) {
         <TableHeader>
           <TableRow>
             <TableHead>Action</TableHead>
-            <TableHead>Entity</TableHead>
+            <TableHead>Summary</TableHead>
             <TableHead className="text-right">Time</TableHead>
           </TableRow>
         </TableHeader>
@@ -263,7 +265,7 @@ function ActivityTab({ agentId }: { agentId: string }) {
                 {formatAction(entry.action)}
               </TableCell>
               <TableCell className="text-xs text-foreground-lighter">
-                {entry.entity_type}:{entry.entity_id}
+                {entry.summary}
               </TableCell>
               <TableCell className="text-xs text-foreground-lighter text-right whitespace-nowrap">
                 {dayjs(entry.created_at).fromNow()}
@@ -310,7 +312,7 @@ function TasksTab({ agentId }: { agentId: string }) {
             <TableHead>Title</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Priority</TableHead>
-            <TableHead>Feature</TableHead>
+            <TableHead>Project</TableHead>
             <TableHead className="text-right">Created</TableHead>
           </TableRow>
         </TableHeader>
@@ -327,7 +329,7 @@ function TasksTab({ agentId }: { agentId: string }) {
                   {task.priority ?? '--'}
                 </TableCell>
                 <TableCell className="text-xs text-foreground-lighter">
-                  {task.feature_name ?? '--'}
+                  {task.project_name ?? '--'}
                 </TableCell>
                 <TableCell className="text-xs text-foreground-lighter text-right whitespace-nowrap">
                   {dayjs(task.created_at).fromNow()}
@@ -525,33 +527,41 @@ export const OrchestraAgentDetail = () => {
 
       {/* Tabs */}
       <Tabs_Shadcn_ value={activeTab} onValueChange={setActiveTab}>
-        <TabsList_Shadcn_ className="bg-transparent border-b border-default gap-2">
-          <TabsTrigger_Shadcn_ value="overview">Overview</TabsTrigger_Shadcn_>
-          <TabsTrigger_Shadcn_ value="activity">Activity</TabsTrigger_Shadcn_>
-          <TabsTrigger_Shadcn_ value="tasks">Tasks</TabsTrigger_Shadcn_>
-          <TabsTrigger_Shadcn_ value="skills">
-            Skills{agent.skills.length > 0 ? ` (${agent.skills.length})` : ''}
-          </TabsTrigger_Shadcn_>
-          <TabsTrigger_Shadcn_ value="sessions">Sessions</TabsTrigger_Shadcn_>
+        <TabsList_Shadcn_ className="bg-transparent border-b border-default w-full justify-start rounded-none h-auto p-0 gap-0">
+          {[
+            { value: 'overview', label: 'Overview' },
+            { value: 'activity', label: 'Activity' },
+            { value: 'tasks', label: 'Tasks' },
+            { value: 'skills', label: `Skills${agent.skills.length > 0 ? ` (${agent.skills.length})` : ''}` },
+            { value: 'sessions', label: 'Sessions' },
+          ].map((tab) => (
+            <TabsTrigger_Shadcn_
+              key={tab.value}
+              value={tab.value}
+              className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 pb-3 pt-2 text-sm text-foreground-lighter data-[state=active]:text-foreground"
+            >
+              {tab.label}
+            </TabsTrigger_Shadcn_>
+          ))}
         </TabsList_Shadcn_>
 
-        <TabsContent_Shadcn_ value="overview" className="mt-4">
+        <TabsContent_Shadcn_ value="overview" className="mt-6">
           <OverviewTab agent={agent} isLoading={isLoading} />
         </TabsContent_Shadcn_>
 
-        <TabsContent_Shadcn_ value="activity" className="mt-4">
+        <TabsContent_Shadcn_ value="activity" className="mt-6">
           <ActivityTab agentId={agent.id} />
         </TabsContent_Shadcn_>
 
-        <TabsContent_Shadcn_ value="tasks" className="mt-4">
+        <TabsContent_Shadcn_ value="tasks" className="mt-6">
           <TasksTab agentId={agent.id} />
         </TabsContent_Shadcn_>
 
-        <TabsContent_Shadcn_ value="skills" className="mt-4">
+        <TabsContent_Shadcn_ value="skills" className="mt-6">
           <SkillsTab skills={agent.skills} />
         </TabsContent_Shadcn_>
 
-        <TabsContent_Shadcn_ value="sessions" className="mt-4">
+        <TabsContent_Shadcn_ value="sessions" className="mt-6">
           <SessionsTab agentId={agent.id} />
         </TabsContent_Shadcn_>
       </Tabs_Shadcn_>
