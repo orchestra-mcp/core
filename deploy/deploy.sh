@@ -182,7 +182,7 @@ fi
 log "Restarting services..."
 
 # PHP-FPM
-systemctl restart php8.3-fpm
+systemctl restart php8.4-fpm
 
 # Caddy
 supervisorctl restart caddy 2>/dev/null || caddy reload --config "$ORCHESTRA_DIR/caddy/Caddyfile" 2>/dev/null || warn "Caddy not ready"

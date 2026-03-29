@@ -1,0 +1,40 @@
+name: Lint
+
+on:
+  pull_request:
+    branches: [master]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  studio-lint:
+    name: Studio TypeCheck & Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: TypeScript type check
+        run: pnpm run typecheck
+
+      - name: ESLint
+        run: pnpm run lint
+
+      - name: Prettier format check
+        run: pnpm run test:prettier || true

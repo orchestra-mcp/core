@@ -12,6 +12,7 @@
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
+use std::time::Duration;
 use tokio::io::{self, AsyncBufReadExt, AsyncWriteExt, BufReader};
 
 /// MCP endpoint path on the Go server.
@@ -90,28 +91,43 @@ struct ClaudeCodeConfig {
 // Connection Testing
 // ---------------------------------------------------------------------------
 
+/// Build an HTTP client with sensible timeouts for MCP communication.
+fn build_mcp_client() -> Result<Client, String> {
+    Client::builder()
+        .timeout(Duration::from_secs(15))
+        .connect_timeout(Duration::from_secs(5))
+        .build()
+        .map_err(|e| format!("Failed to build HTTP client: {}", e))
+}
+
 /// Test the connection to the MCP server by sending an initialize request
 /// and optionally a tools/list request.
+///
+/// The health endpoint check is optional — if it fails we still attempt the
+/// MCP initialize handshake directly (the Go server may not expose `/mcp/health`).
 pub async fn test_connection(server_url: &str, token: &str) -> ConnectionTestResult {
-    let client = Client::new();
+    let client = match build_mcp_client() {
+        Ok(c) => c,
+        Err(e) => {
+            return ConnectionTestResult {
+                success: false,
+                server_url: server_url.to_string(),
+                server_name: None,
+                server_version: None,
+                protocol_version: None,
+                tools_count: None,
+                error: Some(e),
+                latency_ms: 0,
+            };
+        }
+    };
+
     let start = std::time::Instant::now();
 
-    // First try the health endpoint.
+    // Optionally try the health endpoint, but do NOT abort if it fails —
+    // many MCP servers only serve the /mcp POST endpoint.
     let health_url = format!("{}{}", server_url, HEALTH_ENDPOINT);
-    let health_result = client.get(&health_url).send().await;
-
-    if let Err(e) = health_result {
-        return ConnectionTestResult {
-            success: false,
-            server_url: server_url.to_string(),
-            server_name: None,
-            server_version: None,
-            protocol_version: None,
-            tools_count: None,
-            error: Some(format!("Cannot reach server: {}", e)),
-            latency_ms: start.elapsed().as_millis() as u64,
-        };
-    }
+    let _health_ok = client.get(&health_url).send().await.is_ok();
 
     // Send an MCP initialize request via POST.
     let mcp_url = format!("{}{}", server_url, MCP_ENDPOINT);
@@ -131,7 +147,8 @@ pub async fn test_connection(server_url: &str, token: &str) -> ConnectionTestRes
 
     let mut req_builder = client
         .post(&mcp_url)
-        .header("Content-Type", "application/json");
+        .header("Content-Type", "application/json")
+        .header("Accept", "application/json, text/event-stream");
 
     if !token.is_empty() {
         req_builder = req_builder.header("Authorization", format!("Bearer {}", token));
@@ -140,6 +157,13 @@ pub async fn test_connection(server_url: &str, token: &str) -> ConnectionTestRes
     let init_response = match req_builder.json(&init_request).send().await {
         Ok(resp) => resp,
         Err(e) => {
+            let msg = if e.is_connect() {
+                format!("Cannot reach server at {} — is it running?", server_url)
+            } else if e.is_timeout() {
+                format!("Connection to {} timed out", server_url)
+            } else {
+                format!("Initialize request failed: {}", e)
+            };
             return ConnectionTestResult {
                 success: false,
                 server_url: server_url.to_string(),
@@ -147,7 +171,7 @@ pub async fn test_connection(server_url: &str, token: &str) -> ConnectionTestRes
                 server_version: None,
                 protocol_version: None,
                 tools_count: None,
-                error: Some(format!("Initialize request failed: {}", e)),
+                error: Some(msg),
                 latency_ms: start.elapsed().as_millis() as u64,
             };
         }
@@ -192,6 +216,25 @@ pub async fn test_connection(server_url: &str, token: &str) -> ConnectionTestRes
         }
     };
 
+    // Check for JSON-RPC error in response body.
+    if let Some(err) = init_body.get("error") {
+        let err_msg = err
+            .get("message")
+            .and_then(|m| m.as_str())
+            .unwrap_or("Unknown server error");
+        let err_code = err.get("code").and_then(|c| c.as_i64()).unwrap_or(-1);
+        return ConnectionTestResult {
+            success: false,
+            server_url: server_url.to_string(),
+            server_name: None,
+            server_version: None,
+            protocol_version: None,
+            tools_count: None,
+            error: Some(format!("MCP error ({}): {}", err_code, err_msg)),
+            latency_ms: start.elapsed().as_millis() as u64,
+        };
+    }
+
     let result = init_body.get("result");
     let server_name = result
         .and_then(|r| r.get("serverInfo"))
@@ -221,6 +264,7 @@ pub async fn test_connection(server_url: &str, token: &str) -> ConnectionTestRes
         let mut tools_req_builder = client
             .post(&mcp_url)
             .header("Content-Type", "application/json")
+            .header("Accept", "application/json, text/event-stream")
             .header("Mcp-Session-Id", sid.as_str());
 
         if !token.is_empty() {
@@ -517,7 +561,10 @@ pub fn write_claude_code_global_config(
 /// process that reads JSON-RPC from stdin and writes responses to stdout.
 /// Each message is forwarded to the Go MCP server via HTTP POST.
 pub async fn run_stdio_bridge(config: McpBridgeConfig) -> Result<(), Box<dyn std::error::Error>> {
-    let client = Client::new();
+    let client = Client::builder()
+        .timeout(Duration::from_secs(60))
+        .connect_timeout(Duration::from_secs(10))
+        .build()?;
     let mcp_url = format!("{}{}", config.server_url, MCP_ENDPOINT);
     let mut session_id: Option<String> = None;
 
@@ -555,7 +602,8 @@ pub async fn run_stdio_bridge(config: McpBridgeConfig) -> Result<(), Box<dyn std
         // Forward to the Go server.
         let mut req_builder = client
             .post(&mcp_url)
-            .header("Content-Type", "application/json");
+            .header("Content-Type", "application/json")
+            .header("Accept", "application/json, text/event-stream");
 
         if !config.token.is_empty() {
             req_builder =

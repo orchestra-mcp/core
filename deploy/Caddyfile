@@ -1,11 +1,23 @@
 # /opt/orchestra/caddy/Caddyfile
-# Orchestra MCP — Single-domain reverse proxy with auto-SSL
+# Orchestra MCP — Single-domain reverse proxy with Cloudflare DNS TLS
 # Usage: caddy run --config /opt/orchestra/caddy/Caddyfile
 
+{
+    email admin@orchestra-mcp.dev
+}
+
 orchestra-mcp.dev {
+    # ─── TLS via Cloudflare DNS Challenge (Full Strict SSL) ───
+    tls {
+        dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+    }
+
     # ─── Logging ───
     log {
-        output file /var/log/caddy/access.log
+        output file /var/log/caddy/access.log {
+            roll_size 100mb
+            roll_keep 5
+        }
         format json
     }
 
@@ -29,7 +41,7 @@ orchestra-mcp.dev {
 
     # ─── Supabase PostgREST API ───
     handle /rest/v1/* {
-        reverse_proxy localhost:54321 {
+        reverse_proxy localhost:8000 {
             header_up Host {http.request.host}
             header_up X-Real-IP {http.request.remote.host}
         }
@@ -37,14 +49,14 @@ orchestra-mcp.dev {
 
     # ─── Supabase GoTrue Auth ───
     handle /auth/v1/* {
-        reverse_proxy localhost:54321 {
+        reverse_proxy localhost:8000 {
             header_up Host {http.request.host}
         }
     }
 
     # ─── Supabase Realtime ───
     handle /realtime/v1/* {
-        reverse_proxy localhost:54321 {
+        reverse_proxy localhost:8000 {
             header_up Host {http.request.host}
             header_up Upgrade {http.request.header.Upgrade}
             header_up Connection {http.request.header.Connection}
@@ -53,21 +65,21 @@ orchestra-mcp.dev {
 
     # ─── Supabase Storage ───
     handle /storage/v1/* {
-        reverse_proxy localhost:54321 {
+        reverse_proxy localhost:8000 {
             header_up Host {http.request.host}
         }
     }
 
     # ─── Supabase Edge Functions ───
     handle /functions/v1/* {
-        reverse_proxy localhost:54321 {
+        reverse_proxy localhost:8000 {
             header_up Host {http.request.host}
         }
     }
 
     # ─── Supabase Analytics/Ingest ───
     handle /ingest/* {
-        reverse_proxy localhost:54321 {
+        reverse_proxy localhost:8000 {
             header_up Host {http.request.host}
         }
     }
@@ -105,7 +117,7 @@ orchestra-mcp.dev {
     # ─── Laravel (catch-all via PHP-FPM) ───
     handle {
         root * /opt/orchestra/web/public
-        php_fastcgi unix//run/php/php8.3-fpm.sock
+        php_fastcgi unix//run/php/php8.4-fpm.sock
         file_server
     }
 }

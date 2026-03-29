@@ -24,31 +24,18 @@ interface ActivityEntry {
   created_at?: string;
 }
 
-const STAT_CONFIG = [
-  {
-    key: "active_tasks" as const,
-    label: "Active Tasks",
-    accentColor: "var(--brand-default)",
-    icon: "checkCircle",
-  },
-  {
-    key: "agents_online" as const,
-    label: "Agents Online",
-    accentColor: "var(--brand-default)",
-    icon: "users",
-  },
-  {
-    key: "sessions" as const,
-    label: "Sessions",
-    accentColor: "var(--foreground-lighter)",
-    icon: "terminal",
-  },
-  {
-    key: "memories" as const,
-    label: "Memories",
-    accentColor: "var(--warning-default)",
-    icon: "brain",
-  },
+interface StatItem {
+  key: keyof Stats;
+  label: string;
+  accentColor: string;
+  icon: string;
+}
+
+const STAT_CONFIG: StatItem[] = [
+  { key: "active_tasks", label: "Active Tasks", accentColor: "var(--brand-default)", icon: "checkCircle" },
+  { key: "agents_online", label: "Agents Online", accentColor: "var(--brand-default)", icon: "users" },
+  { key: "sessions", label: "Sessions", accentColor: "var(--brand-600)", icon: "terminal" },
+  { key: "memories", label: "Memories", accentColor: "var(--brand-link)", icon: "brain" },
 ];
 
 const STATUS_STYLES: Record<string, { color: string; label: string }> = {
@@ -57,12 +44,13 @@ const STATUS_STYLES: Record<string, { color: string; label: string }> = {
   offline: { color: "var(--foreground-muted)", label: "Offline" },
 };
 
-const AVATAR_COLORS = [
+/** Brand-derived avatar palette for team member initials */
+const AVATAR_COLORS: readonly string[] = [
   "var(--brand-default)",
   "var(--brand-600)",
-  "var(--foreground-lighter)",
-  "var(--warning-default)",
-];
+  "var(--brand-link)",
+  "var(--brand-500)",
+] as const;
 
 /** Format an ISO timestamp into a relative time string */
 function timeAgo(isoDate: string): string {
@@ -279,7 +267,6 @@ const Dashboard: FC = () => {
                 border: "1px solid var(--border-default)",
               }}
             >
-              {/* Color accent line at top */}
               <div className="h-0.5" style={{ background: stat.accentColor }} />
               <div className="p-4">
                 <p className="text-xs font-medium" style={{ color: "var(--foreground-lighter)" }}>
@@ -355,7 +342,7 @@ const Dashboard: FC = () => {
                           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
                           style={{ background: avatarBg }}
                         >
-                          <span className="text-sm font-bold" style={{ color: "var(--foreground-contrast)" }}>
+                          <span className="text-sm font-bold" style={{ color: "var(--foreground-light)" }}>
                             {initial}
                           </span>
                         </div>
@@ -433,7 +420,7 @@ const Dashboard: FC = () => {
                       >
                         <div
                           className="h-1.5 w-1.5 rounded-full"
-                          style={{ background: "var(--brand-default)" }}
+                          style={{ background: "var(--foreground-muted)" }}
                         />
                       </div>
                       <div>
@@ -473,8 +460,8 @@ const Dashboard: FC = () => {
               style={{
                 background: connected ? "var(--brand-default)" : "var(--destructive-default)",
                 boxShadow: connected
-                  ? "0 0 8px hsla(153.1, 60.2%, 52.7%, 0.3)"
-                  : "0 0 8px hsla(10.2, 77.9%, 53.9%, 0.3)",
+                  ? "0 0 6px hsla(153.1, 60.2%, 52.7%, 0.25)"
+                  : "none",
               }}
             />
             <div>
