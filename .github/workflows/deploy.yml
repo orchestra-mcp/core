@@ -18,46 +18,46 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
         with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script_stop: true
-          command_timeout: 10m
-          script: |
-            set -e
-            cd /opt/orchestra
-            git pull origin master
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
 
-            # Deploy Supabase stack
-            cd /opt/orchestra/supabase/docker
-            docker compose pull
-            docker compose up -d
+      - name: Deploy via SSH
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_HOST }} << 'DEPLOY'
+          set -e
+          cd /opt/orchestra
+          git pull origin master
 
-            # Apply database migrations
-            for f in /opt/orchestra/supabase/migrations/*.sql; do
-              [ -f "$f" ] || continue
-              docker compose exec -T db psql -U supabase_admin -d postgres -f - < "$f" 2>/dev/null || true
-            done
+          # Deploy Supabase stack
+          cd /opt/orchestra/supabase/docker
+          docker compose pull
+          docker compose up -d
 
-            # Build and restart Go MCP server
-            cd /opt/orchestra/mcp-server
-            go build -o /opt/orchestra/bin/orchestra-mcp ./cmd/server
-            supervisorctl restart orchestra-mcp
+          # Apply database migrations
+          for f in /opt/orchestra/supabase/migrations/*.sql; do
+            [ -f "$f" ] || continue
+            docker compose exec -T db psql -U supabase_admin -d postgres -f - < "$f" 2>/dev/null || true
+          done
 
-            # Deploy Laravel
-            cd /opt/orchestra/web
-            composer install --no-dev --optimize-autoloader
-            php artisan migrate --force
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
-            npm ci && npm run build
-            supervisorctl restart orchestra-worker orchestra-scheduler
+          # Build and restart Go MCP server
+          cd /opt/orchestra/mcp-server
+          go build -o /opt/orchestra/bin/orchestra-mcp ./cmd/server
+          supervisorctl restart orchestra-mcp
 
-            # Reload Caddy
-            supervisorctl restart caddy
+          # Deploy Laravel
+          cd /opt/orchestra/web
+          composer install --no-dev --optimize-autoloader
+          php artisan migrate --force
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+          npm ci && npm run build
+          supervisorctl restart orchestra-worker orchestra-scheduler
 
-            echo "Deployment complete"
+          # Reload Caddy
+          supervisorctl restart caddy
+
+          echo "Deployment complete"
+          DEPLOY
