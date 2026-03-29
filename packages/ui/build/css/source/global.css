@@ -97,8 +97,8 @@
   --colors-slate-light-alpha-1000: hsla(204.39999999999998, 100%, 5.3%, 0.5098039215686274);
   --colors-slate-light-alpha-1100: hsla(205, 100%, 4.7%, 0.5882352941176471);
   --colors-slate-light-alpha-1200: hsla(200, 100%, 2.4%, 0.9294117647058824);
-  --variables-colors-brand-primary: 153.1deg 60.2% 52.7%;
-  --variables-colors-brand-accent: 152.9deg 56.1% 46.5%;
+  --variables-colors-brand-primary: 277deg 100% 50%;
+  --variables-colors-brand-accent: 277deg 80% 55%;
   --spacing-scale: 2px;
   --spacing-xs: 4px;
   --spacing-sm: 8px;
