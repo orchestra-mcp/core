@@ -1,9 +1,0 @@
-/Users/fadymondy/Sites/orch/desktop/src-tauri/target/debug/deps/unicode_segmentation-dc520a4dfc4f49e0.d: /Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/unicode-segmentation-1.13.2/src/lib.rs /Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/unicode-segmentation-1.13.2/src/grapheme.rs /Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/unicode-segmentation-1.13.2/src/sentence.rs /Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/unicode-segmentation-1.13.2/src/word.rs /Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/unicode-segmentation-1.13.2/src/tables.rs
-
-/Users/fadymondy/Sites/orch/desktop/src-tauri/target/debug/deps/libunicode_segmentation-dc520a4dfc4f49e0.rmeta: /Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/unicode-segmentation-1.13.2/src/lib.rs /Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/unicode-segmentation-1.13.2/src/grapheme.rs /Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/unicode-segmentation-1.13.2/src/sentence.rs /Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/unicode-segmentation-1.13.2/src/word.rs /Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/unicode-segmentation-1.13.2/src/tables.rs
-
-/Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/unicode-segmentation-1.13.2/src/lib.rs:
-/Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/unicode-segmentation-1.13.2/src/grapheme.rs:
-/Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/unicode-segmentation-1.13.2/src/sentence.rs:
-/Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/unicode-segmentation-1.13.2/src/word.rs:
-/Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/unicode-segmentation-1.13.2/src/tables.rs:

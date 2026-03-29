@@ -25,7 +25,8 @@
       }
     ],
     "trayIcon": {
-      "iconPath": "icons/icon.png",
+      "id": "orchestra-tray",
+      "iconPath": "icons/trayTemplate.png",
       "iconAsTemplate": true
     },
     "security": {
@@ -40,15 +41,32 @@
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
-      "icons/icon.ico"
+      "icons/icon.ico",
+      "icons/icon.png"
     ],
     "macOS": {
-      "minimumSystemVersion": "10.15"
+      "minimumSystemVersion": "11.0"
     }
   },
   "plugins": {
     "shell": {
       "open": true
+    },
+    "store": {},
+    "dialog": {
+      "open": true,
+      "save": true
+    },
+    "fs": {
+      "scope": {
+        "allow": [
+          { "path": "$HOME/**" },
+          { "path": "$DESKTOP/**" },
+          { "path": "$DOCUMENT/**" },
+          { "path": "$DOWNLOAD/**" },
+          { "path": "/tmp/**" }
+        ]
+      }
     }
   }
 }

@@ -1,8 +1,0 @@
-/Users/fadymondy/Sites/orch/desktop/src-tauri/target/debug/deps/objc2_core_graphics-726f66671b1722a6.d: /Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-graphics-0.3.2/src/lib.rs /Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-graphics-0.3.2/src/generated/mod.rs /Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-graphics-0.3.2/src/generated/CGDirectDisplay.rs /Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-graphics-0.3.2/src/thread_safety.rs
-
-/Users/fadymondy/Sites/orch/desktop/src-tauri/target/debug/deps/libobjc2_core_graphics-726f66671b1722a6.rmeta: /Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-graphics-0.3.2/src/lib.rs /Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-graphics-0.3.2/src/generated/mod.rs /Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-graphics-0.3.2/src/generated/CGDirectDisplay.rs /Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-graphics-0.3.2/src/thread_safety.rs
-
-/Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-graphics-0.3.2/src/lib.rs:
-/Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-graphics-0.3.2/src/generated/mod.rs:
-/Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-graphics-0.3.2/src/generated/CGDirectDisplay.rs:
-/Users/fadymondy/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-core-graphics-0.3.2/src/thread_safety.rs:

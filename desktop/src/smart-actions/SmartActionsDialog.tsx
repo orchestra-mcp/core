@@ -76,11 +76,21 @@ const SmartActionsDialog: FC<SmartActionsDialogProps> = ({ open, onClose }) => {
     <div
       ref={overlayRef}
       onClick={handleOverlayClick}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
+      style={{ background: "hsla(0, 0%, 0%, 0.6)" }}
     >
-      <div className="w-full max-w-xl rounded-2xl border border-zinc-800 bg-zinc-900 shadow-2xl shadow-black/40">
+      <div
+        className="w-full max-w-xl rounded-lg shadow-2xl"
+        style={{
+          background: "var(--background-dialog)",
+          border: "1px solid var(--border-overlay)",
+        }}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-zinc-800 px-6 py-4">
+        <div
+          className="flex items-center justify-between px-6 py-4"
+          style={{ borderBottom: "1px solid var(--border-default)" }}
+        >
           <div className="flex items-center gap-3">
             {selected && (
               <button
@@ -90,7 +100,16 @@ const SmartActionsDialog: FC<SmartActionsDialogProps> = ({ open, onClose }) => {
                   setContent("");
                   setError(null);
                 }}
-                className="rounded-md p-1 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
+                className="rounded-md p-1 transition-colors"
+                style={{ color: "var(--foreground-lighter)" }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "var(--background-surface-300)";
+                  e.currentTarget.style.color = "var(--foreground-default)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.color = "var(--foreground-lighter)";
+                }}
               >
                 <svg
                   width="16"
@@ -106,7 +125,7 @@ const SmartActionsDialog: FC<SmartActionsDialogProps> = ({ open, onClose }) => {
                 </svg>
               </button>
             )}
-            <h2 className="text-base font-semibold text-zinc-100">
+            <h2 className="text-base font-semibold" style={{ color: "var(--foreground-default)" }}>
               {selected
                 ? `Create ${selected.label}`
                 : "Smart Actions"}
@@ -114,7 +133,16 @@ const SmartActionsDialog: FC<SmartActionsDialogProps> = ({ open, onClose }) => {
           </div>
           <button
             onClick={onClose}
-            className="rounded-md p-1 text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-200"
+            className="rounded-md p-1 transition-colors"
+            style={{ color: "var(--foreground-lighter)" }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "var(--background-surface-300)";
+              e.currentTarget.style.color = "var(--foreground-default)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "var(--foreground-lighter)";
+            }}
           >
             <svg
               width="16"
@@ -135,7 +163,7 @@ const SmartActionsDialog: FC<SmartActionsDialogProps> = ({ open, onClose }) => {
         <div className="p-6">
           {!selected ? (
             <>
-              <p className="mb-4 text-sm text-zinc-500">
+              <p className="mb-4 text-sm" style={{ color: "var(--foreground-lighter)" }}>
                 Select an entity type to create
               </p>
               <SmartActionsGrid onSelect={setSelected} />
@@ -145,14 +173,17 @@ const SmartActionsDialog: FC<SmartActionsDialogProps> = ({ open, onClose }) => {
               {/* Entity badge */}
               <div className="flex items-center gap-2">
                 <span className="text-lg">{selected.icon}</span>
-                <span className="text-sm font-medium text-zinc-300">
+                <span className="text-sm font-medium" style={{ color: "var(--foreground-light)" }}>
                   {selected.label}
                 </span>
               </div>
 
               {/* Title */}
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-zinc-400">
+                <label
+                  className="mb-1.5 block text-xs font-medium"
+                  style={{ color: "var(--foreground-lighter)" }}
+                >
                   Title
                 </label>
                 <input
@@ -164,28 +195,64 @@ const SmartActionsDialog: FC<SmartActionsDialogProps> = ({ open, onClose }) => {
                   }}
                   placeholder={`Enter ${selected.label.toLowerCase()} title...`}
                   autoFocus
-                  className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500/30"
+                  className="w-full rounded-md px-3 py-2 text-sm outline-none transition"
+                  style={{
+                    background: "var(--background-control)",
+                    border: "1px solid var(--border-control)",
+                    color: "var(--foreground-default)",
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = "var(--brand-default)";
+                    e.currentTarget.style.boxShadow = "0 0 0 1px hsla(153.1, 60.2%, 52.7%, 0.3)";
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = "var(--border-control)";
+                    e.currentTarget.style.boxShadow = "none";
+                  }}
                 />
               </div>
 
               {/* Content */}
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-zinc-400">
+                <label
+                  className="mb-1.5 block text-xs font-medium"
+                  style={{ color: "var(--foreground-lighter)" }}
+                >
                   Content{" "}
-                  <span className="text-zinc-600">(markdown supported)</span>
+                  <span style={{ color: "var(--foreground-muted)" }}>(markdown supported)</span>
                 </label>
                 <textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="Write your content here..."
                   rows={6}
-                  className="w-full resize-none rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500/30"
+                  className="w-full resize-none rounded-md px-3 py-2 text-sm outline-none transition"
+                  style={{
+                    background: "var(--background-control)",
+                    border: "1px solid var(--border-control)",
+                    color: "var(--foreground-default)",
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = "var(--brand-default)";
+                    e.currentTarget.style.boxShadow = "0 0 0 1px hsla(153.1, 60.2%, 52.7%, 0.3)";
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = "var(--border-control)";
+                    e.currentTarget.style.boxShadow = "none";
+                  }}
                 />
               </div>
 
               {/* Error */}
               {error && (
-                <p className="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-400">
+                <p
+                  className="rounded-md px-3 py-2 text-xs"
+                  style={{
+                    background: "var(--destructive-200)",
+                    border: "1px solid hsla(10.2, 77.9%, 53.9%, 0.2)",
+                    color: "var(--destructive-600)",
+                  }}
+                >
                   {error}
                 </p>
               )}
@@ -199,14 +266,34 @@ const SmartActionsDialog: FC<SmartActionsDialogProps> = ({ open, onClose }) => {
                     setContent("");
                     setError(null);
                   }}
-                  className="rounded-lg border border-zinc-700 px-4 py-2 text-sm font-medium text-zinc-300 transition-colors hover:bg-zinc-800"
+                  className="rounded-md px-4 py-2 text-sm font-medium transition-colors"
+                  style={{
+                    border: "1px solid var(--border-strong)",
+                    color: "var(--foreground-light)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "var(--background-surface-300)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "transparent";
+                  }}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleCreate}
                   disabled={!title.trim() || creating}
-                  className="rounded-lg bg-gradient-to-r from-violet-600 to-violet-500 px-4 py-2 text-sm font-medium text-white shadow-lg shadow-violet-500/20 transition-all hover:from-violet-500 hover:to-violet-400 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-md px-4 py-2 text-sm font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50"
+                  style={{
+                    background: "var(--brand-default)",
+                    color: "var(--foreground-contrast)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "var(--brand-600)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "var(--brand-default)";
+                  }}
                 >
                   {creating ? "Creating..." : "Create"}
                 </button>

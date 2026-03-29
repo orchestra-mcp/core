@@ -161,3 +161,15 @@ keys.json
 
 # Application
 **/.superset/**
+
+# Rust build artifacts
+**/target/
+
+# Desktop build output
+desktop/dist/
+
+# Orchestra projects cache
+.projects/
+
+# Old env files
+*.env.old

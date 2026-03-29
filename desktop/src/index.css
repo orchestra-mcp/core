@@ -1,13 +1,87 @@
 @import "tailwindcss";
 
+/* ==========================================================================
+   Supabase Studio Dark Theme — Design Tokens
+   Mapped from packages/ui/build/css/themes/dark.css + global.css
+   ========================================================================== */
+
 :root {
-  --orchestra-purple: #7c3aed;
-  --orchestra-blue: #3b82f6;
-  --orchestra-dark: #09090b;
-  --orchestra-surface: #18181b;
-  --orchestra-border: #27272a;
-  --orchestra-text: #fafafa;
-  --orchestra-text-muted: #a1a1aa;
+  /* ---- Font ---- */
+  --font-family-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+
+  /* ---- Background ---- */
+  --background-default: hsl(0 0% 7.1%);
+  --background-alternative: hsl(0 0% 5.9%);
+  --background-200: hsl(0 0% 9%);
+  --background-dash-canvas: hsl(0 0% 7.1%);
+  --background-dash-sidebar: hsl(0 0% 9%);
+  --background-surface-75: hsl(0 0% 9%);
+  --background-surface-100: hsl(0 0% 12.2%);
+  --background-surface-200: hsl(0 0% 12.9%);
+  --background-surface-300: hsl(0 0% 16.1%);
+  --background-surface-400: hsl(0 0% 16.1%);
+  --background-control: hsl(0 0% 14.1%);
+  --background-muted: hsl(0 0% 14.1%);
+  --background-overlay-default: hsl(0 0% 14.1%);
+  --background-overlay-hover: hsl(0 0% 18%);
+  --background-selection: hsl(0 0% 19.2%);
+  --background-dialog: hsl(0 0% 7.1%);
+  --background-button: hsl(0 0% 18%);
+
+  /* ---- Foreground ---- */
+  --foreground-default: hsl(0 0% 98%);
+  --foreground-light: hsl(0 0% 70.6%);
+  --foreground-lighter: hsl(0 0% 53.7%);
+  --foreground-muted: hsl(0 0% 30.2%);
+  --foreground-contrast: hsl(0 0% 8.6%);
+
+  /* ---- Border ---- */
+  --border-default: hsl(0 0% 18%);
+  --border-strong: hsl(0 0% 21.2%);
+  --border-stronger: hsl(0 0% 27.1%);
+  --border-muted: hsl(0 0% 14.1%);
+  --border-overlay: hsl(0 0% 20%);
+  --border-control: hsl(0 0% 22.4%);
+  --border-button: hsl(0 0% 24.3%);
+  --border-button-hover: hsl(0 0% 31.4%);
+
+  /* ---- Brand (Supabase green) ---- */
+  --brand-default: hsl(153.1 60.2% 52.7%);
+  --brand-600: hsl(154.9 59.5% 70%);
+  --brand-500: hsl(154.9 100% 19.2%);
+  --brand-400: hsl(155.5 100% 9.6%);
+  --brand-300: hsl(155.1 100% 8%);
+  --brand-200: hsl(162 100% 2%);
+  --brand-link: hsl(155 100% 38.6%);
+
+  /* ---- Destructive ---- */
+  --destructive-default: hsl(10.2 77.9% 53.9%);
+  --destructive-600: hsl(9.7 85.2% 62.9%);
+  --destructive-200: hsl(10.9 23.4% 9.2%);
+
+  /* ---- Warning ---- */
+  --warning-default: hsl(38.9 100% 42.9%);
+  --warning-200: hsl(36.6 100% 8%);
+
+  /* ---- Gray palette (from global.css) ---- */
+  --colors-gray-dark-100: hsl(0 0% 8.6%);
+  --colors-gray-dark-200: hsl(0 0% 11%);
+  --colors-gray-dark-300: hsl(0 0% 13.7%);
+  --colors-gray-dark-400: hsl(0 0% 15.7%);
+  --colors-gray-dark-500: hsl(0 0% 18%);
+  --colors-gray-dark-600: hsl(0 0% 20.4%);
+  --colors-gray-dark-700: hsl(0 0% 24.3%);
+  --colors-gray-dark-800: hsl(0 0% 31.4%);
+  --colors-gray-dark-900: hsl(0 0% 43.9%);
+  --colors-gray-dark-1000: hsl(0 0% 49.4%);
+  --colors-gray-dark-1100: hsl(0 0% 62.7%);
+  --colors-gray-dark-1200: hsl(0 0% 92.9%);
+
+  /* ---- Spacing / Radius (from Studio) ---- */
+  --border-radius-sm: 4px;
+  --border-radius-lg: 8px;
+  --border-radius-xl: 16px;
 }
 
 html,
@@ -16,9 +90,12 @@ body,
   height: 100%;
   margin: 0;
   padding: 0;
+  font-family: var(--font-family-body);
+  background: var(--background-default);
+  color: var(--foreground-default);
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar — Studio-style subtle */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -29,20 +106,20 @@ body,
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--orchestra-border);
+  background: var(--border-default);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--orchestra-text-muted);
+  background: var(--border-stronger);
 }
 
 /* ------------------------------------------------------------------ */
-/* Markdown preview styles                                            */
+/* Markdown preview styles — using Studio tokens                      */
 /* ------------------------------------------------------------------ */
 
 .markdown-preview {
-  color: #d4d4d8;
+  color: var(--foreground-light);
   font-size: 0.875rem;
   line-height: 1.75;
 }
@@ -50,46 +127,46 @@ body,
 .markdown-preview .md-h1 {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #fafafa;
+  color: var(--foreground-default);
   margin: 1.25rem 0 0.75rem;
   padding-bottom: 0.375rem;
-  border-bottom: 1px solid #27272a;
+  border-bottom: 1px solid var(--border-default);
 }
 
 .markdown-preview .md-h2 {
   font-size: 1.375rem;
   font-weight: 600;
-  color: #fafafa;
+  color: var(--foreground-default);
   margin: 1rem 0 0.5rem;
   padding-bottom: 0.25rem;
-  border-bottom: 1px solid #27272a;
+  border-bottom: 1px solid var(--border-default);
 }
 
 .markdown-preview .md-h3 {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #e4e4e7;
+  color: var(--foreground-light);
   margin: 0.875rem 0 0.375rem;
 }
 
 .markdown-preview .md-h4 {
   font-size: 1rem;
   font-weight: 600;
-  color: #e4e4e7;
+  color: var(--foreground-light);
   margin: 0.75rem 0 0.25rem;
 }
 
 .markdown-preview .md-h5 {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #a1a1aa;
+  color: var(--foreground-lighter);
   margin: 0.625rem 0 0.25rem;
 }
 
 .markdown-preview .md-h6 {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #71717a;
+  color: var(--foreground-muted);
   margin: 0.5rem 0 0.25rem;
 }
 
@@ -98,45 +175,45 @@ body,
 }
 
 .markdown-preview strong {
-  color: #fafafa;
+  color: var(--foreground-default);
   font-weight: 600;
 }
 
 .markdown-preview em {
   font-style: italic;
-  color: #d4d4d8;
+  color: var(--foreground-light);
 }
 
 .markdown-preview .md-inline-code {
-  background: #27272a;
-  color: #c084fc;
+  background: var(--background-surface-300);
+  color: var(--brand-600);
   padding: 0.125rem 0.375rem;
-  border-radius: 0.25rem;
+  border-radius: var(--border-radius-sm);
   font-family: ui-monospace, "SF Mono", "Cascadia Code", monospace;
   font-size: 0.8125rem;
 }
 
 .markdown-preview .md-link {
-  color: #a78bfa;
+  color: var(--brand-default);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
 .markdown-preview .md-link:hover {
-  color: #c4b5fd;
+  color: var(--brand-600);
 }
 
 .markdown-preview .md-code-block {
-  background: #18181b;
-  border: 1px solid #27272a;
-  border-radius: 0.5rem;
+  background: var(--background-surface-100);
+  border: 1px solid var(--border-default);
+  border-radius: var(--border-radius-lg);
   padding: 0.875rem 1rem;
   margin: 0.75rem 0;
   overflow-x: auto;
   font-family: ui-monospace, "SF Mono", "Cascadia Code", monospace;
   font-size: 0.8125rem;
   line-height: 1.625;
-  color: #a1a1aa;
+  color: var(--foreground-lighter);
 }
 
 .markdown-preview .md-code-block code {
@@ -145,12 +222,12 @@ body,
 }
 
 .markdown-preview .md-blockquote {
-  border-left: 3px solid #7c3aed;
+  border-left: 3px solid var(--brand-default);
   padding: 0.5rem 0.75rem;
   margin: 0.75rem 0;
-  color: #a1a1aa;
-  background: #18181b;
-  border-radius: 0 0.375rem 0.375rem 0;
+  color: var(--foreground-lighter);
+  background: var(--background-surface-100);
+  border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
 }
 
 .markdown-preview .md-ul,
@@ -174,7 +251,7 @@ body,
 
 .markdown-preview .md-hr {
   border: none;
-  border-top: 1px solid #27272a;
+  border-top: 1px solid var(--border-default);
   margin: 1rem 0;
 }
 
@@ -186,22 +263,149 @@ body,
 }
 
 .markdown-preview .md-table th {
-  background: #18181b;
-  color: #a1a1aa;
+  background: var(--background-surface-100);
+  color: var(--foreground-lighter);
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.6875rem;
   letter-spacing: 0.05em;
   padding: 0.5rem 0.75rem;
-  border: 1px solid #27272a;
+  border: 1px solid var(--border-default);
 }
 
 .markdown-preview .md-table td {
   padding: 0.5rem 0.75rem;
-  border: 1px solid #27272a;
-  color: #d4d4d8;
+  border: 1px solid var(--border-default);
+  color: var(--foreground-light);
 }
 
 .markdown-preview .md-table tbody tr:hover {
-  background: #18181b;
+  background: var(--background-surface-100);
+}
+
+/* ---- GFM Extensions ---- */
+
+/* Strikethrough */
+.markdown-preview del {
+  text-decoration: line-through;
+  color: var(--foreground-muted);
+}
+
+/* Task list — remove bullet and adjust alignment */
+.markdown-preview .md-ul li:has(> .md-checkbox) {
+  list-style: none;
+  margin-left: -1.25rem;
+}
+
+.markdown-preview .md-checkbox {
+  width: 14px;
+  height: 14px;
+  vertical-align: middle;
+  accent-color: hsl(153.1 60.2% 52.7%);
+  cursor: default;
+}
+
+/* Images */
+.markdown-preview .md-img {
+  max-width: 100%;
+  margin: 0.75rem 0;
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--border-default);
+}
+
+/* ------------------------------------------------------------------ */
+/* highlight.js dark theme (GitHub Dark Dimmed-inspired)               */
+/* ------------------------------------------------------------------ */
+
+.markdown-preview .md-code-block .hljs {
+  background: transparent;
+  color: var(--foreground-light);
+}
+
+.markdown-preview .hljs-keyword,
+.markdown-preview .hljs-selector-tag,
+.markdown-preview .hljs-built_in,
+.markdown-preview .hljs-type {
+  color: #ff7b72;
+}
+
+.markdown-preview .hljs-string,
+.markdown-preview .hljs-attr,
+.markdown-preview .hljs-addition {
+  color: #a5d6ff;
+}
+
+.markdown-preview .hljs-number,
+.markdown-preview .hljs-literal {
+  color: #79c0ff;
+}
+
+.markdown-preview .hljs-comment,
+.markdown-preview .hljs-quote,
+.markdown-preview .hljs-meta {
+  color: #8b949e;
+  font-style: italic;
+}
+
+.markdown-preview .hljs-function,
+.markdown-preview .hljs-title {
+  color: #d2a8ff;
+}
+
+.markdown-preview .hljs-params {
+  color: var(--foreground-light);
+}
+
+.markdown-preview .hljs-variable,
+.markdown-preview .hljs-template-variable {
+  color: #ffa657;
+}
+
+.markdown-preview .hljs-regexp {
+  color: #7ee787;
+}
+
+.markdown-preview .hljs-deletion {
+  color: #ffa198;
+  background: rgba(248, 81, 73, 0.1);
+}
+
+.markdown-preview .hljs-addition {
+  color: #aff5b4;
+  background: rgba(63, 185, 80, 0.1);
+}
+
+.markdown-preview .hljs-selector-class,
+.markdown-preview .hljs-selector-id {
+  color: #7ee787;
+}
+
+.markdown-preview .hljs-attribute {
+  color: #79c0ff;
+}
+
+.markdown-preview .hljs-tag {
+  color: #7ee787;
+}
+
+.markdown-preview .hljs-name {
+  color: #7ee787;
+}
+
+.markdown-preview .hljs-symbol,
+.markdown-preview .hljs-bullet {
+  color: #ffa657;
+}
+
+.markdown-preview .hljs-section {
+  color: #d2a8ff;
+  font-weight: bold;
+}
+
+.markdown-preview .hljs-emphasis {
+  font-style: italic;
+}
+
+.markdown-preview .hljs-strong {
+  font-weight: bold;
 }
