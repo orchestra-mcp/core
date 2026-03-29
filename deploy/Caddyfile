@@ -114,10 +114,13 @@ orchestra-mcp.dev {
         file_server
     }
 
-    # ─── Laravel (catch-all via PHP-FPM) ───
+    # ─── Laravel via Octane (FrankenPHP) ───
     handle {
-        root * /opt/orchestra/web/public
-        php_fastcgi unix//run/php/php8.4-fpm.sock
-        file_server
+        reverse_proxy 127.0.0.1:8080 {
+            header_up Host {http.request.host}
+            header_up X-Real-IP {http.request.remote.host}
+            header_up X-Forwarded-For {http.request.remote.host}
+            header_up X-Forwarded-Proto {http.request.scheme}
+        }
     }
 }

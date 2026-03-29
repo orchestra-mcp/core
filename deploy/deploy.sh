@@ -170,7 +170,10 @@ EOF
     # Restart workers
     php artisan queue:restart 2>/dev/null || true
     supervisorctl restart laravel-worker 2>/dev/null || warn "Laravel worker not in supervisor"
-    
+
+    # Restart Octane (FrankenPHP)
+    supervisorctl restart orchestra-octane 2>/dev/null || warn "Octane not in supervisor"
+
     log "Laravel deployed successfully"
 else
     warn "Laravel project not found — skipping"
@@ -181,8 +184,8 @@ fi
 # ============================================================
 log "Restarting services..."
 
-# PHP-FPM
-systemctl restart php8.4-fpm
+# Octane (FrankenPHP) — replaces PHP-FPM for web serving
+supervisorctl restart orchestra-octane 2>/dev/null || warn "Octane not in supervisor"
 
 # Caddy
 supervisorctl restart caddy 2>/dev/null || caddy reload --config "$ORCHESTRA_DIR/caddy/Caddyfile" 2>/dev/null || warn "Caddy not ready"
@@ -214,11 +217,11 @@ else
     echo -e "  ${YELLOW}○${NC} Go MCP Server (may not be built yet)"
 fi
 
-# Check Laravel
-if curl -sf http://localhost:8000 > /dev/null 2>&1 || curl -sf http://localhost > /dev/null 2>&1; then
-    echo -e "  ${GREEN}✓${NC} Laravel"
+# Check Laravel (Octane on port 8080)
+if curl -sf http://localhost:8080 > /dev/null 2>&1; then
+    echo -e "  ${GREEN}✓${NC} Laravel (Octane/FrankenPHP)"
 else
-    echo -e "  ${YELLOW}○${NC} Laravel (check PHP-FPM)"
+    echo -e "  ${YELLOW}○${NC} Laravel Octane (check: supervisorctl status orchestra-octane)"
 fi
 
 # Check Redis
