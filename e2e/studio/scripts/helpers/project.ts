@@ -2,8 +2,8 @@ import assert from 'assert'
 import { faker } from '@faker-js/faker'
 
 import { waitForProjectStatus } from '../common/helpers.js'
-import { waitForHealthyServices } from '../common/wait-healthy-services.js'
 import { PlatformClient } from '../common/platform.js'
+import { waitForHealthyServices } from '../common/wait-healthy-services.js'
 
 export interface CreateProjectParams {
   platformClient: PlatformClient

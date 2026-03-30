@@ -1,9 +1,9 @@
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { parse } from 'yaml'
-
 import type { ModuleTypes } from '~/features/docs/Reference.typeSpec'
 import type { AbbrevApiReferenceSection } from '~/features/docs/Reference.utils'
+import { parse } from 'yaml'
+
 import { type Json } from '../helpers.types'
 import { type IApiEndPoint } from './Reference.api.utils'
 

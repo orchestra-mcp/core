@@ -1,7 +1,7 @@
-import { config } from 'dotenv'
-import { existsSync, rmSync, mkdirSync, renameSync } from 'node:fs'
 import { execSync } from 'node:child_process'
+import { existsSync, mkdirSync, renameSync, rmSync } from 'node:fs'
 import path from 'node:path'
+import { config } from 'dotenv'
 
 const envLocalPath = path.resolve(process.cwd(), '.env.local')
 if (existsSync(envLocalPath)) {
@@ -35,9 +35,12 @@ const run = (cmd: string) => {
     return output
   } catch (error: any) {
     // Sanitize error messages by replacing token with [REDACTED]
-    const sanitizedMessage = error.message?.replace(new RegExp(token, 'g'), '[REDACTED]') ?? 'Unknown error'
-    const sanitizedStderr = error.stderr?.toString().replace(new RegExp(token, 'g'), '[REDACTED]') ?? ''
-    const sanitizedStdout = error.stdout?.toString().replace(new RegExp(token, 'g'), '[REDACTED]') ?? ''
+    const sanitizedMessage =
+      error.message?.replace(new RegExp(token, 'g'), '[REDACTED]') ?? 'Unknown error'
+    const sanitizedStderr =
+      error.stderr?.toString().replace(new RegExp(token, 'g'), '[REDACTED]') ?? ''
+    const sanitizedStdout =
+      error.stdout?.toString().replace(new RegExp(token, 'g'), '[REDACTED]') ?? ''
 
     const sanitizedError = new Error(sanitizedMessage)
     ;(sanitizedError as any).stderr = sanitizedStderr

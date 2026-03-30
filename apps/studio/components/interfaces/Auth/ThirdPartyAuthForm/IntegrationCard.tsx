@@ -1,9 +1,9 @@
-import { Check } from 'lucide-react'
-import Image from 'next/image'
-
 import { ThirdPartyAuthIntegration } from 'data/third-party-auth/integrations-query'
 import { DOCS_URL } from 'lib/constants'
+import { Check } from 'lucide-react'
+import Image from 'next/image'
 import { Badge, Button } from 'ui'
+
 import { AWS_IDP_REGIONS } from './AwsRegionSelector'
 import {
   getIntegrationType,

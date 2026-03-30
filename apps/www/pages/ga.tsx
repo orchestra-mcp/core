@@ -1,3 +1,4 @@
+import DefaultLayout from '~/components/Layouts/Default'
 import { NextSeo } from 'next-seo'
 import { useTheme } from 'next-themes'
 import dynamic from 'next/dynamic'
@@ -6,9 +7,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import React from 'react'
 import ReactMarkdown from 'react-markdown'
-
 import { ExpandableVideo } from 'ui-patterns/ExpandableVideo'
-import DefaultLayout from '~/components/Layouts/Default'
+
 import ImageGrid from '../components/ImageGrid'
 import SectionContainer from '../components/Layouts/SectionContainer'
 import { data as pageData } from '../data/ga'

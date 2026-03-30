@@ -17,6 +17,7 @@ import {
   ScrollArea,
 } from 'ui'
 import ShimmeringLoader from 'ui-patterns/ShimmeringLoader'
+
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver'
 
 export interface ComboBoxOption {

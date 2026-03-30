@@ -1,3 +1,4 @@
+import { basename } from 'path'
 import { useQueries, useQueryClient } from '@tanstack/react-query'
 import {
   getEdgeFunctionBody,
@@ -9,7 +10,6 @@ import {
 } from 'data/edge-functions/edge-functions-query'
 import { edgeFunctionsKeys } from 'data/edge-functions/keys'
 import { handleError } from 'data/fetchers'
-import { basename } from 'path'
 import { useCallback, useMemo } from 'react'
 
 interface UseEdgeFunctionsDiffProps {

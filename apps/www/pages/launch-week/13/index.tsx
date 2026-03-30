@@ -1,16 +1,15 @@
-import { useState, useEffect } from 'react'
+import { Session } from '@supabase/supabase-js'
+import LWHeader from '~/components/LaunchWeek/13/Releases/LWHeader'
+import LWStickyNav from '~/components/LaunchWeek/13/Releases/LWStickyNav'
+import MainStage from '~/components/LaunchWeek/13/Releases/MainStage'
+import { ConfDataContext, TicketState, UserData } from '~/components/LaunchWeek/hooks/use-conf-data'
+import DefaultLayout from '~/components/Layouts/Default'
+import { LW_URL, LW13_DATE, LW13_TITLE, SITE_ORIGIN } from '~/lib/constants'
+import supabase from '~/lib/supabase'
+import { NextSeo } from 'next-seo'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
-import { NextSeo } from 'next-seo'
-import { Session } from '@supabase/supabase-js'
-import { LW13_DATE, LW13_TITLE, LW_URL, SITE_ORIGIN } from '~/lib/constants'
-import supabase from '~/lib/supabase'
-
-import DefaultLayout from '~/components/Layouts/Default'
-import { TicketState, ConfDataContext, UserData } from '~/components/LaunchWeek/hooks/use-conf-data'
-import LWStickyNav from '~/components/LaunchWeek/13/Releases/LWStickyNav'
-import LWHeader from '~/components/LaunchWeek/13/Releases/LWHeader'
-import MainStage from '~/components/LaunchWeek/13/Releases/MainStage'
+import { useEffect, useState } from 'react'
 
 const BuildStage = dynamic(() => import('~/components/LaunchWeek/13/Releases/BuildStage'))
 const CTABanner = dynamic(() => import('~/components/CTABanner'))

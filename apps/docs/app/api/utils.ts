@@ -1,6 +1,6 @@
 import { type PostgrestError } from '@supabase/supabase-js'
-import { type ZodError } from 'zod'
 import { isObject } from '~/features/helpers.misc'
+import { type ZodError } from 'zod'
 
 type ObjectOrNever = object | never
 

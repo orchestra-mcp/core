@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
-import { IconDocumentation, IconMicSolid, IconProductHunt, IconYoutubeSolid, cn } from 'ui'
-
 import Link from 'next/link'
-import { StepLink } from '../data/lwx_data'
+import { useEffect, useState } from 'react'
+import { cn, IconDocumentation, IconMicSolid, IconProductHunt, IconYoutubeSolid } from 'ui'
 import { ExpandableVideo } from 'ui-patterns/ExpandableVideo'
+
+import { StepLink } from '../data/lwx_data'
 
 interface DayLink extends StepLink {
   className?: string

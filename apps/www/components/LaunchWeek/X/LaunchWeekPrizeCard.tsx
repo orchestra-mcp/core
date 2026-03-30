@@ -1,6 +1,6 @@
+import Panel from '~/components/Panel'
 import React from 'react'
 import { cn } from 'ui'
-import Panel from '~/components/Panel'
 
 export default function LaunchWeekPrizeCard({
   content,

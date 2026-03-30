@@ -1,8 +1,4 @@
 import { paths } from 'api-types'
-import { compact } from 'lodash'
-import { NextApiRequest, NextApiResponse } from 'next'
-import { z } from 'zod'
-
 import apiWrapper from 'lib/api/apiWrapper'
 import {
   deleteSnippet,
@@ -11,6 +7,9 @@ import {
   SnippetSchema,
   updateSnippet,
 } from 'lib/api/snippets.utils'
+import { compact } from 'lodash'
+import { NextApiRequest, NextApiResponse } from 'next'
+import { z } from 'zod'
 
 const wrappedHandler = (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
 

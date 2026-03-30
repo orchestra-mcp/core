@@ -53,11 +53,7 @@ export const LocalDropdown = ({
           type="default"
           className="[&>span]:flex px-0 py-0 rounded-full overflow-hidden h-8 w-8"
         >
-          <ProfileImage
-            alt={displayName}
-            src={avatarUrl}
-            className="w-8 h-8 rounded-md"
-          />
+          <ProfileImage alt={displayName} src={avatarUrl} className="w-8 h-8 rounded-md" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent side="bottom" align="end" className={cn('w-52', contentClassName)}>
@@ -65,10 +61,7 @@ export const LocalDropdown = ({
           <>
             <div className="px-2 py-1 flex flex-col gap-0 text-sm">
               {displayName && (
-                <span
-                  title={displayName}
-                  className="w-full text-left text-foreground truncate"
-                >
+                <span title={displayName} className="w-full text-left text-foreground truncate">
                   {displayName}
                 </span>
               )}

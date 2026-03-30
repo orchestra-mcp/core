@@ -1,7 +1,5 @@
-import { useEffect, useState } from 'react'
-
 import * as Dialog from '@radix-ui/react-dialog'
-
+import { useEffect, useState } from 'react'
 import styleHandler from 'ui/src/lib/theme/styleHandler'
 
 export type ImageModalProps = RadixProps & Props

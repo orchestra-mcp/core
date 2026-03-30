@@ -1,5 +1,5 @@
 ---
-description: "Docs: how to run tests locally (Supabase setup + correct commands)"
+description: 'Docs: how to run tests locally (Supabase setup + correct commands)'
 globs:
   - apps/docs/**/*.{test,spec}.{ts,tsx}
 alwaysApply: false
@@ -22,4 +22,3 @@ pnpm run -F docs test:local:unwatch
 
 - Always reset the local DB before running docs tests to avoid state leakage.
 - Prefer `test:local:unwatch` for non-watch CI-like runs.
-

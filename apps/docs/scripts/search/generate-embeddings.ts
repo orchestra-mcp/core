@@ -1,21 +1,21 @@
 import '../utils/dotenv.js'
 
-import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { parseArgs } from 'node:util'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { OpenAI } from 'openai'
 import { v4 as uuidv4 } from 'uuid'
 
 import type { Section } from '../helpers.mdx.js'
 import {
+  computePageResults,
+  createBatches,
+  logFailedSections,
+  mapEmbeddingsToSections,
+  updatePageInsertionCounts,
   type PageInfo,
   type PageSectionForEmbedding,
   type PageSectionWithEmbedding,
   type ProcessingResult,
-  createBatches,
-  mapEmbeddingsToSections,
-  updatePageInsertionCounts,
-  computePageResults,
-  logFailedSections,
 } from './embeddings/utils.js'
 import { fetchAllSources } from './sources/index.js'
 

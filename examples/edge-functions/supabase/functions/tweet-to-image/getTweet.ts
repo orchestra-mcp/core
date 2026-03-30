@@ -1,4 +1,4 @@
-import type { TwitterApiResponse, Tweet, FormattedTweet } from './types.ts'
+import type { FormattedTweet, Tweet, TwitterApiResponse } from './types.ts'
 
 export const getTweets: (ids: string[]) => Promise<FormattedTweet[]> = async (ids: string[]) => {
   if (ids.length === 0) {

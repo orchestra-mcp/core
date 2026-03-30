@@ -22,6 +22,11 @@ import {
 import { AttachmentUploadDisplay, useAttachmentUpload } from './AttachmentUpload'
 import { CategoryAndSeverityInfo } from './CategoryAndSeverityInfo'
 import { ClientLibraryInfo } from './ClientLibraryInfo'
+import {
+  DASHBOARD_LOG_CATEGORIES,
+  getSanitizedBreadcrumbs,
+  uploadDashboardLog,
+} from './dashboard-logs'
 import { DashboardLogsToggle } from './DashboardLogsToggle'
 import { MessageField } from './MessageField'
 import { OrganizationSelector } from './OrganizationSelector'
@@ -32,17 +37,12 @@ import { DISABLE_SUPPORT_ACCESS_CATEGORIES, SupportAccessToggle } from './Suppor
 import type { SupportFormValues } from './SupportForm.schema'
 import type { SupportFormActions, SupportFormState } from './SupportForm.state'
 import {
-  NO_ORG_MARKER,
-  NO_PROJECT_MARKER,
   formatMessage,
   formatStudioVersion,
   getOrgSubscriptionPlan,
+  NO_ORG_MARKER,
+  NO_PROJECT_MARKER,
 } from './SupportForm.utils'
-import {
-  DASHBOARD_LOG_CATEGORIES,
-  getSanitizedBreadcrumbs,
-  uploadDashboardLog,
-} from './dashboard-logs'
 
 const useIsSimplifiedForm = (slug: string, subscriptionPlanId?: OrganizationPlanID) => {
   const simplifiedSupportForm = useFlag('simplifiedSupportForm')

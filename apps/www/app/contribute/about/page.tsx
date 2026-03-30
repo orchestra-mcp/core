@@ -1,3 +1,7 @@
+import { GithubAvatar } from '~/components/Contribute/GithubAvatar'
+import DefaultLayout from '~/components/Layouts/Default'
+import SectionContainer from '~/components/Layouts/SectionContainer'
+import { Feature, FeaturesSection as FeaturesSectionType } from '~/data/solutions/solutions.utils'
 import { Realtime } from 'icons'
 import {
   ArrowLeft,
@@ -16,11 +20,7 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Badge, Button, Separator, cn } from 'ui'
-import { GithubAvatar } from '~/components/Contribute/GithubAvatar'
-import DefaultLayout from '~/components/Layouts/Default'
-import SectionContainer from '~/components/Layouts/SectionContainer'
-import { Feature, FeaturesSection as FeaturesSectionType } from '~/data/solutions/solutions.utils'
+import { Badge, Button, cn, Separator } from 'ui'
 
 const githubUsers = [
   'aantti',

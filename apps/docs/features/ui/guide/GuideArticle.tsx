@@ -1,7 +1,6 @@
+import Breadcrumbs from '~/components/Breadcrumbs'
 import { type ReactNode } from 'react'
 import { cn } from 'ui'
-
-import Breadcrumbs from '~/components/Breadcrumbs'
 
 interface GuideArticleProps {
   children: ReactNode

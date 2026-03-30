@@ -27,10 +27,7 @@ import {
 } from 'ui/src/components/shadcn/ui/table'
 
 import { useRevokeOrchestraTokenMutation } from '@/data/orchestra/orchestra-token-revoke-mutation'
-import {
-  OrchestraToken,
-  useOrchestraTokensQuery,
-} from '@/data/orchestra/orchestra-tokens-query'
+import { OrchestraToken, useOrchestraTokensQuery } from '@/data/orchestra/orchestra-tokens-query'
 
 dayjs.extend(relativeTime)
 
@@ -68,7 +65,13 @@ interface TokenNameCellProps {
 
 const TokenNameCell = ({ name, prefix, isRevoked }: TokenNameCellProps) => (
   <TableCell className="w-auto max-w-96">
-    <p className={cn('truncate', isRevoked ? 'text-foreground-lighter line-through' : 'text-foreground')} title={name}>
+    <p
+      className={cn(
+        'truncate',
+        isRevoked ? 'text-foreground-lighter line-through' : 'text-foreground'
+      )}
+      title={name}
+    >
       {name}
     </p>
     <p
@@ -104,7 +107,10 @@ interface CreatedCellProps {
 const CreatedCell = ({ createdAt, revokedAt }: CreatedCellProps) => (
   <TableCell className="min-w-28 text-foreground-light">
     {revokedAt ? (
-      <p className="text-sm text-destructive-600" title={`Revoked ${dayjs(revokedAt).format('DD MMM YYYY, HH:mm')}`}>
+      <p
+        className="text-sm text-destructive-600"
+        title={`Revoked ${dayjs(revokedAt).format('DD MMM YYYY, HH:mm')}`}
+      >
         Revoked
       </p>
     ) : (

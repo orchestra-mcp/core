@@ -33,7 +33,11 @@ export type RevokeOrchestraTokenError = ResponseError
 export const useRevokeOrchestraTokenMutation = () => {
   const queryClient = useQueryClient()
 
-  return useMutation<RevokeOrchestraTokenData, RevokeOrchestraTokenError, RevokeOrchestraTokenVariables>({
+  return useMutation<
+    RevokeOrchestraTokenData,
+    RevokeOrchestraTokenError,
+    RevokeOrchestraTokenVariables
+  >({
     mutationFn: revokeOrchestraToken,
     onSuccess: (_data, variables) => {
       toast.success('Token revoked successfully')

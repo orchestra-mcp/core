@@ -1,11 +1,11 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { BASE_PATH } from 'lib/constants'
 import { constructHeaders, fetchHandler } from 'data/fetchers'
+import { BASE_PATH } from 'lib/constants'
 import type { ResponseError } from 'types'
 
 import {
-  OrchestraIntegrationsSettings,
   orchestraIntegrationKeys,
+  OrchestraIntegrationsSettings,
 } from './orchestra-integrations-query'
 
 type UpdateOrchestraIntegrationsVariables = {

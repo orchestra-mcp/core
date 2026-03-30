@@ -1,7 +1,9 @@
 'use client'
+
 import { useCallback, useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+
 import Avatar from './avatar'
+import { createClient } from '@/lib/supabase/client'
 
 type Claims = { sub: string; email?: string; [key: string]: unknown }
 

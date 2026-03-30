@@ -33,14 +33,14 @@
  * ```
  */
 
-import { type Root } from 'mdast'
-import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
+import { PARTIALS_DIRECTORY } from '~/lib/docs'
+import { type Root } from 'mdast'
+import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx'
 import { type Parent } from 'unist'
 import { visitParents } from 'unist-util-visit-parents'
 
-import { PARTIALS_DIRECTORY } from '~/lib/docs'
 import { fromDocsMarkdown, getAttributeValue, getAttributeValueExpression } from './utils.server'
 
 export function partialsRemark() {

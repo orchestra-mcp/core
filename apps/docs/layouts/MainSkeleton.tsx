@@ -1,12 +1,5 @@
 'use client'
 
-import dynamic from 'next/dynamic'
-import { usePathname } from 'next/navigation'
-import { memo, type PropsWithChildren, type ReactNode, useEffect } from 'react'
-// End of third-party imports
-
-import { isFeatureEnabled } from 'common'
-import { cn } from 'ui'
 import type { NavMenuSection } from '~/components/Navigation/Navigation.types'
 import DefaultNavigationMenu, {
   type MenuId,
@@ -15,6 +8,13 @@ import { getMenuId } from '~/components/Navigation/NavigationMenu/NavigationMenu
 import TopNavBar from '~/components/Navigation/NavigationMenu/TopNavBar'
 import { DOCS_CONTENT_CONTAINER_ID } from '~/features/ui/helpers.constants'
 import { menuState, useMenuMobileOpen } from '~/hooks/useMenuState'
+// End of third-party imports
+
+import { isFeatureEnabled } from 'common'
+import dynamic from 'next/dynamic'
+import { usePathname } from 'next/navigation'
+import { memo, useEffect, type PropsWithChildren, type ReactNode } from 'react'
+import { cn } from 'ui'
 
 const Footer = dynamic(() => import('~/components/Navigation/Footer'))
 

@@ -1,9 +1,10 @@
+import { CTA } from '~/types/common'
+import Link from 'next/link'
 import React from 'react'
 import { Button, cn } from 'ui'
-import Link from 'next/link'
-import ProductIcon from '../ProductIcon'
+
 import SectionContainer from '../Layouts/SectionContainer'
-import { CTA } from '~/types/common'
+import ProductIcon from '../ProductIcon'
 
 // to do: move types to be global
 // then solutions.types.ts should extend this

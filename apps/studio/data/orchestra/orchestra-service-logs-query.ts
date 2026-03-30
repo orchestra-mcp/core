@@ -14,7 +14,7 @@ export interface ServiceLogEntry {
   created_at: string
 }
 
-export type ServiceFilter = 'all' | 'go_mcp' | 'laravel' | 'orchestra'
+export type ServiceFilter = 'all' | 'go_mcp' | 'laravel' | 'orchestra' | 'activity_log'
 
 export async function getOrchestraServiceLogs(
   {
@@ -55,12 +55,15 @@ export async function getOrchestraServiceLogs(
     LIMIT 50
   `
 
-  const includeActivityLog = service === 'all' || service === 'orchestra'
+  const includeActivityLog = service === 'all' || service === 'orchestra' || service === 'activity_log'
 
   // Combine both sources using UNION ALL when applicable
-  const combinedSql = includeActivityLog
-    ? `(${serviceLogsSql}) UNION ALL (${activityLogSql}) ORDER BY created_at DESC LIMIT 200`
-    : serviceLogsSql
+  const combinedSql =
+    service === 'activity_log'
+      ? activityLogSql
+      : includeActivityLog
+        ? `(${serviceLogsSql}) UNION ALL (${activityLogSql}) ORDER BY created_at DESC LIMIT 200`
+        : serviceLogsSql
 
   const { result } = await executeSql<ServiceLogEntry[]>(
     {
@@ -94,10 +97,7 @@ export const useOrchestraServiceLogsQuery = <TData = OrchestraServiceLogsData>(
   return useQuery<OrchestraServiceLogsData, OrchestraServiceLogsError, TData>({
     queryKey: orchestraKeys.serviceLogs(projectRef, service ?? 'all', level, hours ?? 24),
     queryFn: ({ signal }) =>
-      getOrchestraServiceLogs(
-        { projectRef: projectRef!, service, level, hours },
-        signal
-      ),
+      getOrchestraServiceLogs({ projectRef: projectRef!, service, level, hours }, signal),
     enabled: !!projectRef,
     refetchInterval: 10_000, // Auto-refresh every 10 seconds
     ...options,

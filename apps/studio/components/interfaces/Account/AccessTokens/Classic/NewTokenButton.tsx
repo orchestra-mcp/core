@@ -1,6 +1,6 @@
+import { type NewAccessToken } from 'data/access-tokens/access-tokens-create-mutation'
 import { ChevronDown } from 'lucide-react'
 import { useState } from 'react'
-
 import {
   Button,
   DropdownMenu,
@@ -8,8 +8,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from 'ui'
+
 import { NewTokenDialog } from './NewTokenDialog'
-import { type NewAccessToken } from 'data/access-tokens/access-tokens-create-mutation'
 
 export interface NewAccessTokenButtonProps {
   onCreateToken: (token: NewAccessToken) => void

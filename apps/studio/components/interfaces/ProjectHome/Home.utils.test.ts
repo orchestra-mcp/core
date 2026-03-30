@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { mergeSectionOrder, getSectionVisibility } from './Home.utils'
+import { getSectionVisibility, mergeSectionOrder } from './Home.utils'
 
 describe('mergeSectionOrder', () => {
   it('returns stored order unchanged when it matches defaults', () => {

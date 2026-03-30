@@ -1,5 +1,7 @@
 import { Table } from '@tanstack/react-table'
+import { DataTableFilterField } from 'components/ui/DataTable/DataTable.types'
 import { endOfDay, endOfHour, startOfDay, startOfHour } from 'date-fns'
+import { useCopyToClipboard } from 'hooks/ui/useCopyToClipboard'
 import {
   CalendarClock,
   CalendarDays,
@@ -11,9 +13,6 @@ import {
   Search,
 } from 'lucide-react'
 import { ComponentPropsWithRef } from 'react'
-
-import { DataTableFilterField } from 'components/ui/DataTable/DataTable.types'
-import { useCopyToClipboard } from 'hooks/ui/useCopyToClipboard'
 import {
   cn,
   DropdownMenu,

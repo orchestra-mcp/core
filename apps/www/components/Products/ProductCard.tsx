@@ -1,8 +1,8 @@
-import React from 'react'
-import Link from 'next/link'
 import Panel from '~/components/Panel'
-import { cn } from 'ui'
 import { detectBrowser, isBrowser } from 'common'
+import Link from 'next/link'
+import React from 'react'
+import { cn } from 'ui'
 
 const ProductCard = ({
   className,

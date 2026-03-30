@@ -52,7 +52,12 @@ export const AccountIdentities = () => {
   const router = useRouter()
   const { profile } = useProfile()
 
-  const { data, isPending: isLoading, isSuccess, isError } = useProfileIdentitiesQuery({
+  const {
+    data,
+    isPending: isLoading,
+    isSuccess,
+    isError,
+  } = useProfileIdentitiesQuery({
     enabled: IS_PLATFORM,
   })
 
@@ -65,7 +70,11 @@ export const AccountIdentities = () => {
             id: 'self-hosted-email',
             user_id: String(profile.id),
             provider: 'email' as const,
-            identity_data: { email: profile.primary_email, sub: String(profile.id), user_name: undefined as string | undefined },
+            identity_data: {
+              email: profile.primary_email,
+              sub: String(profile.id),
+              user_name: undefined as string | undefined,
+            },
             email: profile.primary_email,
             created_at: '',
             updated_at: '',

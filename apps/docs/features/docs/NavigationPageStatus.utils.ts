@@ -1,6 +1,5 @@
 import { type NavMenuConstant } from '~/components/Navigation/Navigation.types'
 import {
-  GLOBAL_MENU_ITEMS,
   ai,
   api,
   auth,
@@ -9,6 +8,7 @@ import {
   deployment,
   functions,
   gettingstarted,
+  GLOBAL_MENU_ITEMS,
   graphql,
   integrations,
   local_development,

@@ -1,7 +1,8 @@
 'use client'
 
-import { useSupabaseClient } from '@/hooks/useSupabaseClient'
 import { useEffect, useState } from 'react'
+
+import { useSupabaseClient } from '@/hooks/useSupabaseClient'
 
 export function ReadData() {
   const supabase = useSupabaseClient()

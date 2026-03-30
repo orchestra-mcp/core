@@ -1,5 +1,5 @@
 ---
-description: "Studio: composable chart patterns built on Recharts and our chart presentational components"
+description: 'Studio: composable chart patterns built on Recharts and our chart presentational components'
 globs:
   - apps/studio/**/*.{ts,tsx}
 alwaysApply: false
@@ -23,4 +23,3 @@ Use the Design System UI pattern docs as the source of truth:
 - Prefer provided chart building blocks over passing raw Recharts components to `ChartContent`.
 - Use `useChart` context flags for consistent loading/disabled handling.
 - Keep chart composition straightforward; avoid over-abstraction.
-

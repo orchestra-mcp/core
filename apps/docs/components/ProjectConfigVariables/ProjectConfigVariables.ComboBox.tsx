@@ -1,3 +1,4 @@
+import { useIntersectionObserver } from '~/hooks/useIntersectionObserver'
 import { noop } from 'lodash-es'
 import { Check, ChevronsUpDown } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
@@ -15,7 +16,6 @@ import {
   ScrollArea,
 } from 'ui'
 import ShimmeringLoader from 'ui-patterns/ShimmeringLoader'
-import { useIntersectionObserver } from '~/hooks/useIntersectionObserver'
 
 export interface ComboBoxOption {
   id: string

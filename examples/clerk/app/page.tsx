@@ -1,5 +1,6 @@
-import { ReadData } from '@/components/read'
 import Image from 'next/image'
+
+import { ReadData } from '@/components/read'
 
 export default function Home() {
   return (

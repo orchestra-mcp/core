@@ -1,7 +1,7 @@
 <div>
     {{-- Page heading --}}
-    <div class="mb-8">
-        <h1 class="text-2xl font-semibold text-[#ededed]">Notification Preferences</h1>
+    <div class="mb-6 sm:mb-8">
+        <h1 class="text-xl sm:text-2xl font-semibold text-[#ededed]">Notification Preferences</h1>
         <p class="mt-1 text-sm text-[#999999]">Choose how and when you want to be notified about project activity.</p>
     </div>
 

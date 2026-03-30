@@ -1,12 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { isEmpty, isNull, keyBy, mapValues, partition } from 'lodash'
-import { Plus, Trash } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
-import { SubmitHandler, useFieldArray, useForm } from 'react-hook-form'
-import { toast } from 'sonner'
-import z from 'zod'
-
 import { POSTGRES_DATA_TYPES } from 'components/interfaces/TableGridEditor/SidePanelEditor/SidePanelEditor.constants'
+import { DiscardChangesConfirmationDialog } from 'components/ui-patterns/Dialogs/DiscardChangesConfirmationDialog'
 import SchemaSelector from 'components/ui/SchemaSelector'
 import { useDatabaseExtensionsQuery } from 'data/database-extensions/database-extensions-query'
 import { useDatabaseFunctionCreateMutation } from 'data/database-functions/database-functions-create-mutation'
@@ -15,34 +9,40 @@ import { useDatabaseFunctionUpdateMutation } from 'data/database-functions/datab
 import { useSelectedProjectQuery } from 'hooks/misc/useSelectedProject'
 import { useConfirmOnClose } from 'hooks/ui/useConfirmOnClose'
 import { useProtectedSchemas } from 'hooks/useProtectedSchemas'
+import { isEmpty, isNull, keyBy, mapValues, partition } from 'lodash'
+import { Plus, Trash } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { SubmitHandler, useFieldArray, useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import type { FormSchema } from 'types'
 import {
   Button,
+  cn,
+  Form_Shadcn_,
   FormControl_Shadcn_,
   FormDescription_Shadcn_,
   FormField_Shadcn_,
   FormItem_Shadcn_,
   FormLabel_Shadcn_,
   FormMessage_Shadcn_,
-  Form_Shadcn_,
   Input_Shadcn_,
   Radio,
   ScrollArea,
+  Select_Shadcn_,
   SelectContent_Shadcn_,
   SelectItem_Shadcn_,
   SelectTrigger_Shadcn_,
   SelectValue_Shadcn_,
-  Select_Shadcn_,
   Separator,
   Sheet,
   SheetContent,
   SheetFooter,
   SheetSection,
   Toggle,
-  cn,
 } from 'ui'
-import { DiscardChangesConfirmationDialog } from 'components/ui-patterns/Dialogs/DiscardChangesConfirmationDialog'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
+import z from 'zod'
+
 import { convertArgumentTypes, convertConfigParams } from '../Functions.utils'
 import { CreateFunctionConfigParamsSection } from './CreateFunctionConfigParamsSection'
 import { CreateFunctionHeader } from './CreateFunctionHeader'

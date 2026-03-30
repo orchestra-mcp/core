@@ -1,9 +1,8 @@
-import { type ReactNode } from 'react'
-
-import type { WithRequired } from '~/features/helpers.types'
 import { EditLink } from '~/features/helpers.edit-link'
+import type { WithRequired } from '~/features/helpers.types'
 import { type GuideFrontmatter } from '~/lib/docs'
 import { SerializeOptions } from '~/types/next-mdx-remote-serialize'
+import { type ReactNode } from 'react'
 
 import { Guide, GuideArticle, GuideFooter, GuideHeader, GuideMdxContent } from './guide'
 

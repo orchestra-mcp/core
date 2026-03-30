@@ -1,4 +1,4 @@
-import { env } from "../../env.config.js";
+import { env } from '../../env.config.js'
 
 /**
  * Make an HTTP request to the local Supabase Storage API.
@@ -13,7 +13,7 @@ export async function storageRequest<T>(
   options?: { method?: 'GET' | 'POST' | 'PUT' | 'DELETE'; body?: Record<string, unknown> }
 ): Promise<T> {
   const storageUrl = `${env.API_URL}/storage/v1`
-  
+
   const headers: Record<string, string> = {
     apikey: env.SERVICE_ROLE_KEY,
     Authorization: `Bearer ${env.SERVICE_ROLE_KEY}`,

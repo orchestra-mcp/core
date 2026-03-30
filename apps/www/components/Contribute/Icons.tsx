@@ -1,6 +1,6 @@
+import type { ThreadSource } from '~/types/contribute'
 import type { SVGProps } from 'react'
 import { cn } from 'ui'
-import type { ThreadSource } from '~/types/contribute'
 
 export function RedditIcon(props: SVGProps<SVGSVGElement>) {
   return (

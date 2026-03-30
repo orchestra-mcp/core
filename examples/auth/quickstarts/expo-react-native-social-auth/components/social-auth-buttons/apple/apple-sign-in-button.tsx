@@ -1,8 +1,9 @@
-import { supabase } from '@/lib/supabase'
-import { AppleButton, appleAuth } from '@invertase/react-native-apple-authentication'
+import { appleAuth, AppleButton } from '@invertase/react-native-apple-authentication'
 import type { SignInWithIdTokenCredentials } from '@supabase/supabase-js'
 import { router } from 'expo-router'
 import { Platform } from 'react-native'
+
+import { supabase } from '@/lib/supabase'
 
 async function onAppleButtonPress() {
   // Performs login request

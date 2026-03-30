@@ -1,9 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { SubmitHandler, useForm } from 'react-hook-form'
-import { toast } from 'sonner'
-import z from 'zod'
-
 import { Markdown } from 'components/interfaces/Markdown'
+import { DiscardChangesConfirmationDialog } from 'components/ui-patterns/Dialogs/DiscardChangesConfirmationDialog'
 import { useDatabaseExtensionsQuery } from 'data/database-extensions/database-extensions-query'
 import { useDatabaseQueueCreateMutation } from 'data/database-queues/database-queues-create-mutation'
 import { useQueuesExposePostgrestStatusQuery } from 'data/database-queues/database-queues-expose-postgrest-status-query'
@@ -11,6 +8,8 @@ import { useSelectedProjectQuery } from 'hooks/misc/useSelectedProject'
 import { useConfirmOnClose } from 'hooks/ui/useConfirmOnClose'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
+import { SubmitHandler, useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import {
   Badge,
   Button,
@@ -31,8 +30,9 @@ import {
   SheetTitle,
 } from 'ui'
 import { Admonition } from 'ui-patterns'
-import { DiscardChangesConfirmationDialog } from 'components/ui-patterns/Dialogs/DiscardChangesConfirmationDialog'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
+import z from 'zod'
+
 import { QUEUE_TYPES } from './Queues.constants'
 import { QueryNameSchema } from './Queues.utils'
 

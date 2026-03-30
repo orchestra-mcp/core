@@ -1,8 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import type { OrchestraIntegrationsSettings } from 'data/integrations/orchestra-integrations-query'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 
-import type { OrchestraIntegrationsSettings } from 'data/integrations/orchestra-integrations-query'
 import { IntegrationSection } from '../IntegrationSection'
 
 const DiscordIcon = () => (

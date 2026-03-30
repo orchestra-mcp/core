@@ -80,9 +80,7 @@ function getTaskStatusConfig(status: string) {
 }
 
 function formatAction(action: string): string {
-  return action
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (l) => l.toUpperCase())
+  return action.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
 }
 
 function AgentAvatar({
@@ -264,9 +262,7 @@ function ActivityTab({ agentId }: { agentId: string }) {
               <TableCell className="text-sm text-foreground">
                 {formatAction(entry.action)}
               </TableCell>
-              <TableCell className="text-xs text-foreground-lighter">
-                {entry.summary}
-              </TableCell>
+              <TableCell className="text-xs text-foreground-lighter">{entry.summary}</TableCell>
               <TableCell className="text-xs text-foreground-lighter text-right whitespace-nowrap">
                 {dayjs(entry.created_at).fromNow()}
               </TableCell>
@@ -343,11 +339,7 @@ function TasksTab({ agentId }: { agentId: string }) {
   )
 }
 
-function SkillsTab({
-  skills,
-}: {
-  skills: string[]
-}) {
+function SkillsTab({ skills }: { skills: string[] }) {
   if (!skills || skills.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-48 gap-2">
@@ -418,18 +410,14 @@ function SessionsTab({ agentId }: { agentId: string }) {
                     <div
                       className={`h-2 w-2 rounded-full shrink-0 ${isActive ? 'bg-brand' : 'bg-foreground-muted'}`}
                     />
-                    <span className="text-sm text-foreground">
-                      {isActive ? 'Active' : 'Ended'}
-                    </span>
+                    <span className="text-sm text-foreground">{isActive ? 'Active' : 'Ended'}</span>
                   </div>
                 </TableCell>
                 <TableCell className="text-xs text-foreground-lighter">
                   {dayjs(session.started_at).format('MMM D, YYYY HH:mm')}
                 </TableCell>
                 <TableCell className="text-xs text-foreground-lighter">
-                  {session.ended_at
-                    ? dayjs(session.ended_at).format('MMM D, YYYY HH:mm')
-                    : '--'}
+                  {session.ended_at ? dayjs(session.ended_at).format('MMM D, YYYY HH:mm') : '--'}
                 </TableCell>
                 <TableCell className="text-xs text-foreground-lighter text-right whitespace-nowrap">
                   {session.last_heartbeat ? dayjs(session.last_heartbeat).fromNow() : '--'}
@@ -532,7 +520,10 @@ export const OrchestraAgentDetail = () => {
             { value: 'overview', label: 'Overview' },
             { value: 'activity', label: 'Activity' },
             { value: 'tasks', label: 'Tasks' },
-            { value: 'skills', label: `Skills${agent.skills.length > 0 ? ` (${agent.skills.length})` : ''}` },
+            {
+              value: 'skills',
+              label: `Skills${agent.skills.length > 0 ? ` (${agent.skills.length})` : ''}`,
+            },
             { value: 'sessions', label: 'Sessions' },
           ].map((tab) => (
             <TabsTrigger_Shadcn_

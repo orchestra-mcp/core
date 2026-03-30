@@ -8,14 +8,12 @@ description: test/it function for defining tests with modifiers
 ## Basic Test
 
 ```ts
-import { expect, test } from 'vitest'
+// Alias: it
+import { expect, it, test } from 'vitest'
 
 test('adds numbers', () => {
   expect(1 + 1).toBe(2)
 })
-
-// Alias: it
-import { it } from 'vitest'
 
 it('works the same', () => {
   expect(true).toBe(true)
@@ -32,7 +30,7 @@ test('async test', async () => {
 
 // Promises are automatically awaited
 test('returns promise', () => {
-  return fetchData().then(result => {
+  return fetchData().then((result) => {
     expect(result).toBeDefined()
   })
 })
@@ -170,9 +168,9 @@ First argument provides context utilities:
 
 ```ts
 test('with context', ({ expect, skip, task }) => {
-  console.log(task.name)   // Test name
-  skip(someCondition)      // Skip dynamically
-  expect(1).toBe(1)        // Context-bound expect
+  console.log(task.name) // Test name
+  skip(someCondition) // Skip dynamically
+  expect(1).toBe(1) // Context-bound expect
 })
 ```
 
@@ -203,13 +201,17 @@ test('flaky test', { retry: 3 }, async () => {
 })
 
 // Advanced retry options
-test('with delay', {
-  retry: {
-    count: 3,
-    delay: 1000,
-    condition: /timeout/i, // Only retry on timeout errors
+test(
+  'with delay',
+  {
+    retry: {
+      count: 3,
+      delay: 1000,
+      condition: /timeout/i, // Only retry on timeout errors
+    },
   },
-}, async () => {})
+  async () => {}
+)
 ```
 
 ## Tags
@@ -227,7 +229,7 @@ test('database test', { tags: ['db', 'slow'] }, async () => {})
 - Use context's `expect` for concurrent tests and snapshots
 - Function name is used as test name if passed as first arg
 
-<!-- 
+<!--
 Source references:
 - https://vitest.dev/api/test.html
 -->

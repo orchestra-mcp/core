@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Upload } from 'lucide-vue-next'
+
+import { formatBytes, useDropzoneContext } from './dropzone.vue'
 import { cn } from '@/lib/utils'
-import { useDropzoneContext, formatBytes } from './dropzone.vue'
 
 const props = defineProps<{ className?: string }>()
 

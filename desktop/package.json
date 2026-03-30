@@ -19,6 +19,7 @@
     "@tauri-apps/plugin-shell": "^2.0.0",
     "@tauri-apps/plugin-store": "^2.4.2",
     "html2canvas": "^1.4.1",
+    "mermaid": "^11.13.0",
     "monaco-editor": "^0.52.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

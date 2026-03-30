@@ -1,0 +1,235 @@
+{
+  "_version": "1.0.0",
+  "_updated": "2026-03-30",
+  "_note": "DOM selectors for content script monitoring. Version tracks the DOM snapshot date for each service.",
+
+  "gmail": {
+    "version": "2026-03",
+    "unread": ".aim .bsU",
+    "unreadBadge": ".bsU",
+    "inboxCount": "div[data-tooltip='Inbox'] .bsU",
+    "conversationList": ".zA",
+    "openConversation": ".h7",
+    "sender": ".yW span[email]",
+    "subject": ".hP",
+    "preview": ".y2",
+    "composeButton": ".T-I.J-J5-Ji.T-I-KE.L3",
+    "notificationBanner": ".pE"
+  },
+
+  "slack": {
+    "version": "2026-03",
+    "unreadBadge": ".p-channel_sidebar__badge",
+    "channelList": ".p-channel_sidebar__channel",
+    "activeChannel": ".p-channel_sidebar__channel--selected",
+    "messageInput": "[data-qa='message_input']",
+    "messageList": "[data-qa='virtual-list-scroll-container']",
+    "message": "[data-qa='message_content']",
+    "senderName": "[data-qa='message_sender_name']",
+    "directMessages": "[data-qa='channel_sidebar_section_heading_value']:contains('Direct messages')",
+    "unreadChannels": ".p-channel_sidebar__channel--unread",
+    "mentionBadge": ".p-channel_sidebar__badge--mention",
+    "typingIndicator": "[data-qa='typing_indicator']"
+  },
+
+  "whatsapp": {
+    "version": "2026-03",
+    "chatList": "#pane-side [data-testid='chat-list']",
+    "chatItem": "[data-testid='cell-frame-container']",
+    "unreadBadge": "[data-testid='icon-unread-count']",
+    "chatTitle": "[data-testid='cell-frame-title']",
+    "lastMessage": "[data-testid='last-msg-status']",
+    "activeChat": ".two",
+    "messageInput": "[data-testid='conversation-compose-box-input']",
+    "messageList": "[data-testid='conversation-panel-messages']",
+    "incomingMessage": "[data-testid='msg-container'][class*='message-in']",
+    "status": "[data-testid='status-v3']"
+  },
+
+  "discord": {
+    "version": "2026-03",
+    "serverList": "nav[aria-label='Servers sidebar'] ul",
+    "channelList": "[data-list-id='channels']",
+    "unreadChannel": "[class*='unread']",
+    "mentionBadge": "[class*='badge']",
+    "messageList": "ol[data-list-id='chat-messages']",
+    "message": "li[class*='messageListItem']",
+    "senderName": "[class*='username']",
+    "directMessages": "[href='/channels/@me']",
+    "dmList": "ul[aria-label='Direct Messages']",
+    "notificationBell": "[aria-label='Inbox']"
+  },
+
+  "telegram": {
+    "version": "2026-03",
+    "chatList": ".chatlist-container",
+    "chatItem": ".chatlist-chat",
+    "unreadBadge": ".badge",
+    "chatTitle": ".fullName",
+    "lastMessage": ".message",
+    "activeChat": ".chatlist-chat.active",
+    "messageList": ".messages-list",
+    "incomingMessage": ".message.is-in",
+    "messageInput": "[contenteditable='true'].input-message-input",
+    "typingIndicator": ".peer-title + .peer-subtitle"
+  },
+
+  "twitter": {
+    "version": "2026-03",
+    "notificationsList": "[data-testid='notification']",
+    "unreadBadge": "[data-testid='badge']",
+    "navNotifications": "[data-testid='AppTabBar_Notifications_Link']",
+    "tweet": "[data-testid='tweet']",
+    "tweetText": "[data-testid='tweetText']",
+    "authorName": "[data-testid='User-Name']",
+    "trendsList": "[data-testid='trend']",
+    "dmBadge": "[data-testid='AppTabBar_DirectMessage_Link'] [data-testid='badge']",
+    "timeline": "[aria-label='Timeline: Your Home Timeline']"
+  },
+
+  "github": {
+    "version": "2026-03",
+    "notificationsList": ".notifications-list-item",
+    "unreadCount": ".mail-status",
+    "notificationBell": "[aria-label='You have unread notifications']",
+    "prList": "[data-hovercard-type='pull_request']",
+    "issueList": "[data-hovercard-type='issue']",
+    "reviewRequests": ".notification-shelf",
+    "assignedItems": ".js-notification-shelf",
+    "mentionItems": ".notification-type-mention",
+    "checkStatus": ".octicon-check, .octicon-x, .octicon-clock",
+    "fileChanged": ".js-details-container"
+  },
+
+  "linear": {
+    "version": "2026-03",
+    "inboxList": "[data-testid='inbox-item']",
+    "inboxCount": "[data-testid='inbox-count']",
+    "issueList": "[data-testid='issue-list-item']",
+    "myIssues": "[data-testid='my-issues']",
+    "cycleProgress": "[data-testid='cycle-progress']",
+    "priorityBadge": "[data-testid='priority']",
+    "statusBadge": "[data-testid='status']",
+    "assignee": "[data-testid='assignee']",
+    "projectList": "[data-testid='project-list-item']",
+    "teamSelector": "[data-testid='team-selector']"
+  },
+
+  "jira": {
+    "version": "2026-03",
+    "boardList": "[data-testid='software-board.board-container']",
+    "issueCard": "[data-testid='platform-board-kit.ui.card.card']",
+    "sprintHeader": "[data-testid='software-board.header.title']",
+    "backlogItem": "[data-testid='software-backlog.backlog-item-renderer']",
+    "assigneeAvatar": "[data-testid='avatar-container']",
+    "statusDropdown": "[data-testid='issue-field-status.ui.status-lozenge']",
+    "notificationBell": "[data-testid='notifications-banner']",
+    "projectNav": "[data-testid='project-navigation']",
+    "filterBar": "[data-testid='software-board-filters']"
+  },
+
+  "gcal": {
+    "version": "2026-03",
+    "eventList": "[data-eventid]",
+    "todayEvents": ".lv0Hdc",
+    "eventChip": ".v0nBnd",
+    "eventTitle": ".r4nke",
+    "eventTime": ".GSusSb",
+    "miniCalendar": "#mini-cal",
+    "currentDay": ".P0EEcb",
+    "createButton": "[data-testid='create-button']",
+    "viewSelector": "[data-view-type]",
+    "nextButton": "[data-dir='next']"
+  },
+
+  "calcom": {
+    "version": "2026-03",
+    "bookingList": "[data-testid='booking-item']",
+    "upcomingBookings": "[data-testid='upcoming']",
+    "pastBookings": "[data-testid='past']",
+    "bookingTitle": "[data-testid='booking-title']",
+    "bookingTime": "[data-testid='booking-time']",
+    "attendeeCount": "[data-testid='attendee-count']",
+    "availabilityCalendar": "[data-testid='availability-calendar']",
+    "newBookingBadge": ".new-booking-notification"
+  },
+
+  "gmeet": {
+    "version": "2026-03",
+    "joinButton": "[data-idom-key='join-button']",
+    "participantList": "[data-participant-id]",
+    "participantCount": ".uGOf1d",
+    "micButton": "[data-mute-button]",
+    "cameraButton": "[data-camera-button]",
+    "handRaise": "[aria-label*='hand']",
+    "chatPanel": "[data-panel-id='chat']",
+    "captionContainer": ".a4cQT",
+    "meetingTitle": ".u6vdEc",
+    "leaveButton": "[data-idom-key='leave-button']"
+  },
+
+  "zoom": {
+    "version": "2026-03",
+    "meetingList": "[data-testid='meeting-item']",
+    "joinButton": "[data-testid='join-button']",
+    "participantPanel": "[data-testid='participant-panel']",
+    "chatPanel": "[data-testid='chat-panel']",
+    "recordingIndicator": "[data-testid='recording-status']",
+    "handRaiseList": "[data-testid='hand-raise']",
+    "meetingTitle": "[data-testid='meeting-title']",
+    "scheduledMeetings": "[data-testid='upcoming-meetings']"
+  },
+
+  "gcp-billing": {
+    "version": "2026-03",
+    "totalCost": "[data-test-id='cost-summary-total'], .cfc-billing-account-overview-cost-amount, [jsname='cost-amount']",
+    "costCards": "[data-test-id='cost-card'], .cfc-billing-service-cost-card",
+    "serviceRows": "table tr[data-test-id], .cfc-billing-account-cost-table tbody tr",
+    "projectName": "[data-test-id='project-name'], .cfc-billing-account-name",
+    "currency": "[data-test-id='currency-code'], .currency-code",
+    "billingOverview": "[data-test-id='billing-overview'], .cfc-billing-account-overview",
+    "forecastAmount": "[data-test-id='forecast-amount'], .cfc-forecast-amount",
+    "budgetAlert": "[data-test-id='budget-alert'], .cfc-budget-alert"
+  },
+
+  "claude-usage": {
+    "version": "2026-03",
+    "usageContainer": "[data-testid='usage-section'], .usage-section",
+    "planBadge": "[data-testid='plan-badge'], [class*='plan-badge'], [class*='subscription-tier']",
+    "tokensUsed": "[data-testid='tokens-used'], [class*='tokens-used'], [class*='usage-amount']",
+    "creditsRemaining": "[data-testid='credits-remaining'], [class*='credits-remaining']",
+    "periodLabel": "[data-testid='billing-period'], [class*='billing-period'], [class*='reset-date']",
+    "totalCost": "[data-testid='total-cost'], [class*='total-cost'], [class*='amount-due']"
+  },
+
+  "openai-usage": {
+    "version": "2026-03",
+    "totalCost": "[data-testid='usage-total-cost'], .usage-total-cost, [class*='total-cost']",
+    "dailyRows": "[data-testid='daily-usage-row'], .daily-usage-row, table tbody tr",
+    "apiCallCount": "[data-testid='api-call-count'], [class*='api-calls'], [class*='request-count']",
+    "periodLabel": "[data-testid='billing-period'], [class*='billing-period']",
+    "modelRows": "[data-testid='model-usage-row'], [class*='model-row']",
+    "creditBalance": "[data-testid='credit-balance'], [class*='credit-balance']",
+    "usageContainer": "[data-testid='usage-container'], .usage-container"
+  },
+
+  "perplexity-usage": {
+    "version": "2026-03",
+    "settingsContainer": "[data-testid='settings-container'], [class*='settings-container']",
+    "planBadge": "[data-testid='plan-name'], [class*='plan-name'], [class*='subscription-plan']",
+    "queriesUsed": "[data-testid='queries-used'], [class*='queries-used'], [class*='pro-queries-used']",
+    "queriesRemaining": "[data-testid='queries-remaining'], [class*='queries-remaining']",
+    "renewalDate": "[data-testid='renewal-date'], [class*='renewal-date'], [class*='next-renewal']",
+    "usageBar": "[data-testid='usage-progress'], [class*='usage-progress'], [role='progressbar']"
+  },
+
+  "x-premium": {
+    "version": "2026-03",
+    "premiumContainer": "[data-testid='premium-container'], [data-testid='subscriptions-page']",
+    "planName": "[data-testid='premium-plan-name'], [data-testid='subscription-tier']",
+    "statusBadge": "[data-testid='subscription-status'], [data-testid='premium-status']",
+    "renewalDate": "[data-testid='renewal-date'], [data-testid='next-billing-date']",
+    "monthlyCost": "[data-testid='subscription-price'], [data-testid='billing-amount']",
+    "featureList": "[data-testid='premium-feature'], [data-testid='feature-item']"
+  }
+}

@@ -1,10 +1,11 @@
 import { createHash } from 'node:crypto'
-import { BaseLoader, BaseSource } from './base.js'
+
 import {
   getAllTroubleshootingEntriesInternal,
   getArticleSlug,
 } from '../../../features/docs/Troubleshooting.utils.common.mjs'
 import type { ITroubleshootingEntry } from '../../../features/docs/Troubleshooting.utils.js'
+import { BaseLoader, BaseSource } from './base.js'
 
 /**
  * Loader for troubleshooting articles from local MDX files.

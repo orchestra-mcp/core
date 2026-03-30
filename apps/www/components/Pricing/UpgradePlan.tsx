@@ -1,10 +1,10 @@
 'use client'
 
+import { Organization } from '~/data/organizations'
 import { Check, ChevronsUpDown, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 import { PlanId } from 'shared-data/plans'
-
 import {
   Button,
   ButtonProps,
@@ -29,7 +29,6 @@ import {
   PopoverContent_Shadcn_,
   PopoverTrigger_Shadcn_,
 } from 'ui'
-import { Organization } from '~/data/organizations'
 
 interface UpgradePlanProps {
   organizations?: Organization[]

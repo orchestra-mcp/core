@@ -1,11 +1,5 @@
 <script setup lang="ts">
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 </script>
 
 <template>
@@ -19,8 +13,8 @@ import {
           </CardHeader>
           <CardContent>
             <p class="text-sm text-muted-foreground">
-              You’ve successfully signed up. Please check your email to confirm your account
-              before signing in.
+              You’ve successfully signed up. Please check your email to confirm your account before
+              signing in.
             </p>
           </CardContent>
         </Card>

@@ -1,15 +1,14 @@
 import { PermissionAction } from '@supabase/shared-types/out/constants'
-import Link from 'next/link'
-import { useState } from 'react'
-import { parseAsBoolean, useQueryState } from 'nuqs'
-
 import { useParams } from 'common'
-import { ButtonTooltip } from 'components/ui/ButtonTooltip'
 import { DiscardChangesConfirmationDialog } from 'components/ui-patterns/Dialogs/DiscardChangesConfirmationDialog'
+import { ButtonTooltip } from 'components/ui/ButtonTooltip'
 import { useDatabaseExtensionsQuery } from 'data/database-extensions/database-extensions-query'
 import { useAsyncCheckPermissions } from 'hooks/misc/useCheckPermissions'
 import { useSelectedProjectQuery } from 'hooks/misc/useSelectedProject'
 import { useConfirmOnClose } from 'hooks/ui/useConfirmOnClose'
+import Link from 'next/link'
+import { parseAsBoolean, useQueryState } from 'nuqs'
+import { useState } from 'react'
 import {
   Alert_Shadcn_,
   AlertDescription_Shadcn_,
@@ -20,6 +19,7 @@ import {
   SheetContent,
   WarningIcon,
 } from 'ui'
+
 import { IntegrationOverviewTab } from '../Integration/IntegrationOverviewTab'
 import { CreateIcebergWrapperSheet } from './CreateIcebergWrapperSheet'
 import { CreateWrapperSheet } from './CreateWrapperSheet'

@@ -1,11 +1,5 @@
-import dayjs from 'dayjs'
-import { AlertTriangle, GitBranchIcon, GitMerge, MoreVertical, Shield, X } from 'lucide-react'
-import Link from 'next/link'
-import { useRouter } from 'next/router'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { toast } from 'sonner'
-
 import { useParams } from 'common'
+import { useIsPgDeltaDiffEnabled } from 'components/interfaces/App/FeaturePreview/FeaturePreviewContext'
 import { DatabaseDiffPanel } from 'components/interfaces/BranchManagement/DatabaseDiffPanel'
 import { EdgeFunctionsDiffPanel } from 'components/interfaces/BranchManagement/EdgeFunctionsDiffPanel'
 import { OutOfDateNotice } from 'components/interfaces/BranchManagement/OutOfDateNotice'
@@ -24,10 +18,16 @@ import { useBranchUpdateMutation } from 'data/branches/branch-update-mutation'
 import { useBranchesQuery } from 'data/branches/branches-query'
 import { useProjectDetailQuery } from 'data/projects/project-detail-query'
 import { useSendEventMutation } from 'data/telemetry/send-event-mutation'
+import dayjs from 'dayjs'
 import { useBranchMergeDiff } from 'hooks/branches/useBranchMergeDiff'
 import { useWorkflowManagement } from 'hooks/branches/useWorkflowManagement'
 import { useSelectedOrganizationQuery } from 'hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from 'hooks/misc/useSelectedProject'
+import { AlertTriangle, GitBranchIcon, GitMerge, MoreVertical, Shield, X } from 'lucide-react'
+import Link from 'next/link'
+import { useRouter } from 'next/router'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { toast } from 'sonner'
 import type { NextPageWithLayout } from 'types'
 import {
   Badge,
@@ -40,7 +40,6 @@ import {
   NavMenu,
   NavMenuItem,
 } from 'ui'
-import { useIsPgDeltaDiffEnabled } from 'components/interfaces/App/FeaturePreview/FeaturePreviewContext'
 import { ConfirmationModal } from 'ui-patterns/Dialogs/ConfirmationModal'
 
 const MergePage: NextPageWithLayout = () => {

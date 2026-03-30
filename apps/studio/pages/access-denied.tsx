@@ -5,13 +5,12 @@
  * profiles.is_admin = true in the database.
  */
 
+import { AuthenticationLayout } from 'components/layouts/AuthenticationLayout'
+import SignInLayout from 'components/layouts/SignInLayout/SignInLayout'
+import { ORCH_AUTH_ENABLED, useOrchAuth } from 'lib/orch-auth'
 import { ShieldOff } from 'lucide-react'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
-
-import { AuthenticationLayout } from 'components/layouts/AuthenticationLayout'
-import SignInLayout from 'components/layouts/SignInLayout/SignInLayout'
-import { useOrchAuth, ORCH_AUTH_ENABLED } from 'lib/orch-auth'
 import type { NextPageWithLayout } from 'types'
 import { Button } from 'ui'
 
@@ -60,8 +59,10 @@ const AccessDeniedPage: NextPageWithLayout = () => {
         <h2 className="text-xl font-semibold text-foreground">Access Denied</h2>
         <p className="text-sm text-foreground-light max-w-sm">
           Your account{user?.email ? ` (${user.email})` : ''} does not have administrator
-          privileges. Only users with <code className="text-xs bg-surface-200 px-1 py-0.5 rounded">is_admin = true</code> in
-          the <code className="text-xs bg-surface-200 px-1 py-0.5 rounded">profiles</code> table can access Orchestra Studio.
+          privileges. Only users with{' '}
+          <code className="text-xs bg-surface-200 px-1 py-0.5 rounded">is_admin = true</code> in the{' '}
+          <code className="text-xs bg-surface-200 px-1 py-0.5 rounded">profiles</code> table can
+          access Orchestra Studio.
         </p>
       </div>
 

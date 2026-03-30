@@ -6,10 +6,7 @@ defineProps<{
 
 <template>
   <div
-    :class="[
-      'flex h-full w-full items-center justify-center rounded-full bg-muted',
-      $props.class,
-    ]"
+    :class="['flex h-full w-full items-center justify-center rounded-full bg-muted', $props.class]"
   >
     <slot />
   </div>

@@ -1,8 +1,8 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import {
+  getDefaultHelper,
   LogsTableName,
   PREVIEWER_DATEPICKER_HELPERS,
-  getDefaultHelper,
 } from 'components/interfaces/Settings/Logs/Logs.constants'
 import type {
   Count,

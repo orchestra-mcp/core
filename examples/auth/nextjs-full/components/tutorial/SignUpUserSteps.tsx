@@ -1,4 +1,5 @@
 import Link from 'next/link'
+
 import Step from './Step'
 
 export default function SignUpUserSteps() {

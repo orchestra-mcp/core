@@ -1,11 +1,9 @@
-import { type Metadata } from 'next'
-import Link from 'next/link'
-
-import { Button } from 'ui'
-
 import { Recommendations, SearchButton } from '~/features/recommendations/NotFound.client'
 import { LayoutMainContent } from '~/layouts/DefaultLayout'
 import { SidebarSkeleton } from '~/layouts/MainSkeleton'
+import { type Metadata } from 'next'
+import Link from 'next/link'
+import { Button } from 'ui'
 
 export default function NotFound() {
   return (

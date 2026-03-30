@@ -9,10 +9,11 @@ import {
   IonTitle,
   IonToolbar,
   useIonLoading,
-  useIonToast,
   useIonRouter,
+  useIonToast,
 } from '@ionic/react'
 import { useEffect, useState } from 'react'
+
 import { Avatar } from '../components/Avatar'
 import { supabase } from '../supabaseClient'
 

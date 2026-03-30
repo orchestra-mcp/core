@@ -1,11 +1,11 @@
+import { Service } from 'data/graphql/graphql'
 import {
-  ERROR_CODES,
   ERROR_CODE_DOCS_URLS,
+  ERROR_CODES,
   HTTP_ERROR_CODES,
   type ErrorCodeDefinition,
   type ErrorCodeService,
 } from 'shared-data'
-import { Service } from 'data/graphql/graphql'
 
 const SERVICE_MAP: Partial<Record<Service, ErrorCodeService>> = {
   [Service.Auth]: 'auth',

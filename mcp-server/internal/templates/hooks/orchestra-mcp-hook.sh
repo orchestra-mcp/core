@@ -9,7 +9,7 @@
 #   in the same directory.
 #
 # Arguments / Environment:
-#   $1             — Event type (tool_call, tool_result, notification, browser_*, etc.)
+#   $1             — Event type (tool_call, tool_result, notification, session_*, etc.)
 #   $2..           — Additional arguments passed through to sub-hooks
 #   HOOK_EVENT     — Claude Code sets this to the event type
 #   HOOK_TOOL_NAME — Claude Code sets this to the tool name
@@ -44,7 +44,6 @@ export HOOK_TOOL_INPUT="${HOOK_TOOL_INPUT:-}"
 #
 # Routing rules:
 #   - notification, tool_call, tool_result  -> notify.sh (background)
-#   - browser_*                             -> browser.sh (foreground — may return data)
 #   - session_*                             -> session.sh (background)
 #   - Everything else                       -> notify.sh (background, catch-all)
 #
@@ -72,13 +71,6 @@ case "$EVENT" in
   # -----------------------------------------------------------------------
   notification|tool_call|tool_result)
     run_hook "$HOOK_DIR/notify.sh" "$@" 2>/dev/null &
-    ;;
-
-  # -----------------------------------------------------------------------
-  # Browser events — foreground because they may return data to Claude Code.
-  # -----------------------------------------------------------------------
-  browser_*)
-    run_hook "$HOOK_DIR/browser.sh" "$@" 2>/dev/null
     ;;
 
   # -----------------------------------------------------------------------

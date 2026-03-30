@@ -1,9 +1,3 @@
-import { ExternalLink } from 'lucide-react'
-import { type ReactNode } from 'react'
-import ReactMarkdown from 'react-markdown'
-
-import { cn } from 'ui'
-
 import Breadcrumbs from '~/components/Breadcrumbs'
 import GuidesSidebar from '~/components/GuidesSidebar'
 import { TocAnchorsProvider } from '~/features/docs/GuidesMdx.client'
@@ -11,6 +5,10 @@ import { MDXRemoteBase } from '~/features/docs/MdxBase'
 import type { WithRequired } from '~/features/helpers.types'
 import { type GuideFrontmatter } from '~/lib/docs'
 import { SerializeOptions } from '~/types/next-mdx-remote-serialize'
+import { ExternalLink } from 'lucide-react'
+import { type ReactNode } from 'react'
+import ReactMarkdown from 'react-markdown'
+import { cn } from 'ui'
 
 const EDIT_LINK_SYMBOL = Symbol('edit link')
 interface EditLink {

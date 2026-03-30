@@ -1,4 +1,5 @@
 import { handleError } from 'data/fetchers'
+
 import type { TypedDocumentString } from './graphql'
 
 export async function executeGraphQL<TResult, TVariables>(

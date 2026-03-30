@@ -1,39 +1,38 @@
-import { useState, useEffect, useCallback, type FC } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from '@tauri-apps/api/core'
+import { useCallback, useEffect, useState, type FC } from 'react'
+
+import { useSettings } from '@/lib/settings'
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 interface ConnectionTestResult {
-  success: boolean;
-  server_url: string;
-  server_name: string | null;
-  server_version: string | null;
-  protocol_version: string | null;
-  tools_count: number | null;
-  error: string | null;
-  latency_ms: number;
+  success: boolean
+  server_url: string
+  server_name: string | null
+  server_version: string | null
+  protocol_version: string | null
+  tools_count: number | null
+  error: string | null
+  latency_ms: number
 }
 
 interface ConfigGenerationResult {
-  success: boolean;
-  config_path: string;
-  config_content: string;
-  written: boolean;
-  error: string | null;
+  success: boolean
+  config_path: string
+  config_content: string
+  written: boolean
+  error: string | null
 }
 
 interface ConfigPaths {
-  claude_desktop: string;
-  claude_code_global: string;
+  claude_desktop: string
+  claude_code_global: string
 }
 
-type ConnectionStatus = "idle" | "testing" | "connected" | "error";
-type InstallTarget =
-  | "claude_desktop"
-  | "claude_code_global"
-  | "claude_code_project";
+type ConnectionStatus = 'idle' | 'testing' | 'connected' | 'error'
+type InstallTarget = 'claude_desktop' | 'claude_code_global' | 'claude_code_project'
 
 // ---------------------------------------------------------------------------
 // Sub-components
@@ -41,137 +40,171 @@ type InstallTarget =
 
 const StatusDot: FC<{ status: ConnectionStatus }> = ({ status }) => {
   const colorMap: Record<ConnectionStatus, string> = {
-    idle: "var(--foreground-muted)",
-    testing: "var(--warning-default)",
-    connected: "var(--brand-default)",
-    error: "var(--destructive-default)",
-  };
+    idle: 'var(--foreground-muted)',
+    testing: 'var(--warning-default)',
+    connected: 'var(--status-online)',
+    error: 'var(--destructive-default)',
+  }
   return (
     <div
-      className={`h-2.5 w-2.5 rounded-full ${status === "testing" ? "animate-pulse" : ""}`}
+      className={`h-2.5 w-2.5 rounded-full ${status === 'testing' ? 'animate-pulse' : ''}`}
       style={{
         background: colorMap[status],
-        boxShadow: status === "connected"
-          ? "0 0 6px hsla(153.1, 60.2%, 52.7%, 0.25)"
-          : "none",
+        boxShadow: status === 'connected' ? '0 0 6px hsla(153.1, 60.2%, 52.7%, 0.3)' : 'none',
       }}
     />
-  );
-};
+  )
+}
 
 const SectionCard: FC<{
-  title: string;
-  description?: string;
-  children: React.ReactNode;
+  title: string
+  description?: string
+  children: React.ReactNode
 }> = ({ title, description, children }) => (
   <div
     className="rounded-lg p-5"
     style={{
-      background: "var(--background-surface-100)",
-      border: "1px solid var(--border-default)",
+      background: 'var(--background-surface-100)',
+      border: '1px solid var(--border-default)',
     }}
   >
-    <h3 className="text-sm font-semibold" style={{ color: "var(--foreground-default)" }}>{title}</h3>
+    <h3 className="text-sm font-semibold" style={{ color: 'var(--foreground-default)' }}>
+      {title}
+    </h3>
     {description && (
-      <p className="mt-1 text-xs" style={{ color: "var(--foreground-lighter)" }}>{description}</p>
+      <p className="mt-1 text-xs" style={{ color: 'var(--foreground-lighter)' }}>
+        {description}
+      </p>
     )}
     <div className="mt-4">{children}</div>
   </div>
-);
+)
 
 const CopyButton: FC<{ text: string }> = ({ text }) => {
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState(false)
 
   const handleCopy = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
     } catch {
       // Fallback for environments without clipboard API
     }
-  }, [text]);
+  }, [text])
 
   return (
     <button
       onClick={handleCopy}
       className="rounded px-2 py-1 text-[10px] font-medium transition-colors"
       style={{
-        border: "1px solid var(--border-strong)",
-        color: "var(--foreground-lighter)",
+        border: '1px solid var(--border-strong)',
+        color: 'var(--foreground-lighter)',
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.background = "var(--background-surface-300)";
-        e.currentTarget.style.color = "var(--foreground-default)";
+        e.currentTarget.style.background = 'var(--background-surface-300)'
+        e.currentTarget.style.color = 'var(--foreground-default)'
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.background = "transparent";
-        e.currentTarget.style.color = "var(--foreground-lighter)";
+        e.currentTarget.style.background = 'transparent'
+        e.currentTarget.style.color = 'var(--foreground-lighter)'
       }}
     >
-      {copied ? "Copied" : "Copy"}
+      {copied ? 'Copied' : 'Copy'}
     </button>
-  );
-};
+  )
+}
 
 // ---------------------------------------------------------------------------
 // Main Component
 // ---------------------------------------------------------------------------
 
 const McpConnector: FC = () => {
-  // Settings
-  const [serverUrl, setServerUrl] = useState("http://localhost:9999");
-  const [token, setToken] = useState("");
-  const [showToken, setShowToken] = useState(false);
+  // Load settings from the Tauri store (shared with SettingsPage)
+  const { settings, loading: settingsLoading, updateConnection } = useSettings()
+
+  // Local draft state — initialized from store, synced back on change
+  const [serverUrl, setServerUrl] = useState('')
+  const [token, setToken] = useState('')
+  const [showToken, setShowToken] = useState(false)
+  const [settingsInitialized, setSettingsInitialized] = useState(false)
+
+  // Sync local state from the settings store once loaded
+  useEffect(() => {
+    if (!settingsLoading && !settingsInitialized) {
+      setServerUrl(settings.connection.mcpServerUrl || 'http://localhost:9999')
+      setToken(settings.connection.mcpToken || '')
+      setSettingsInitialized(true)
+    }
+  }, [settingsLoading, settingsInitialized, settings])
+
+  // Persist settings changes back to the store (debounced)
+  useEffect(() => {
+    if (!settingsInitialized) return
+    const timeout = setTimeout(() => {
+      const storeUrl = settings.connection.mcpServerUrl
+      const storeToken = settings.connection.mcpToken
+      if (serverUrl !== storeUrl || token !== storeToken) {
+        updateConnection({ mcpServerUrl: serverUrl, mcpToken: token })
+      }
+    }, 500)
+    return () => clearTimeout(timeout)
+  }, [
+    serverUrl,
+    token,
+    settingsInitialized,
+    settings.connection.mcpServerUrl,
+    settings.connection.mcpToken,
+    updateConnection,
+  ])
 
   // Connection state
-  const [connectionStatus, setConnectionStatus] =
-    useState<ConnectionStatus>("idle");
-  const [testResult, setTestResult] = useState<ConnectionTestResult | null>(
-    null,
-  );
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('idle')
+  const [testResult, setTestResult] = useState<ConnectionTestResult | null>(null)
 
   // Config state
-  const [configPaths, setConfigPaths] = useState<ConfigPaths | null>(null);
-  const [generatedConfig, setGeneratedConfig] = useState<string | null>(null);
-  const [configTarget, setConfigTarget] = useState<
-    "claude_desktop" | "claude_code"
-  >("claude_desktop");
-  const [installResult, setInstallResult] =
-    useState<ConfigGenerationResult | null>(null);
-  const [installing, setInstalling] = useState(false);
-  const [projectPath, setProjectPath] = useState("");
+  const [configPaths, setConfigPaths] = useState<ConfigPaths | null>(null)
+  const [generatedConfig, setGeneratedConfig] = useState<string | null>(null)
+  const [configTarget, setConfigTarget] = useState<'claude_desktop' | 'claude_code'>(
+    'claude_desktop'
+  )
+  const [installResult, setInstallResult] = useState<ConfigGenerationResult | null>(null)
+  const [installing, setInstalling] = useState(false)
+  const [projectPath, setProjectPath] = useState('')
 
   // Load config paths on mount
   useEffect(() => {
-    invoke<ConfigPaths>("mcp_get_config_paths").then(setConfigPaths).catch(() => {});
-  }, []);
+    invoke<ConfigPaths>('mcp_get_config_paths')
+      .then(setConfigPaths)
+      .catch(() => {})
+  }, [])
 
   // Preview config when settings change
   useEffect(() => {
+    if (!settingsInitialized) return
     const cmd =
-      configTarget === "claude_desktop"
-        ? "mcp_generate_claude_desktop_config"
-        : "mcp_generate_claude_code_config";
+      configTarget === 'claude_desktop'
+        ? 'mcp_generate_claude_desktop_config'
+        : 'mcp_generate_claude_code_config'
     invoke<string>(cmd, { serverUrl, token })
       .then(setGeneratedConfig)
-      .catch(() => setGeneratedConfig(null));
-  }, [serverUrl, token, configTarget]);
+      .catch(() => setGeneratedConfig(null))
+  }, [serverUrl, token, configTarget, settingsInitialized])
 
   // -----------------------------------------------------------------------
   // Actions
   // -----------------------------------------------------------------------
 
   const handleTestConnection = useCallback(async () => {
-    setConnectionStatus("testing");
-    setTestResult(null);
+    setConnectionStatus('testing')
+    setTestResult(null)
     try {
-      const result = await invoke<ConnectionTestResult>("mcp_test_connection", {
+      const result = await invoke<ConnectionTestResult>('mcp_test_connection', {
         serverUrl,
         token,
-      });
-      setTestResult(result);
-      setConnectionStatus(result.success ? "connected" : "error");
+      })
+      setTestResult(result)
+      setConnectionStatus(result.success ? 'connected' : 'error')
     } catch (err) {
       setTestResult({
         success: false,
@@ -182,52 +215,53 @@ const McpConnector: FC = () => {
         tools_count: null,
         error: String(err),
         latency_ms: 0,
-      });
-      setConnectionStatus("error");
+      })
+      setConnectionStatus('error')
     }
-  }, [serverUrl, token]);
+  }, [serverUrl, token])
 
   const handleInstall = useCallback(
     async (target: InstallTarget) => {
-      setInstalling(true);
-      setInstallResult(null);
+      setInstalling(true)
+      setInstallResult(null)
       try {
-        let result: ConfigGenerationResult;
+        let result: ConfigGenerationResult
         switch (target) {
-          case "claude_desktop":
-            result = await invoke<ConfigGenerationResult>(
-              "mcp_install_claude_desktop",
-              { serverUrl, token },
-            );
-            break;
-          case "claude_code_global":
-            result = await invoke<ConfigGenerationResult>(
-              "mcp_install_claude_code_global",
-              { serverUrl, token },
-            );
-            break;
-          case "claude_code_project":
-            result = await invoke<ConfigGenerationResult>(
-              "mcp_install_claude_code_project",
-              { projectPath, serverUrl, token },
-            );
-            break;
+          case 'claude_desktop':
+            result = await invoke<ConfigGenerationResult>('mcp_install_claude_desktop', {
+              serverUrl,
+              token,
+            })
+            break
+          case 'claude_code_global':
+            result = await invoke<ConfigGenerationResult>('mcp_install_claude_code_global', {
+              serverUrl,
+              token,
+            })
+            break
+          case 'claude_code_project':
+            result = await invoke<ConfigGenerationResult>('mcp_install_claude_code_project', {
+              projectPath,
+              serverUrl,
+              token,
+            })
+            break
         }
-        setInstallResult(result);
+        setInstallResult(result)
       } catch (err) {
         setInstallResult({
           success: false,
-          config_path: "",
-          config_content: "",
+          config_path: '',
+          config_content: '',
           written: false,
           error: String(err),
-        });
+        })
       } finally {
-        setInstalling(false);
+        setInstalling(false)
       }
     },
-    [serverUrl, token, projectPath],
-  );
+    [serverUrl, token, projectPath]
+  )
 
   // -----------------------------------------------------------------------
   // Render
@@ -237,8 +271,10 @@ const McpConnector: FC = () => {
     <div className="space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold" style={{ color: "var(--foreground-default)" }}>MCP Connection</h1>
-        <p className="mt-1 text-sm" style={{ color: "var(--foreground-lighter)" }}>
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--foreground-default)' }}>
+          MCP Connection
+        </h1>
+        <p className="mt-1 text-sm" style={{ color: 'var(--foreground-lighter)' }}>
           Connect Claude Desktop and Claude Code to your Orchestra MCP server.
         </p>
       </div>
@@ -247,20 +283,20 @@ const McpConnector: FC = () => {
       <div
         className="flex items-center justify-between rounded-lg p-4"
         style={{
-          background: "var(--background-surface-100)",
-          border: "1px solid var(--border-default)",
+          background: 'var(--background-surface-100)',
+          border: '1px solid var(--border-default)',
         }}
       >
         <div className="flex items-center gap-3">
           <StatusDot status={connectionStatus} />
           <div>
-            <p className="text-sm font-medium" style={{ color: "var(--foreground-default)" }}>
-              {connectionStatus === "idle" && "Not tested"}
-              {connectionStatus === "testing" && "Testing connection..."}
-              {connectionStatus === "connected" && "Connected"}
-              {connectionStatus === "error" && "Connection failed"}
+            <p className="text-sm font-medium" style={{ color: 'var(--foreground-default)' }}>
+              {connectionStatus === 'idle' && 'Not tested'}
+              {connectionStatus === 'testing' && 'Testing connection...'}
+              {connectionStatus === 'connected' && 'Connected'}
+              {connectionStatus === 'error' && 'Connection failed'}
             </p>
-            <p className="text-xs" style={{ color: "var(--foreground-muted)" }}>
+            <p className="text-xs" style={{ color: 'var(--foreground-muted)' }}>
               {testResult?.success
                 ? `${testResult.server_name} v${testResult.server_version} | ${testResult.tools_count ?? 0} tools | ${testResult.latency_ms}ms`
                 : testResult?.error
@@ -271,22 +307,22 @@ const McpConnector: FC = () => {
         </div>
         <button
           onClick={handleTestConnection}
-          disabled={connectionStatus === "testing"}
+          disabled={connectionStatus === 'testing'}
           className="rounded-md px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50"
           style={{
-            border: "1px solid var(--border-strong)",
-            color: "var(--foreground-lighter)",
+            border: '1px solid var(--border-strong)',
+            color: 'var(--foreground-lighter)',
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = "var(--background-surface-300)";
-            e.currentTarget.style.color = "var(--foreground-default)";
+            e.currentTarget.style.background = 'var(--background-surface-300)'
+            e.currentTarget.style.color = 'var(--foreground-default)'
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = "transparent";
-            e.currentTarget.style.color = "var(--foreground-lighter)";
+            e.currentTarget.style.background = 'transparent'
+            e.currentTarget.style.color = 'var(--foreground-lighter)'
           }}
         >
-          {connectionStatus === "testing" ? "Testing..." : "Test Connection"}
+          {connectionStatus === 'testing' ? 'Testing...' : 'Test Connection'}
         </button>
       </div>
 
@@ -297,7 +333,10 @@ const McpConnector: FC = () => {
       >
         <div className="space-y-3">
           <div>
-            <label className="mb-1 block text-xs font-medium" style={{ color: "var(--foreground-lighter)" }}>
+            <label
+              className="mb-1 block text-xs font-medium"
+              style={{ color: 'var(--foreground-lighter)' }}
+            >
               MCP Server URL
             </label>
             <input
@@ -307,53 +346,64 @@ const McpConnector: FC = () => {
               placeholder="http://localhost:9999"
               className="w-full rounded-md px-3 py-2 text-sm outline-none transition-colors"
               style={{
-                background: "var(--background-control)",
-                border: "1px solid var(--border-control)",
-                color: "var(--foreground-default)",
+                background: 'var(--background-control)',
+                border: '1px solid var(--border-control)',
+                color: 'var(--foreground-default)',
               }}
-              onFocus={(e) => { e.currentTarget.style.borderColor = "var(--brand-default)"; }}
-              onBlur={(e) => { e.currentTarget.style.borderColor = "var(--border-control)"; }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = 'var(--brand-default)'
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = 'var(--border-control)'
+              }}
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium" style={{ color: "var(--foreground-lighter)" }}>
+            <label
+              className="mb-1 block text-xs font-medium"
+              style={{ color: 'var(--foreground-lighter)' }}
+            >
               MCP Token
             </label>
             <div className="flex gap-2">
               <input
-                type={showToken ? "text" : "password"}
+                type={showToken ? 'text' : 'password'}
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
                 placeholder="Enter your MCP token"
                 className="flex-1 rounded-md px-3 py-2 text-sm outline-none transition-colors"
                 style={{
-                  background: "var(--background-control)",
-                  border: "1px solid var(--border-control)",
-                  color: "var(--foreground-default)",
+                  background: 'var(--background-control)',
+                  border: '1px solid var(--border-control)',
+                  color: 'var(--foreground-default)',
                 }}
-                onFocus={(e) => { e.currentTarget.style.borderColor = "var(--brand-default)"; }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = "var(--border-control)"; }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--brand-default)'
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--border-control)'
+                }}
               />
               <button
                 onClick={() => setShowToken(!showToken)}
                 className="rounded-md px-3 py-2 text-xs font-medium transition-colors"
                 style={{
-                  border: "1px solid var(--border-strong)",
-                  color: "var(--foreground-lighter)",
+                  border: '1px solid var(--border-strong)',
+                  color: 'var(--foreground-lighter)',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "var(--background-surface-300)";
-                  e.currentTarget.style.color = "var(--foreground-default)";
+                  e.currentTarget.style.background = 'var(--background-surface-300)'
+                  e.currentTarget.style.color = 'var(--foreground-default)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "transparent";
-                  e.currentTarget.style.color = "var(--foreground-lighter)";
+                  e.currentTarget.style.background = 'transparent'
+                  e.currentTarget.style.color = 'var(--foreground-lighter)'
                 }}
               >
-                {showToken ? "Hide" : "Show"}
+                {showToken ? 'Hide' : 'Show'}
               </button>
             </div>
-            <p className="mt-1 text-[10px]" style={{ color: "var(--foreground-muted)" }}>
+            <p className="mt-1 text-[10px]" style={{ color: 'var(--foreground-muted)' }}>
               Get your token from the Orchestra web dashboard after registration.
             </p>
           </div>
@@ -368,21 +418,27 @@ const McpConnector: FC = () => {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs" style={{ color: "var(--foreground-lighter)" }}>Config file:</p>
-              <p className="mt-0.5 font-mono text-[11px]" style={{ color: "var(--foreground-muted)" }}>
-                {configPaths?.claude_desktop ?? "~/Library/Application Support/Claude/claude_desktop_config.json"}
+              <p className="text-xs" style={{ color: 'var(--foreground-lighter)' }}>
+                Config file:
+              </p>
+              <p
+                className="mt-0.5 font-mono text-[11px]"
+                style={{ color: 'var(--foreground-muted)' }}
+              >
+                {configPaths?.claude_desktop ??
+                  '~/Library/Application Support/Claude/claude_desktop_config.json'}
               </p>
             </div>
             <button
-              onClick={() => handleInstall("claude_desktop")}
+              onClick={() => handleInstall('claude_desktop')}
               disabled={installing}
               className="rounded-md px-4 py-2 text-xs font-medium transition-all disabled:opacity-50"
               style={{
-                background: "var(--brand-default)",
-                color: "var(--foreground-contrast)",
+                background: 'var(--brand-default)',
+                color: 'var(--foreground-contrast)',
               }}
             >
-              {installing ? "Installing..." : "Install Config"}
+              {installing ? 'Installing...' : 'Install Config'}
             </button>
           </div>
 
@@ -391,17 +447,15 @@ const McpConnector: FC = () => {
             <button
               onClick={() =>
                 setConfigTarget(
-                  configTarget === "claude_desktop"
-                    ? "claude_code"
-                    : "claude_desktop",
+                  configTarget === 'claude_desktop' ? 'claude_code' : 'claude_desktop'
                 )
               }
               className="text-[10px] font-medium"
-              style={{ color: "var(--brand-default)" }}
+              style={{ color: 'var(--brand-default)' }}
             >
-              {configTarget === "claude_desktop"
-                ? "Showing Claude Desktop config"
-                : "Showing Claude Code config"}{" "}
+              {configTarget === 'claude_desktop'
+                ? 'Showing Claude Desktop config'
+                : 'Showing Claude Code config'}{' '}
               (click to switch)
             </button>
           </div>
@@ -417,32 +471,37 @@ const McpConnector: FC = () => {
           {/* Global install */}
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium" style={{ color: "var(--foreground-light)" }}>Global</p>
-              <p className="mt-0.5 font-mono text-[11px]" style={{ color: "var(--foreground-muted)" }}>
-                {configPaths?.claude_code_global ?? "~/.claude/mcp.json"}
+              <p className="text-xs font-medium" style={{ color: 'var(--foreground-light)' }}>
+                Global
+              </p>
+              <p
+                className="mt-0.5 font-mono text-[11px]"
+                style={{ color: 'var(--foreground-muted)' }}
+              >
+                {configPaths?.claude_code_global ?? '~/.claude/mcp.json'}
               </p>
             </div>
             <button
-              onClick={() => handleInstall("claude_code_global")}
+              onClick={() => handleInstall('claude_code_global')}
               disabled={installing}
               className="rounded-md px-4 py-2 text-xs font-medium transition-all disabled:opacity-50"
               style={{
-                background: "var(--brand-default)",
-                color: "var(--foreground-contrast)",
+                background: 'var(--brand-default)',
+                color: 'var(--foreground-contrast)',
               }}
             >
-              {installing ? "Installing..." : "Install Global"}
+              {installing ? 'Installing...' : 'Install Global'}
             </button>
           </div>
 
-          <div style={{ borderTop: "1px solid var(--border-default)" }} />
+          <div style={{ borderTop: '1px solid var(--border-default)' }} />
 
           {/* Project-specific install */}
           <div>
-            <p className="text-xs font-medium" style={{ color: "var(--foreground-light)" }}>
+            <p className="text-xs font-medium" style={{ color: 'var(--foreground-light)' }}>
               Project-Specific
             </p>
-            <p className="mt-0.5 text-[10px]" style={{ color: "var(--foreground-lighter)" }}>
+            <p className="mt-0.5 text-[10px]" style={{ color: 'var(--foreground-lighter)' }}>
               Creates a .mcp.json in the specified project directory.
             </p>
             <div className="mt-2 flex gap-2">
@@ -453,20 +512,24 @@ const McpConnector: FC = () => {
                 placeholder="/path/to/your/project"
                 className="flex-1 rounded-md px-3 py-2 text-sm outline-none transition-colors"
                 style={{
-                  background: "var(--background-control)",
-                  border: "1px solid var(--border-control)",
-                  color: "var(--foreground-default)",
+                  background: 'var(--background-control)',
+                  border: '1px solid var(--border-control)',
+                  color: 'var(--foreground-default)',
                 }}
-                onFocus={(e) => { e.currentTarget.style.borderColor = "var(--brand-default)"; }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = "var(--border-control)"; }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--brand-default)'
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--border-control)'
+                }}
               />
               <button
-                onClick={() => handleInstall("claude_code_project")}
+                onClick={() => handleInstall('claude_code_project')}
                 disabled={installing || !projectPath}
                 className="rounded-md px-4 py-2 text-xs font-medium transition-all disabled:opacity-50"
                 style={{
-                  background: "var(--brand-default)",
-                  color: "var(--foreground-contrast)",
+                  background: 'var(--brand-default)',
+                  color: 'var(--foreground-contrast)',
                 }}
               >
                 Install
@@ -481,42 +544,44 @@ const McpConnector: FC = () => {
         <div
           className="rounded-lg p-4"
           style={{
-            background: installResult.success ? "var(--brand-400)" : "var(--destructive-200)",
-            border: `1px solid ${installResult.success ? "var(--brand-500)" : "hsla(10.2, 77.9%, 53.9%, 0.3)"}`,
+            background: installResult.success ? 'var(--brand-400)' : 'var(--destructive-200)',
+            border: `1px solid ${installResult.success ? 'var(--brand-500)' : 'hsla(10.2, 77.9%, 53.9%, 0.3)'}`,
           }}
         >
           <div className="flex items-start gap-3">
             <div
               className="mt-0.5 h-2 w-2 shrink-0 rounded-full"
               style={{
-                background: installResult.success ? "var(--brand-default)" : "var(--destructive-default)",
+                background: installResult.success
+                  ? 'var(--brand-default)'
+                  : 'var(--destructive-default)',
               }}
             />
             <div className="min-w-0 flex-1">
               <p
                 className="text-sm font-medium"
                 style={{
-                  color: installResult.success ? "var(--brand-600)" : "var(--destructive-600)",
+                  color: installResult.success ? 'var(--brand-600)' : 'var(--destructive-600)',
                 }}
               >
-                {installResult.success
-                  ? "Config installed successfully"
-                  : "Installation failed"}
+                {installResult.success ? 'Config installed successfully' : 'Installation failed'}
               </p>
               {installResult.success && (
-                <p className="mt-0.5 font-mono text-[11px]" style={{ color: "var(--foreground-lighter)" }}>
+                <p
+                  className="mt-0.5 font-mono text-[11px]"
+                  style={{ color: 'var(--foreground-lighter)' }}
+                >
                   {installResult.config_path}
                 </p>
               )}
               {installResult.error && (
-                <p className="mt-0.5 text-xs" style={{ color: "var(--destructive-600)" }}>
+                <p className="mt-0.5 text-xs" style={{ color: 'var(--destructive-600)' }}>
                   {installResult.error}
                 </p>
               )}
               {installResult.success && (
-                <p className="mt-2 text-[10px]" style={{ color: "var(--foreground-lighter)" }}>
-                  Restart Claude Desktop / Claude Code for changes to take
-                  effect.
+                <p className="mt-2 text-[10px]" style={{ color: 'var(--foreground-lighter)' }}>
+                  Restart Claude Desktop / Claude Code for changes to take effect.
                 </p>
               )}
             </div>
@@ -531,16 +596,16 @@ const McpConnector: FC = () => {
       >
         <div className="relative">
           <div className="absolute right-2 top-2">
-            <CopyButton text={generatedConfig ?? ""} />
+            <CopyButton text={generatedConfig ?? ''} />
           </div>
           <pre
             className="max-h-64 overflow-auto rounded-md p-3 font-mono text-[11px] leading-relaxed"
             style={{
-              background: "var(--background-default)",
-              color: "var(--foreground-lighter)",
+              background: 'var(--background-default)',
+              color: 'var(--foreground-lighter)',
             }}
           >
-            {generatedConfig ?? "Loading..."}
+            {generatedConfig ?? 'Loading...'}
           </pre>
         </div>
       </SectionCard>
@@ -550,36 +615,36 @@ const McpConnector: FC = () => {
         <SectionCard title="Server Info">
           <div className="grid grid-cols-2 gap-3">
             {[
-              { label: "Server", value: testResult.server_name },
-              { label: "Version", value: testResult.server_version },
-              { label: "Protocol", value: testResult.protocol_version },
+              { label: 'Server', value: testResult.server_name },
+              { label: 'Version', value: testResult.server_version },
+              { label: 'Protocol', value: testResult.protocol_version },
               {
-                label: "Tools",
-                value:
-                  testResult.tools_count !== null
-                    ? String(testResult.tools_count)
-                    : null,
+                label: 'Tools',
+                value: testResult.tools_count !== null ? String(testResult.tools_count) : null,
               },
-              { label: "Latency", value: `${testResult.latency_ms}ms` },
-              { label: "URL", value: testResult.server_url },
+              { label: 'Latency', value: `${testResult.latency_ms}ms` },
+              { label: 'URL', value: testResult.server_url },
             ].map(
               (item) =>
                 item.value && (
                   <div key={item.label}>
-                    <p className="text-[10px] font-medium" style={{ color: "var(--foreground-lighter)" }}>
+                    <p
+                      className="text-[10px] font-medium"
+                      style={{ color: 'var(--foreground-lighter)' }}
+                    >
                       {item.label}
                     </p>
-                    <p className="mt-0.5 text-xs" style={{ color: "var(--foreground-light)" }}>
+                    <p className="mt-0.5 text-xs" style={{ color: 'var(--foreground-light)' }}>
                       {item.value}
                     </p>
                   </div>
-                ),
+                )
             )}
           </div>
         </SectionCard>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default McpConnector;
+export default McpConnector

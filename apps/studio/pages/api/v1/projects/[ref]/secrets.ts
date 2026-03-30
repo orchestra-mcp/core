@@ -1,7 +1,6 @@
-import { type NextApiRequest, type NextApiResponse } from 'next'
-
 import apiWrapper from 'lib/api/apiWrapper'
 import { executeQuery } from 'lib/api/self-hosted/query'
+import { type NextApiRequest, type NextApiResponse } from 'next'
 
 export default function handlerWithErrorCatching(req: NextApiRequest, res: NextApiResponse) {
   return apiWrapper(req, res, handler, { withAuth: true })
@@ -67,18 +66,28 @@ const handlePost = async (req: NextApiRequest, res: NextApiResponse) => {
   const secrets: { name: string; value: string }[] = req.body
 
   if (!Array.isArray(secrets) || secrets.length === 0) {
-    return res.status(400).json({ error: { message: 'Request body must be a non-empty array of { name, value }' } })
+    return res
+      .status(400)
+      .json({ error: { message: 'Request body must be a non-empty array of { name, value }' } })
   }
 
   for (const secret of secrets) {
     if (!secret.name || typeof secret.name !== 'string') {
-      return res.status(400).json({ error: { message: 'Each secret must have a non-empty "name" string' } })
+      return res
+        .status(400)
+        .json({ error: { message: 'Each secret must have a non-empty "name" string' } })
     }
     if (secret.name.startsWith('SUPABASE_')) {
-      return res.status(400).json({ error: { message: `Secret name must not start with the SUPABASE_ prefix: ${secret.name}` } })
+      return res.status(400).json({
+        error: {
+          message: `Secret name must not start with the SUPABASE_ prefix: ${secret.name}`,
+        },
+      })
     }
     if (!secret.value || typeof secret.value !== 'string') {
-      return res.status(400).json({ error: { message: `Each secret must have a non-empty "value" string` } })
+      return res
+        .status(400)
+        .json({ error: { message: `Each secret must have a non-empty "value" string` } })
     }
   }
 
@@ -127,7 +136,9 @@ const handleDelete = async (req: NextApiRequest, res: NextApiResponse) => {
   const secretNames: string[] = req.body
 
   if (!Array.isArray(secretNames) || secretNames.length === 0) {
-    return res.status(400).json({ error: { message: 'Request body must be a non-empty array of secret name strings' } })
+    return res
+      .status(400)
+      .json({ error: { message: 'Request body must be a non-empty array of secret name strings' } })
   }
 
   for (const name of secretNames) {

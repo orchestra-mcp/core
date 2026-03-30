@@ -1,7 +1,7 @@
-import { Suspense } from 'react'
 import { ContributePageLayout } from '~/components/Contribute/ContributePageLayout'
 import { UserProfile } from '~/components/Contribute/UserProfile'
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 
 export const metadata: Metadata = {
   robots: {

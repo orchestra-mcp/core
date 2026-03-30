@@ -1,5 +1,5 @@
 ---
-description: "Studio: table patterns (Table vs Data Table vs Data Grid) and placement of actions/filters"
+description: 'Studio: table patterns (Table vs Data Table vs Data Grid) and placement of actions/filters'
 globs:
   - apps/studio/**/*.{ts,tsx}
 alwaysApply: false
@@ -26,4 +26,3 @@ Use the Design System UI pattern docs as the source of truth:
 - Actions: above the table, aligned right.
 - Search/filters: above the table, aligned left.
 - If the table is the primary page content and has no filters/search, actions can live in the page’s primary/secondary actions area.
-

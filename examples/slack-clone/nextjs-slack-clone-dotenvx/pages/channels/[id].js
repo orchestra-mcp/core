@@ -1,10 +1,10 @@
 import Layout from '~/components/Layout'
 import Message from '~/components/Message'
 import MessageInput from '~/components/MessageInput'
-import { useRouter } from 'next/router'
-import { useStore, addMessage } from '~/lib/Store'
-import { useContext, useEffect, useRef } from 'react'
+import { addMessage, useStore } from '~/lib/Store'
 import UserContext from '~/lib/UserContext'
+import { useRouter } from 'next/router'
+import { useContext, useEffect, useRef } from 'react'
 
 const ChannelsPage = (props) => {
   const router = useRouter()

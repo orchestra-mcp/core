@@ -1,7 +1,7 @@
 'use client'
 
+import { domAnimation, LazyMotion, m } from 'framer-motion'
 import React, { type PropsWithChildren } from 'react'
-import { LazyMotion, domAnimation, m } from 'framer-motion'
 
 const DocsCoverLogo = (props: PropsWithChildren) => {
   const pathMotionConfig = {

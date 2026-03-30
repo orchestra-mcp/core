@@ -1,7 +1,6 @@
-import React, { FC } from 'react'
-
-import { cn, TextLink } from 'ui'
 import SectionContainer from '~/components/Layouts/SectionContainer'
+import React, { FC } from 'react'
+import { cn, TextLink } from 'ui'
 
 interface Props {
   id: string

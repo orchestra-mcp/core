@@ -1,10 +1,9 @@
-import { ChevronRight, FileCode, X } from 'lucide-react'
-import Link from 'next/link'
-import { PropsWithChildren, ReactNode } from 'react'
-
 import { useParams } from 'common'
 import { useSupavisorConfigurationQuery } from 'data/database/supavisor-configuration-query'
 import { IS_PLATFORM } from 'lib/constants'
+import { ChevronRight, FileCode, X } from 'lucide-react'
+import Link from 'next/link'
+import { PropsWithChildren, ReactNode } from 'react'
 import { useDatabaseSelectorStateSnapshot } from 'state/database-selector'
 import {
   Badge,
@@ -18,6 +17,7 @@ import {
   WarningIcon,
 } from 'ui'
 import { Admonition } from 'ui-patterns'
+
 import { ConnectionParameters } from './ConnectionParameters'
 
 interface ConnectionPanelProps {

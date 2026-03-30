@@ -1,3 +1,6 @@
+import { LOCAL_STORAGE_KEYS } from 'common'
+import type { Route } from 'components/ui/ui.types'
+import { useLocalStorageQuery } from 'hooks/misc/useLocalStorage'
 import { noop } from 'lodash'
 import Link from 'next/link'
 import {
@@ -8,10 +11,6 @@ import {
   isValidElement,
 } from 'react'
 import { cn, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
-
-import type { Route } from 'components/ui/ui.types'
-import { useLocalStorageQuery } from 'hooks/misc/useLocalStorage'
-import { LOCAL_STORAGE_KEYS } from 'common'
 
 interface NavigationIconButtonProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
   route: Route

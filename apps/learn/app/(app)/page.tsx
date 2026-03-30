@@ -1,7 +1,8 @@
-import { WhatWillILearn } from '@/components/what-will-i-learn'
-import Link from 'next/link'
 import { Activity, BookOpen, Database, Gauge, Wrench } from 'lucide-react'
+import Link from 'next/link'
 import { Badge, Button, Card, CardDescription, CardHeader } from 'ui'
+
+import { WhatWillILearn } from '@/components/what-will-i-learn'
 
 // Horizontal grid line component
 const HorizontalGridLine = () => <div className="col-span-12 h-px bg-border/30" />

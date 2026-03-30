@@ -1,12 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import dayjs from 'dayjs'
-import Link from 'next/link'
-import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { toast } from 'sonner'
-import * as z from 'zod'
-
 import { useParams } from 'common'
 import { AuthorizeRequesterDetails } from 'components/interfaces/Organization/OAuthApps/AuthorizeRequesterDetails'
 import APIAuthorizationLayout from 'components/layouts/APIAuthorizationLayout'
@@ -14,7 +6,13 @@ import { useApiAuthorizationApproveMutation } from 'data/api-authorization/api-a
 import { useApiAuthorizationDeclineMutation } from 'data/api-authorization/api-authorization-decline-mutation'
 import { useApiAuthorizationQuery } from 'data/api-authorization/api-authorization-query'
 import { useOrganizationsQuery } from 'data/organizations/organizations-query'
+import dayjs from 'dayjs'
 import { withAuth } from 'hooks/misc/withAuth'
+import Link from 'next/link'
+import { useRouter } from 'next/router'
+import { useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import type { NextPageWithLayout } from 'types'
 import {
   Alert_Shadcn_,
@@ -40,6 +38,7 @@ import {
 } from 'ui'
 import { FormLayout } from 'ui-patterns/form/Layout/FormLayout'
 import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
+import * as z from 'zod'
 
 // Need to handle if no organizations in account
 // Need to handle if not logged in yet state

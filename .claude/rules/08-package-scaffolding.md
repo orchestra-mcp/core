@@ -1,6 +1,6 @@
 ---
-description: "New packages must include README, .github workflows, issue templates, and proper directory structure."
-globs: "packages/**"
+description: 'New packages must include README, .github workflows, issue templates, and proper directory structure.'
+globs: 'packages/**'
 alwaysApply: true
 ---
 

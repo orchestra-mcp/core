@@ -1,5 +1,5 @@
+import { getAnimation, INITIAL_BOTTOM } from '~/lib/animations'
 import React, { useRef, useState } from 'react'
-import { INITIAL_BOTTOM, getAnimation } from '~/lib/animations'
 
 interface Highlight {
   image?: React.ReactNode

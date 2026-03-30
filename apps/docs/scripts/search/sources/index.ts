@@ -2,13 +2,13 @@ import { type GuideModel } from '../../../resources/guide/guideModel.js'
 import { GuideModelLoader } from '../../../resources/guide/guideModelLoader.js'
 import { LintWarningsGuideLoader, type LintWarningsGuideSource } from './lint-warnings-guide.js'
 import { MarkdownLoader, type MarkdownSource } from './markdown.js'
-import { IntegrationLoader, type IntegrationSource, fetchPartners } from './partner-integrations.js'
+import { fetchPartners, IntegrationLoader, type IntegrationSource } from './partner-integrations.js'
 import {
-  CliReferenceLoader,
-  type CliReferenceSource,
   ClientLibReferenceLoader,
-  type ClientLibReferenceSource,
+  CliReferenceLoader,
   OpenApiReferenceLoader,
+  type ClientLibReferenceSource,
+  type CliReferenceSource,
   type OpenApiReferenceSource,
 } from './reference-doc.js'
 import { fetchTroubleshootingSources, type TroubleshootingSource } from './troubleshooting.js'

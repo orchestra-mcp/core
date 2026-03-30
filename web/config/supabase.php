@@ -12,9 +12,9 @@ return [
 
     'url' => env('SUPABASE_URL', ''),
 
-    'key' => env('SUPABASE_KEY', ''),
+    'key' => env('SUPABASE_KEY', env('SUPABASE_ANON_KEY', '')),
 
-    'secret' => env('SUPABASE_SECRET', ''),
+    'secret' => env('SUPABASE_SECRET', env('SUPABASE_SERVICE_KEY', '')),
 
     /*
     |--------------------------------------------------------------------------

@@ -1,8 +1,8 @@
-import type { TsDoc } from '../../generator/legacy/definitions'
-
+import type { ICommonItem } from '~/components/reference/Reference.types'
 import { mapValues, values } from 'lodash-es'
 import type { OpenAPIV3 } from 'openapi-types'
-import type { ICommonItem } from '~/components/reference/Reference.types'
+
+import type { TsDoc } from '../../generator/legacy/definitions'
 import { flattenSections } from '../helpers'
 
 export function extractTsDocNode(nodeToFind: string, definition: any) {

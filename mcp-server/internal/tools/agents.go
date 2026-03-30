@@ -19,13 +19,16 @@ import (
 var agentCreateSchema = json.RawMessage(`{
 	"type": "object",
 	"properties": {
-		"name":          {"type": "string", "description": "Agent display name"},
-		"slug":          {"type": "string", "description": "URL-safe identifier (auto-generated from name if omitted)"},
-		"role":          {"type": "string", "description": "Agent role description"},
-		"persona":       {"type": "string", "description": "Agent persona / personality"},
-		"system_prompt": {"type": "string", "description": "System prompt for the agent"},
-		"type":          {"type": "string", "enum": ["ai", "human", "hybrid"], "default": "ai", "description": "Agent type"},
-		"team_id":       {"type": "string", "format": "uuid", "description": "Team the agent belongs to"}
+		"name":            {"type": "string", "description": "Agent display name"},
+		"slug":            {"type": "string", "description": "URL-safe identifier (auto-generated from name if omitted)"},
+		"role":            {"type": "string", "description": "Agent role description"},
+		"persona":         {"type": "string", "description": "Agent persona / personality"},
+		"system_prompt":   {"type": "string", "description": "System prompt for the agent"},
+		"type":            {"type": "string", "enum": ["ai", "human", "hybrid"], "default": "ai", "description": "Agent type"},
+		"model":           {"type": "string", "enum": ["opus", "sonnet", "haiku"], "default": "sonnet", "description": "AI model to use for this agent (opus=planning/architecture, sonnet=code/implementation, haiku=lookups/status)"},
+		"provider":        {"type": "string", "enum": ["claude", "gemini", "openai", "deepseek", "qwen", "ollama"], "default": "claude", "description": "AI provider for this agent"},
+		"provider_config": {"type": "object", "description": "Provider-specific configuration (e.g. base_url for ollama, api_key override)", "additionalProperties": true},
+		"team_id":         {"type": "string", "format": "uuid", "description": "Team the agent belongs to"}
 	},
 	"required": ["name"]
 }`)
@@ -49,15 +52,18 @@ var agentListSchema = json.RawMessage(`{
 var agentUpdateSchema = json.RawMessage(`{
 	"type": "object",
 	"properties": {
-		"id":            {"type": "string", "format": "uuid", "description": "Agent UUID"},
-		"name":          {"type": "string", "description": "Agent display name"},
-		"slug":          {"type": "string", "description": "URL-safe identifier"},
-		"role":          {"type": "string", "description": "Agent role description"},
-		"persona":       {"type": "string", "description": "Agent persona / personality"},
-		"system_prompt": {"type": "string", "description": "System prompt for the agent"},
-		"type":          {"type": "string", "enum": ["ai", "human", "hybrid"], "description": "Agent type"},
-		"team_id":       {"type": "string", "format": "uuid", "description": "Team the agent belongs to"},
-		"status":        {"type": "string", "enum": ["active", "archived"], "description": "Agent status"}
+		"id":             {"type": "string", "format": "uuid", "description": "Agent UUID"},
+		"name":           {"type": "string", "description": "Agent display name"},
+		"slug":           {"type": "string", "description": "URL-safe identifier"},
+		"role":           {"type": "string", "description": "Agent role description"},
+		"persona":        {"type": "string", "description": "Agent persona / personality"},
+		"system_prompt":  {"type": "string", "description": "System prompt for the agent"},
+		"type":           {"type": "string", "enum": ["ai", "human", "hybrid"], "description": "Agent type"},
+		"model":          {"type": "string", "enum": ["opus", "sonnet", "haiku"], "description": "AI model to use for this agent (opus=planning/architecture, sonnet=code/implementation, haiku=lookups/status)"},
+		"provider":       {"type": "string", "enum": ["claude", "gemini", "openai", "deepseek", "qwen", "ollama"], "description": "AI provider for this agent"},
+		"provider_config": {"type": "object", "description": "Provider-specific configuration (e.g. base_url for ollama, api_key override)", "additionalProperties": true},
+		"team_id":        {"type": "string", "format": "uuid", "description": "Team the agent belongs to"},
+		"status":         {"type": "string", "enum": ["active", "archived"], "description": "Agent status"}
 	},
 	"required": ["id"]
 }`)
@@ -90,13 +96,16 @@ func RegisterAgentTools(registry *mcp.ToolRegistry, dbClient *db.Client) {
 func makeAgentCreate(dbClient *db.Client) mcp.ToolHandler {
 	return func(ctx context.Context, params json.RawMessage) (*mcp.ToolResult, error) {
 		var input struct {
-			Name         string `json:"name"`
-			Slug         string `json:"slug"`
-			Role         string `json:"role"`
-			Persona      string `json:"persona"`
-			SystemPrompt string `json:"system_prompt"`
-			Type         string `json:"type"`
-			TeamID       string `json:"team_id"`
+			Name           string                 `json:"name"`
+			Slug           string                 `json:"slug"`
+			Role           string                 `json:"role"`
+			Persona        string                 `json:"persona"`
+			SystemPrompt   string                 `json:"system_prompt"`
+			Type           string                 `json:"type"`
+			Model          string                 `json:"model"`
+			Provider       string                 `json:"provider"`
+			ProviderConfig map[string]interface{} `json:"provider_config"`
+			TeamID         string                 `json:"team_id"`
 		}
 		if err := json.Unmarshal(params, &input); err != nil {
 			return mcp.ErrorResult("invalid params: " + err.Error()), nil
@@ -115,13 +124,28 @@ func makeAgentCreate(dbClient *db.Client) mcp.ToolHandler {
 			agentType = "ai"
 		}
 
+		agentModel := input.Model
+		if agentModel == "" {
+			agentModel = "sonnet"
+		}
+
+		agentProvider := input.Provider
+		if agentProvider == "" {
+			agentProvider = "claude"
+		}
+
 		row := map[string]interface{}{
 			"organization_id": userCtx.OrgID,
 			"name":            input.Name,
 			"type":            agentType,
+			"model":           agentModel,
+			"provider":        agentProvider,
 			"status":          "active",
 			"created_by":      userCtx.UserID,
 			"created_at":      time.Now().UTC().Format(time.RFC3339),
+		}
+		if input.ProviderConfig != nil {
+			row["provider_config"] = input.ProviderConfig
 		}
 		setIfNotEmpty(row, "slug", input.Slug)
 		setIfNotEmpty(row, "role", input.Role)
@@ -203,22 +227,58 @@ func makeAgentList(dbClient *db.Client) mcp.ToolHandler {
 		if err != nil {
 			return mcp.ErrorResult("failed to list agents: " + err.Error()), nil
 		}
-		return mcp.TextResult(string(result)), nil
+
+		items, parseErr := parseJSONArray(result)
+		if parseErr != nil {
+			return mcp.TextResult(string(result)), nil
+		}
+
+		rows := make([][]string, 0, len(items))
+		for _, a := range items {
+			rows = append(rows, []string{
+				jsonStr(a, "name"),
+				jsonStrOr(a, "slug", "-"),
+				jsonStrOr(a, "role", "-"),
+				jsonStrOr(a, "type", "ai"),
+				jsonStrOr(a, "status", "-"),
+				jsonStrOr(a, "id", "-"),
+			})
+		}
+
+		table := mdTable(
+			[]string{"Name", "Slug", "Role", "Type", "Status", "ID"},
+			rows,
+		)
+
+		return mdResult(MarkdownResponse{
+			Frontmatter: map[string]interface{}{
+				"type":  "agent_list",
+				"count": len(items),
+			},
+			Body: fmt.Sprintf("# Agent Roster (%d)\n\n%s", len(items), table),
+			NextSteps: []NextStep{
+				{Label: "Create an agent", Command: `agent_create(name: "...")`},
+				{Label: "View agent details", Command: `agent_get(id: "AGENT_UUID")`},
+			},
+		}), nil
 	}
 }
 
 func makeAgentUpdate(dbClient *db.Client) mcp.ToolHandler {
 	return func(ctx context.Context, params json.RawMessage) (*mcp.ToolResult, error) {
 		var input struct {
-			ID           string  `json:"id"`
-			Name         *string `json:"name"`
-			Slug         *string `json:"slug"`
-			Role         *string `json:"role"`
-			Persona      *string `json:"persona"`
-			SystemPrompt *string `json:"system_prompt"`
-			Type         *string `json:"type"`
-			TeamID       *string `json:"team_id"`
-			Status       *string `json:"status"`
+			ID             string                  `json:"id"`
+			Name           *string                 `json:"name"`
+			Slug           *string                 `json:"slug"`
+			Role           *string                 `json:"role"`
+			Persona        *string                 `json:"persona"`
+			SystemPrompt   *string                 `json:"system_prompt"`
+			Type           *string                 `json:"type"`
+			Model          *string                 `json:"model"`
+			Provider       *string                 `json:"provider"`
+			ProviderConfig map[string]interface{}  `json:"provider_config"`
+			TeamID         *string                 `json:"team_id"`
+			Status         *string                 `json:"status"`
 		}
 		if err := json.Unmarshal(params, &input); err != nil {
 			return mcp.ErrorResult("invalid params: " + err.Error()), nil
@@ -241,6 +301,11 @@ func makeAgentUpdate(dbClient *db.Client) mcp.ToolHandler {
 		setIfPtr(patch, "persona", input.Persona)
 		setIfPtr(patch, "system_prompt", input.SystemPrompt)
 		setIfPtr(patch, "type", input.Type)
+		setIfPtr(patch, "model", input.Model)
+		setIfPtr(patch, "provider", input.Provider)
+		if input.ProviderConfig != nil {
+			patch["provider_config"] = input.ProviderConfig
+		}
 		setIfPtr(patch, "team_id", input.TeamID)
 		setIfPtr(patch, "status", input.Status)
 

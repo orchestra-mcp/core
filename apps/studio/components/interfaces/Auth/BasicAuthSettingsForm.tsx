@@ -1,12 +1,5 @@
 import { yupResolver } from '@hookform/resolvers/yup'
 import { PermissionAction } from '@supabase/shared-types/out/constants'
-import { ExternalLink } from 'lucide-react'
-import Link from 'next/link'
-import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
-import { toast } from 'sonner'
-import { boolean, object, string } from 'yup'
-
 import { useParams } from 'common'
 import AlertError from 'components/ui/AlertError'
 import { InlineLink } from 'components/ui/InlineLink'
@@ -16,17 +9,22 @@ import { useAuthConfigUpdateMutation } from 'data/auth/auth-config-update-mutati
 import { useAsyncCheckPermissions } from 'hooks/misc/useCheckPermissions'
 import { useIsFeatureEnabled } from 'hooks/misc/useIsFeatureEnabled'
 import { DOCS_URL } from 'lib/constants'
+import { ExternalLink } from 'lucide-react'
+import Link from 'next/link'
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import {
+  Alert_Shadcn_,
   AlertDescription_Shadcn_,
   AlertTitle_Shadcn_,
-  Alert_Shadcn_,
   Button,
   Card,
   CardContent,
   CardFooter,
+  Form_Shadcn_,
   FormControl_Shadcn_,
   FormField_Shadcn_,
-  Form_Shadcn_,
   Switch,
   WarningIcon,
 } from 'ui'
@@ -39,6 +37,8 @@ import {
   PageSectionTitle,
 } from 'ui-patterns/PageSection'
 import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
+import { boolean, object, string } from 'yup'
+
 import { NO_REQUIRED_CHARACTERS } from './Auth.constants'
 
 const schema = object({

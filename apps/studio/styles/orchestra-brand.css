@@ -1,8 +1,8 @@
 /* Orchestra MCP Brand Colors */
 :root {
-  --orchestra-cyan: #00E5FF;
-  --orchestra-purple: #A900FF;
-  --orchestra-gradient: linear-gradient(135deg, #00E5FF, #A900FF);
+  --orchestra-cyan: #00e5ff;
+  --orchestra-purple: #a900ff;
+  --orchestra-gradient: linear-gradient(135deg, #00e5ff, #a900ff);
   --orchestra-bg-dark: #1a1a2e;
   --orchestra-bg-card: #16213e;
   --orchestra-text: #e0e0e0;

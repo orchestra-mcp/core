@@ -1,5 +1,5 @@
-import type { GettingStartedState } from './GettingStarted/GettingStarted.types'
 import type { ConnectSectionVariant } from './ConnectSection.config'
+import type { GettingStartedState } from './GettingStarted/GettingStarted.types'
 
 export const DEFAULT_SECTION_ORDER = [
   'connect',

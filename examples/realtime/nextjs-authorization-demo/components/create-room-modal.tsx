@@ -1,9 +1,11 @@
 'use client'
-import { createClient } from '@/utils/supabase/client'
-import { redirect } from 'next/navigation'
-import { SubmitButton } from './submit-button'
-import { useEffect, useState } from 'react'
+
 import { RealtimeChannel } from '@supabase/supabase-js'
+import { redirect } from 'next/navigation'
+import { useEffect, useState } from 'react'
+
+import { SubmitButton } from './submit-button'
+import { createClient } from '@/utils/supabase/client'
 
 export default function CreateRoomModal({ channel }: { channel: RealtimeChannel | null }) {
   const supabase = createClient()

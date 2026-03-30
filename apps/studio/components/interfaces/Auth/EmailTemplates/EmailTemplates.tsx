@@ -1,12 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PermissionAction } from '@supabase/shared-types/out/constants'
-import { ChevronRight, ExternalLink, X } from 'lucide-react'
-import Link from 'next/link'
-import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
-import { toast } from 'sonner'
-import { z } from 'zod'
-
 import { LOCAL_STORAGE_KEYS, useParams } from 'common'
 import AlertError from 'components/ui/AlertError'
 import { InlineLink } from 'components/ui/InlineLink'
@@ -15,6 +8,11 @@ import { useAuthConfigUpdateMutation } from 'data/auth/auth-config-update-mutati
 import { useAsyncCheckPermissions } from 'hooks/misc/useCheckPermissions'
 import { useLocalStorageQuery } from 'hooks/misc/useLocalStorage'
 import { DOCS_URL } from 'lib/constants'
+import { ChevronRight, ExternalLink, X } from 'lucide-react'
+import Link from 'next/link'
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import {
   Badge,
   Button,
@@ -38,6 +36,8 @@ import {
   PageSectionTitle,
 } from 'ui-patterns/PageSection'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
+import { z } from 'zod'
+
 import { TEMPLATES_SCHEMAS } from '../AuthTemplatesValidation'
 import { slugifyTitle } from './EmailTemplates.utils'
 

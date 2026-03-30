@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type PropsWithChildren } from 'react'
 import { AnchorProvider } from 'ui-patterns'
+
 import { TocAnchorsContext, useSubscribeTocRerender } from './GuidesMdx.state'
 
 interface TOCHeader {

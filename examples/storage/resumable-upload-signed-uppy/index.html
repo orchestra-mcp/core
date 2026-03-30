@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <meta charset="utf-8" />
@@ -39,9 +39,9 @@
 
     <script type="module">
       import {
-        Uppy,
         Dashboard,
         Tus,
+        Uppy,
       } from 'https://releases.transloadit.com/uppy/v3.6.1/uppy.min.mjs'
 
       const SUPABASE_PUBLISHABLE_KEY = '' // your project's publishable (anon) key
@@ -97,11 +97,11 @@
         // Important - add signing token header
         const token = await getSignedUploadToken(file.name)
         uppy.setFileState(file.id, {
-            tus: {
-                headers: {
-                  'x-signature': token,
-                }
-            }
+          tus: {
+            headers: {
+              'x-signature': token,
+            },
+          },
         })
       })
 

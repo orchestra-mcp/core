@@ -1,7 +1,3 @@
-import { CpuIcon, Lock, Microchip } from 'lucide-react'
-import { useMemo } from 'react'
-import { UseFormReturn } from 'react-hook-form'
-
 import { SupportCategories } from '@supabase/shared-types/out/constants'
 import { useParams } from 'common'
 import { SupportLink } from 'components/interfaces/Support/SupportLink'
@@ -14,6 +10,9 @@ import { useSelectedOrganizationQuery } from 'hooks/misc/useSelectedOrganization
 import { useSelectedProjectQuery } from 'hooks/misc/useSelectedProject'
 import { getCloudProviderArchitecture } from 'lib/cloudprovider-utils'
 import { DOCS_URL, InstanceSpecs } from 'lib/constants'
+import { CpuIcon, Lock, Microchip } from 'lucide-react'
+import { useMemo } from 'react'
+import { UseFormReturn } from 'react-hook-form'
 import {
   cn,
   FormField_Shadcn_,
@@ -26,12 +25,13 @@ import {
 } from 'ui'
 import { ComputeBadge } from 'ui-patterns'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
+
 import { DiskStorageSchemaType } from '../DiskManagement.schema'
 import { ComputeInstanceAddonVariantId, InfraInstanceSize } from '../DiskManagement.types'
 import {
   calculateComputeSizePrice,
-  getAvailableComputeOptions,
   ComputeAddonVariant,
+  getAvailableComputeOptions,
 } from '../DiskManagement.utils'
 import { BillingChangeBadge } from '../ui/BillingChangeBadge'
 import FormMessage from '../ui/FormMessage'

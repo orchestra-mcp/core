@@ -5,6 +5,7 @@ import { useTheme } from 'next-themes'
 import { useMemo, useState } from 'react'
 import { createMcpCopyHandler, McpConfigPanel, type McpClient } from 'ui-patterns/McpUrlBuilder'
 import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
+
 import type { projectKeys } from './Connect.types'
 
 export const McpTabContent = ({ projectKeys }: { projectKeys: projectKeys }) => {

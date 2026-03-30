@@ -1,6 +1,4 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { useCallback, useState } from 'react'
-
 import { grantColumnPrivileges } from 'data/privileges/column-privileges-grant-mutation'
 import type { ColumnPrivilege } from 'data/privileges/column-privileges-query'
 import {
@@ -9,15 +7,17 @@ import {
 } from 'data/privileges/column-privileges-revoke-mutation'
 import { privilegeKeys } from 'data/privileges/keys'
 import {
-  TablePrivilegesGrant,
   grantTablePrivileges,
+  TablePrivilegesGrant,
 } from 'data/privileges/table-privileges-grant-mutation'
 import type { PgTablePrivileges } from 'data/privileges/table-privileges-query'
 import {
-  TablePrivilegesRevoke,
   revokeTablePrivileges,
+  TablePrivilegesRevoke,
 } from 'data/privileges/table-privileges-revoke-mutation'
 import { useSelectedProjectQuery } from 'hooks/misc/useSelectedProject'
+import { useCallback, useState } from 'react'
+
 import {
   ALL_PRIVILEGE_TYPES,
   COLUMN_PRIVILEGE_TYPES,

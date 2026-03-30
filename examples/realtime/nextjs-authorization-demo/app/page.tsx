@@ -1,6 +1,7 @@
-import SupabaseLogo from '@/components/SupabaseLogo'
-import AuthButton from '../components/AuthButton'
 import Link from 'next/link'
+
+import AuthButton from '../components/AuthButton'
+import SupabaseLogo from '@/components/SupabaseLogo'
 import { createClient } from '@/utils/supabase/server'
 
 export default async function Index() {

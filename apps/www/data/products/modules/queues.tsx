@@ -1,5 +1,5 @@
-import { PRODUCT_MODULES } from 'shared-data/products'
 import BrowserFrame from '~/components/BrowserFrame'
+import { PRODUCT_MODULES } from 'shared-data/products'
 import { Image } from 'ui'
 
 export default () => ({

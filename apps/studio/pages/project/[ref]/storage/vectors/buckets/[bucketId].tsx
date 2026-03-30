@@ -1,7 +1,7 @@
 import { useParams } from 'common'
 import { BUCKET_TYPES } from 'components/interfaces/Storage/Storage.constants'
-import { VectorBucketDetails } from 'components/interfaces/Storage/VectorBuckets/VectorBucketDetails'
 import { useSelectedVectorBucket } from 'components/interfaces/Storage/VectorBuckets/useSelectedVectorBuckets'
+import { VectorBucketDetails } from 'components/interfaces/Storage/VectorBuckets/VectorBucketDetails'
 import { DefaultLayout } from 'components/layouts/DefaultLayout'
 import { PageLayout } from 'components/layouts/PageLayout/PageLayout'
 import StorageLayout from 'components/layouts/StorageLayout/StorageLayout'

@@ -1,7 +1,7 @@
-import { stripIndent } from 'common-tags'
 import { writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { stripIndent } from 'common-tags'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 

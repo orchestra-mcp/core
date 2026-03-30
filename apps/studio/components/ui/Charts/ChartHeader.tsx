@@ -11,8 +11,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { cn } from 'ui'
-import { Badge } from 'ui'
+import { Badge, cn } from 'ui'
 import { InfoTooltip } from 'ui-patterns/info-tooltip'
 
 import { formatPercentage, numberFormatter } from './Charts.utils'

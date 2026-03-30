@@ -1,6 +1,6 @@
-import { type UseQueryOptions, useQuery } from '@tanstack/react-query'
-
+import { useQuery, type UseQueryOptions } from '@tanstack/react-query'
 import type { ResponseError } from '~/types/fetch'
+
 import { get } from './fetchWrappers'
 
 const poolerKeys = {

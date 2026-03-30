@@ -1,9 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import type { OrchestraIntegrationsSettings } from 'data/integrations/orchestra-integrations-query'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 
-import type { OrchestraIntegrationsSettings } from 'data/integrations/orchestra-integrations-query'
 import { IntegrationSection } from '../IntegrationSection'
 
 const GitHubIcon = () => (
@@ -39,9 +39,7 @@ export const GitHubIntegrationSection = ({
   onSave,
 }: GitHubIntegrationSectionProps) => {
   const callbackUrl =
-    typeof window !== 'undefined'
-      ? `${window.location.origin}/api/auth/callback/github`
-      : ''
+    typeof window !== 'undefined' ? `${window.location.origin}/api/auth/callback/github` : ''
 
   const defaultValues: GitHubFormValues = {
     enabled: settings?.enabled ?? false,

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+
 import supabase from '../../utils/supabase'
 
 // realtime subscriptions need to be set up client-side

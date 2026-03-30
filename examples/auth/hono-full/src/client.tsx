@@ -1,8 +1,8 @@
+import type { AppType } from '.'
 import { createBrowserClient } from '@supabase/ssr'
 import { hc } from 'hono/client'
 import { useEffect, useState } from 'hono/jsx'
 import { render } from 'hono/jsx/dom'
-import type { AppType } from '.'
 
 const client = hc<AppType>('/')
 

@@ -1,6 +1,7 @@
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { Result } from '~/features/helpers.fn'
 import { type OpenAIClientInterface } from '~/lib/openAi'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+
 import { ApiError } from '../../utils'
 import { POST } from '../route'
 

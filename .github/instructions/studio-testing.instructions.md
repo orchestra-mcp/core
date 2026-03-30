@@ -1,5 +1,5 @@
 ---
-applyTo: "apps/studio/**"
+applyTo: 'apps/studio/**'
 ---
 
 # Studio Testing Review Rules

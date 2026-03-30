@@ -1,7 +1,7 @@
 'use client'
 
-import { cn } from 'ui'
 import type { LeaderboardRow } from '~/types/contribute'
+import { cn } from 'ui'
 
 function getInitials(name: string | null): string {
   if (!name) return '?'

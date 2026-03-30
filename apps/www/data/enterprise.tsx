@@ -1,3 +1,5 @@
+import RequestADemoForm from 'components/Forms/RequestADemoForm'
+import { companyStats } from 'data/company-stats'
 import {
   Activity,
   ArrowLeftRight,
@@ -16,8 +18,6 @@ import {
   Users,
   UserX,
 } from 'lucide-react'
-import RequestADemoForm from 'components/Forms/RequestADemoForm'
-import { companyStats } from 'data/company-stats'
 
 export default {
   metadata: {

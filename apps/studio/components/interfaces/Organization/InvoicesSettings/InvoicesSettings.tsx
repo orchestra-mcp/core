@@ -1,5 +1,5 @@
-import InvoiceStatusBadge from 'components/interfaces/Billing/InvoiceStatusBadge'
 import { InvoiceStatus } from 'components/interfaces/Billing/Invoices.types'
+import InvoiceStatusBadge from 'components/interfaces/Billing/InvoiceStatusBadge'
 import AlertError from 'components/ui/AlertError'
 import { ButtonTooltip } from 'components/ui/ButtonTooltip'
 import PartnerManagedResource from 'components/ui/PartnerManagedResource'
@@ -19,13 +19,13 @@ import {
   Button,
   Card,
   CardFooter,
+  cn,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-  cn,
 } from 'ui'
 import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 

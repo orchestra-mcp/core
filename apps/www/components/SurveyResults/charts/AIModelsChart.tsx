@@ -1,4 +1,4 @@
-import { SurveyChart, buildWhereClause } from '../SurveyChart'
+import { buildWhereClause, SurveyChart } from '../SurveyChart'
 
 function generateAIModelsSQL(activeFilters: Record<string, string>) {
   const whereClause = buildWhereClause(activeFilters)

@@ -1,6 +1,6 @@
 ---
-description: "DOD: task is not done until tests pass, documentation is written in /docs/, and code quality checks pass."
-globs: "*"
+description: 'DOD: task is not done until tests pass, documentation is written in /docs/, and code quality checks pass.'
+globs: '*'
 alwaysApply: true
 ---
 

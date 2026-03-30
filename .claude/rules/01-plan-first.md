@@ -1,6 +1,6 @@
 ---
-description: "Enforces plan-first development. Never start implementation before saving a plan to .plans/ directory."
-globs: "*"
+description: 'Enforces plan-first development. Never start implementation before saving a plan to .plans/ directory.'
+globs: '*'
 alwaysApply: true
 ---
 
@@ -27,24 +27,30 @@ alwaysApply: true
 **Status**: Draft | In Review | Approved | In Progress | Done
 
 ## Objective
+
 {What are we building and why?}
 
 ## Features
 
 ### Feature 1: {Name}
+
 **Small Win**: {What is the minimum deliverable that proves value?}
 **DOD**:
+
 - [ ] Tests pass
 - [ ] Documentation written
 - [ ] Code reviewed
 
 #### Tasks
+
 - [ ] Task 1
 - [ ] Task 2
 
 ### Feature 2: {Name}
+
 ...
 
 ## Technical Notes
+
 {Architecture decisions, dependencies, risks}
 ```

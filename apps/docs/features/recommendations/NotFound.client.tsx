@@ -1,14 +1,12 @@
 'use client'
 
+import ButtonCard from '~/components/ButtonCard'
+import { useDocsSearch, type DocsSearchResult } from 'common'
 import { usePathname } from 'next/navigation'
 import { useEffect } from 'react'
-
-import { useDocsSearch, type DocsSearchResult } from 'common'
 import { Button, cn } from 'ui'
 import { useSetCommandMenuOpen } from 'ui-patterns/CommandMenu'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
-
-import ButtonCard from '~/components/ButtonCard'
 
 function SearchButton() {
   const setCommandMenuOpen = useSetCommandMenuOpen()

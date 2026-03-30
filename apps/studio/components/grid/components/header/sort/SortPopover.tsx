@@ -1,8 +1,8 @@
-import { useMemo } from 'react'
-
-import { formatSortURLParams } from 'components/grid/SupabaseGrid.utils'
 import { useTableSort } from 'components/grid/hooks/useTableSort'
+import { formatSortURLParams } from 'components/grid/SupabaseGrid.utils'
+import { useMemo } from 'react'
 import { useTableEditorTableStateSnapshot } from 'state/table-editor-table'
+
 import { SortPopoverPrimitive } from './SortPopoverPrimitive'
 
 export interface SortPopoverProps {

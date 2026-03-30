@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  // @ts-ignore
+// @ts-ignore
 import { Cursor } from '@/components/cursor'
 // @ts-ignore
 import { useRealtimeCursors } from '@/composables/useRealtimeCursors'

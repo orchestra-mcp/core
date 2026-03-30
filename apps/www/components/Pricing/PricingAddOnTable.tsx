@@ -1,10 +1,11 @@
 'use client'
 
 import classNames from 'classnames'
+import { ChevronUp } from 'lucide-react'
 import { Fragment, useMemo, useState } from 'react'
 import { Collapsible } from 'ui'
+
 import { Check } from './PricingIcons'
-import { ChevronUp } from 'lucide-react'
 
 interface PricingAddOnTableProps {
   pricing: {

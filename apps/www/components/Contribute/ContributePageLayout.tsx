@@ -1,6 +1,6 @@
-import DefaultLayout from '~/components/Layouts/Default'
-import { BackToThreadsLink } from '~/components/Contribute/BackToThreadsLink'
 import { ContributeGuard } from '~/app/contribute/ContributeGuard'
+import { BackToThreadsLink } from '~/components/Contribute/BackToThreadsLink'
+import DefaultLayout from '~/components/Layouts/Default'
 
 export function ContributePageLayout({ children }: { children: React.ReactNode }) {
   return (

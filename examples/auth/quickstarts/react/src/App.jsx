@@ -1,6 +1,7 @@
 import './index.css'
-import { useState, useEffect } from 'react'
+
 import { createClient } from '@supabase/supabase-js'
+import { useEffect, useState } from 'react'
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,

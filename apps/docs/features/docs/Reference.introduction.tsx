@@ -1,11 +1,9 @@
-import { AlertTriangle } from 'lucide-react'
-import Link from 'next/link'
-
-import { Alert_Shadcn_, AlertDescription_Shadcn_, AlertTitle_Shadcn_, cn } from 'ui'
-
 import { getRefMarkdown, MDXRemoteRefs } from '~/features/docs/Reference.mdx'
 import { ReferenceSectionWrapper } from '~/features/docs/Reference.ui.client'
 import commonClientLibSections from '~/spec/common-client-libs-sections.json' with { type: 'json' }
+import { AlertTriangle } from 'lucide-react'
+import Link from 'next/link'
+import { Alert_Shadcn_, AlertDescription_Shadcn_, AlertTitle_Shadcn_, cn } from 'ui'
 
 function hasIntro(sections: typeof commonClientLibSections, excludeName?: string) {
   return Boolean(

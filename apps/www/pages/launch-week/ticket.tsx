@@ -1,7 +1,7 @@
 import LW15TicketPageProxy from '~/components/LaunchWeek/15/Ticketing/LW15TicketPageProxy'
+import { Lw15ConfDataProvider } from 'components/LaunchWeek/15/hooks/use-conf-data'
 import { useRouter } from 'next/router'
 
-import { Lw15ConfDataProvider } from 'components/LaunchWeek/15/hooks/use-conf-data'
 import DefaultLayout from '../../components/Layouts/Default'
 
 const Lw15Page = () => {

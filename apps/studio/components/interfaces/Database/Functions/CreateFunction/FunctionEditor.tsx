@@ -1,7 +1,6 @@
-import { Maximize2, Minimize2 } from 'lucide-react'
-
 import CodeEditor from 'components/ui/CodeEditor/CodeEditor'
-import { Button, FormControl_Shadcn_, Tooltip, TooltipContent, TooltipTrigger, cn } from 'ui'
+import { Maximize2, Minimize2 } from 'lucide-react'
+import { Button, cn, FormControl_Shadcn_, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 
 export const FunctionEditor = ({
   field,

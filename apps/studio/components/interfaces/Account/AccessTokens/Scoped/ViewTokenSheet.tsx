@@ -1,10 +1,15 @@
+import { DocsButton } from 'components/ui/DocsButton'
+import { useScopedAccessTokenQuery } from 'data/scoped-access-tokens/scoped-access-token-query'
 import dayjs from 'dayjs'
+import { useMemo } from 'react'
 import {
+  Card,
+  CardContent,
+  cn,
+  ScrollArea,
   Sheet,
   SheetContent,
   SheetHeader,
-  ScrollArea,
-  cn,
   Table,
   TableBody,
   TableCell,
@@ -12,14 +17,11 @@ import {
   TableHeader,
   TableRow,
 } from 'ui'
-import { useScopedAccessTokenQuery } from 'data/scoped-access-tokens/scoped-access-token-query'
-import { DocsButton } from 'components/ui/DocsButton'
-import { Card, CardContent } from 'ui'
+import { TimestampInfo } from 'ui-patterns/TimestampInfo'
+
 import { ACCESS_TOKEN_RESOURCES } from '../AccessToken.constants'
-import { useMemo } from 'react'
 import { formatAccessText, getRealAccess } from '../AccessToken.utils'
 import { useOrgAndProjectData } from '../hooks/useOrgAndProjectData'
-import { TimestampInfo } from 'ui-patterns/TimestampInfo'
 
 interface ViewTokenSheetProps {
   visible: boolean

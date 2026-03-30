@@ -1,8 +1,8 @@
 import { useQueries } from '@tanstack/react-query'
-
 import { databaseKeys } from 'data/database/keys'
 import { getIndexAdvisorResult } from 'data/database/retrieve-index-advisor-result-query'
 import { useSelectedProjectQuery } from 'hooks/misc/useSelectedProject'
+
 import { useIndexAdvisorStatus } from '../../QueryPerformance/hooks/useIsIndexAdvisorStatus'
 import type { QueryPerformanceRow } from '../../QueryPerformance/QueryPerformance.types'
 

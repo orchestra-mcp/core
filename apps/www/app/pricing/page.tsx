@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+
 import PricingContent from './PricingContent'
 
 export const metadata: Metadata = {

@@ -1,8 +1,4 @@
 import { PermissionAction } from '@supabase/shared-types/out/constants'
-import { MoreVertical, Redo2, Trash } from 'lucide-react'
-import { useState } from 'react'
-import { toast } from 'sonner'
-
 import { useParams } from 'common'
 import { ButtonTooltip } from 'components/ui/ButtonTooltip'
 import { DropdownMenuItemTooltip } from 'components/ui/DropdownMenuItemTooltip'
@@ -19,6 +15,9 @@ import { useAsyncCheckPermissions } from 'hooks/misc/useCheckPermissions'
 import { useIsFeatureEnabled } from 'hooks/misc/useIsFeatureEnabled'
 import { useSelectedOrganizationQuery } from 'hooks/misc/useSelectedOrganization'
 import { useProfile } from 'lib/profile'
+import { MoreVertical, Redo2, Trash } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
 import {
   Button,
   DropdownMenu,
@@ -27,6 +26,7 @@ import {
   DropdownMenuTrigger,
 } from 'ui'
 import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
+
 import { LeaveTeamButton } from './LeaveTeamButton'
 import { useGetRolesManagementPermissions } from './TeamSettings.utils'
 import { UpdateRolesPanel } from './UpdateRolesPanel/UpdateRolesPanel'

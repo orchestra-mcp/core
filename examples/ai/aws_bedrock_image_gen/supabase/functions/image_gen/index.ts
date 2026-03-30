@@ -1,7 +1,6 @@
 // AWS SDK issue: https://github.com/aws/aws-sdk-js-v3/issues/6134
 // We need to mock the file system for the AWS SDK to work.
 import { prepareVirtualFile } from 'https://deno.land/x/mock_file@v1.1.2/mod.ts'
-
 import { BedrockRuntimeClient, InvokeModelCommand } from 'npm:@aws-sdk/client-bedrock-runtime'
 import { createClient } from 'npm:@supabase/supabase-js'
 import { decode } from 'npm:base64-arraybuffer'

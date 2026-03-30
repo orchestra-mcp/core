@@ -1,4 +1,3 @@
-import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 import { PermissionAction } from '@supabase/shared-types/out/constants'
 import { useParams } from 'common'
 import { Markdown } from 'components/interfaces/Markdown'
@@ -27,6 +26,8 @@ import {
   PageSectionSummary,
   PageSectionTitle,
 } from 'ui-patterns'
+
+import { useCheckEntitlements } from '@/hooks/misc/useCheckEntitlements'
 
 export interface DiskSizeConfigurationProps {
   disabled?: boolean

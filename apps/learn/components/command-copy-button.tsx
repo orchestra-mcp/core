@@ -1,9 +1,8 @@
 'use client'
 
+import { useSendTelemetryEvent } from 'lib/telemetry'
 import { Check, Copy } from 'lucide-react'
 import { useEffect, useState } from 'react'
-
-import { useSendTelemetryEvent } from 'lib/telemetry'
 import { Button_Shadcn_ } from 'ui'
 
 export function CommandCopyButton({ command }: { command: string }) {

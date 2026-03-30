@@ -136,11 +136,7 @@ export const CreateAgentModal = ({ visible, onClose }: CreateAgentModalProps) =>
               render={({ field }) => (
                 <FormItemLayout name="slug" layout="vertical" label="Slug">
                   <FormControl_Shadcn_>
-                    <Input_Shadcn_
-                      {...field}
-                      id="slug"
-                      placeholder="auto-generated-from-name"
-                    />
+                    <Input_Shadcn_ {...field} id="slug" placeholder="auto-generated-from-name" />
                   </FormControl_Shadcn_>
                 </FormItemLayout>
               )}
@@ -153,11 +149,7 @@ export const CreateAgentModal = ({ visible, onClose }: CreateAgentModalProps) =>
                 render={({ field }) => (
                   <FormItemLayout name="role" layout="vertical" label="Role">
                     <FormControl_Shadcn_>
-                      <Input_Shadcn_
-                        {...field}
-                        id="role"
-                        placeholder="e.g. Developer, QA, PM"
-                      />
+                      <Input_Shadcn_ {...field} id="role" placeholder="e.g. Developer, QA, PM" />
                     </FormControl_Shadcn_>
                   </FormItemLayout>
                 )}

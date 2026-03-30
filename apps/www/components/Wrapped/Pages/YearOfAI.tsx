@@ -1,6 +1,7 @@
-import { Android } from '../Visuals'
 import { SurveyStatCard } from '~/components/SurveyResults/SurveyStatCard'
+
 import { AnimatedGridBackground } from '../AnimatedGridBackground'
+import { Android } from '../Visuals'
 
 const toolRankings = [
   { tool: 'execute_sql', share: 69 },

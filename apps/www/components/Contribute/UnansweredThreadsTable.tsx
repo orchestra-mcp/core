@@ -1,5 +1,6 @@
 'use client'
 
+import type { ThreadRow } from '~/types/contribute'
 import { Filter, MessageSquareReply, Search, X } from 'lucide-react'
 import Link from 'next/link'
 import { parseAsString, useQueryState } from 'nuqs'
@@ -23,7 +24,6 @@ import {
   TableRow,
 } from 'ui'
 
-import type { ThreadRow } from '~/types/contribute'
 import { FilterPopover } from './FilterPopover'
 import { ChannelIcon, DiscordIcon, GitHubIcon, RedditIcon } from './Icons'
 

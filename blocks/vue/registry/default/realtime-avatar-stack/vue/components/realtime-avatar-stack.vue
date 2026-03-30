@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-  // @ts-ignore
-import AvatarStack from '@/components/avatar-stack.vue'
 import { useRealtimePresenceRoom } from '../composables/useRealtimePresenceRoom'
+// @ts-ignore
+import AvatarStack from '@/components/avatar-stack.vue'
 
 const props = defineProps<{
   roomName: string

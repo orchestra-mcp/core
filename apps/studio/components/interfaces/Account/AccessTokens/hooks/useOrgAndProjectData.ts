@@ -1,6 +1,6 @@
-import { useMemo } from 'react'
 import { useOrganizationsQuery } from 'data/organizations/organizations-query'
 import { useProjectsInfiniteQuery } from 'data/projects/projects-infinite-query'
+import { useMemo } from 'react'
 
 interface UseOrgAndProjectDataOptions {
   enabled?: boolean

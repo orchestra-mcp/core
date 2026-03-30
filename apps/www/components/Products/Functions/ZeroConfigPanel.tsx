@@ -1,5 +1,5 @@
-import React from 'react'
 import CodeWindow from '~/components/CodeWindow'
+import React from 'react'
 
 const code = `const supabase = createClient(
   Deno.env.get('SUPABASE_URL'),

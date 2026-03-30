@@ -1,7 +1,9 @@
-import { SupabaseProvider, useSupabaseClient } from '@/lib/supabase-context'
 import type { AppProps } from 'next/app'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
+
+import { SupabaseProvider, useSupabaseClient } from '@/lib/supabase-context'
+
 import '../styles/globals.css'
 
 function MyAppInner({ Component, pageProps }: AppProps) {

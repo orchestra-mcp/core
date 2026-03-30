@@ -1,9 +1,6 @@
 'use client'
 
 import { useDebounce } from '@uidotdev/usehooks'
-import { Loader2 } from 'lucide-react'
-import { useCallback, useMemo } from 'react'
-
 import { useParams } from 'common'
 import {
   useIsAnalyticsBucketsEnabled,
@@ -20,6 +17,9 @@ import {
 } from 'data/storage/buckets-query'
 import { useVectorBucketsQuery } from 'data/storage/vector-buckets-query'
 import { AnalyticsBucket as AnalyticsBucketIcon, FilesBucket, Storage, VectorBucket } from 'icons'
+import { Loader2 } from 'lucide-react'
+import { useCallback, useMemo } from 'react'
+
 import {
   EmptyState,
   ResultsList,

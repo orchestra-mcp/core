@@ -1,13 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useParams } from 'common'
+import { useUserUpdateMutation } from 'data/auth/user-update-mutation'
+import { User } from 'data/auth/users-infinite-query'
 import dayjs from 'dayjs'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-import * as z from 'zod'
-
-import { useParams } from 'common'
-import { useUserUpdateMutation } from 'data/auth/user-update-mutation'
-import { User } from 'data/auth/users-infinite-query'
 import {
   Button,
   cn,
@@ -23,6 +21,7 @@ import {
   Separator,
 } from 'ui'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
+import * as z from 'zod'
 
 interface BanUserModalProps {
   visible: boolean

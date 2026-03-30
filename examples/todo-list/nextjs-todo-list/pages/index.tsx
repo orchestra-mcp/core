@@ -1,9 +1,10 @@
-import Head from 'next/head'
-import { supabase } from '@/lib/initSupabase'
 import { Auth, ThemeSupa } from '@supabase/auth-ui-react'
-import TodoList from '@/components/TodoList'
 import { Session } from '@supabase/supabase-js'
+import Head from 'next/head'
 import { useEffect, useState } from 'react'
+
+import TodoList from '@/components/TodoList'
+import { supabase } from '@/lib/initSupabase'
 
 export default function Home() {
   const [session, setSession] = useState<Session | null>(null)

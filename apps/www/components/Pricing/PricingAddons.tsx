@@ -6,6 +6,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { FC } from 'react'
 import { Button, cn } from 'ui'
+
 import CostControlAnimation from './CostControlAnimation'
 
 const addons = [

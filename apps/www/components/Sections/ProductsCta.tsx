@@ -1,7 +1,7 @@
-import React from 'react'
 import SectionContainer from '~/components/Layouts/SectionContainer'
 import MagnifiedProducts from '~/components/MagnifiedProducts'
 import { PRODUCT_SHORTNAMES } from '~/lib/constants'
+import React from 'react'
 
 export type Products = PRODUCT_SHORTNAMES
 

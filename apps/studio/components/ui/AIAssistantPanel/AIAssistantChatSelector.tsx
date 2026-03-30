@@ -1,6 +1,5 @@
 import { Check, ChevronDown, Edit, Plus, Trash, X } from 'lucide-react'
 import { useState } from 'react'
-
 import { useAiAssistantStateSnapshot } from 'state/ai-assistant-state'
 import {
   Button,

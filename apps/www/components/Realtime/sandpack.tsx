@@ -1,6 +1,7 @@
 'use client'
 
-import { SandpackProvider, SandpackLayout, SandpackPreview } from '@codesandbox/sandpack-react'
+import { SandpackLayout, SandpackPreview, SandpackProvider } from '@codesandbox/sandpack-react'
+
 import './sandpack-styles.css' // Import custom Sandpack styles
 
 type SandpackProps = {

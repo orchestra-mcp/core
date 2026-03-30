@@ -51,6 +51,13 @@
   "plugins": {
     "shell": {
       "open": true
+    },
+    "store": null,
+    "updater": {
+      "endpoints": [
+        "https://releases.orchestra-mcp.com/{{target}}/{{arch}}/{{current_version}}"
+      ],
+      "pubkey": ""
     }
   }
 }

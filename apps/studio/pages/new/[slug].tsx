@@ -64,8 +64,8 @@ import { toast } from 'sonner'
 import type { NextPageWithLayout } from 'types'
 import { Button, Form_Shadcn_, FormField_Shadcn_, useWatch_Shadcn_ } from 'ui'
 import { Admonition } from 'ui-patterns/admonition'
-import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
+import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import { z } from 'zod'
 
 const sizesWithNoCostConfirmationRequired: DesiredInstanceSize[] = ['micro', 'small']
@@ -475,10 +475,7 @@ const Wizard: NextPageWithLayout = () => {
                   >
                     Cancel
                   </Button>
-                  <Button
-                    htmlType="submit"
-                    loading={isCreatingNewProject || isSuccessNewProject}
-                  >
+                  <Button htmlType="submit" loading={isCreatingNewProject || isSuccessNewProject}>
                     Create new project
                   </Button>
                 </div>
@@ -502,9 +499,7 @@ const Wizard: NextPageWithLayout = () => {
                         <CloudProviderSelector form={form} />
                       )}
 
-                      {IS_PLATFORM && canChooseInstanceSize && (
-                        <ComputeSizeSelector form={form} />
-                      )}
+                      {IS_PLATFORM && canChooseInstanceSize && <ComputeSizeSelector form={form} />}
 
                       <DatabasePasswordInput form={form} />
 
@@ -619,8 +614,8 @@ const Wizard: NextPageWithLayout = () => {
               <div className="text-sm text-foreground-light space-y-1">
                 <p>
                   Launching a project on compute size "{instanceLabel(instanceSize)}" increases your
-                  monthly costs by ${additionalMonthlySpend}, independent of how actively you use it.
-                  By clicking "I understand", you agree to the additional costs.{' '}
+                  monthly costs by ${additionalMonthlySpend}, independent of how actively you use
+                  it. By clicking "I understand", you agree to the additional costs.{' '}
                   <Link
                     href={`${DOCS_URL}/guides/platform/manage-your-usage/compute`}
                     target="_blank"

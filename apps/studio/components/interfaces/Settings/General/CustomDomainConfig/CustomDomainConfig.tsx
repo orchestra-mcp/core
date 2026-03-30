@@ -3,13 +3,13 @@ import { useFlag, useParams } from 'common'
 import { SupportLink } from 'components/interfaces/Support/SupportLink'
 import { InlineLinkClassName } from 'components/ui/InlineLink'
 import { UpgradeToPro } from 'components/ui/UpgradeToPro'
-import { IS_PLATFORM } from 'lib/constants'
 import {
   useCustomDomainsQuery,
   type CustomDomainsData,
 } from 'data/custom-domains/custom-domains-query'
 import { useProjectAddonsQuery } from 'data/subscriptions/project-addons-query'
 import { useSelectedOrganizationQuery } from 'hooks/misc/useSelectedOrganization'
+import { IS_PLATFORM } from 'lib/constants'
 import { AlertCircle } from 'lucide-react'
 import { Card, CardContent } from 'ui'
 import {

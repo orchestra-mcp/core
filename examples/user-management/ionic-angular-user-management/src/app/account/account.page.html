@@ -5,11 +5,7 @@
 </ion-header>
 
 <ion-content>
-  <app-avatar
-    [avatarUrl]="this.profile?.avatar_url"
-    (upload)="updateProfile($event)"
-  >
-  </app-avatar>
+  <app-avatar [avatarUrl]="this.profile?.avatar_url" (upload)="updateProfile($event)"> </app-avatar>
   <form>
     <ion-item>
       <ion-label position="stacked">Email</ion-label>
@@ -18,25 +14,15 @@
 
     <ion-item>
       <ion-label position="stacked">Name</ion-label>
-      <ion-input
-        type="text"
-        name="username"
-        [(ngModel)]="profile.username"
-      ></ion-input>
+      <ion-input type="text" name="username" [(ngModel)]="profile.username"></ion-input>
     </ion-item>
 
     <ion-item>
       <ion-label position="stacked">Website</ion-label>
-      <ion-input
-        type="url"
-        name="website"
-        [(ngModel)]="profile.website"
-      ></ion-input>
+      <ion-input type="url" name="website" [(ngModel)]="profile.website"></ion-input>
     </ion-item>
     <div class="ion-text-center">
-      <ion-button fill="clear" (click)="updateProfile()"
-        >Update Profile</ion-button
-      >
+      <ion-button fill="clear" (click)="updateProfile()">Update Profile</ion-button>
     </div>
   </form>
 

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Orchestra Twin Bridge</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="header">
+      <div class="header-logo">
+        <img src="../icons/icon-48.png" alt="Orchestra" class="logo" />
+        <div class="header-text">
+          <span class="app-name">Twin Bridge</span>
+          <span class="app-sub">by Orchestra</span>
+        </div>
+      </div>
+      <div class="connection-badge" id="connectionBadge">
+        <span class="dot" id="connectionDot"></span>
+        <span class="connection-label" id="connectionLabel">Connecting…</span>
+      </div>
+    </header>
+
+    <!-- Stats Row -->
+    <section class="stats">
+      <div class="stat-card">
+        <span class="stat-value" id="activeMonitors">—</span>
+        <span class="stat-label">Active Monitors</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="alertsToday">—</span>
+        <span class="stat-label">Alerts Today</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="scriptCount">—</span>
+        <span class="stat-label">Scripts</span>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- Domain Toggles -->
+    <section class="section">
+      <h3 class="section-title">Monitored Services</h3>
+      <div class="domain-list" id="domainList">
+        <!-- Injected by popup.js -->
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- Settings -->
+    <section class="section settings-row">
+      <div class="setting-item">
+        <div class="setting-info">
+          <span class="setting-label">Privacy Mode</span>
+          <span class="setting-desc">Hides message content, sends counts only</span>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="privacyToggle" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- Dynamic Scripts -->
+    <section class="section">
+      <div class="section-header">
+        <h3 class="section-title">Dynamic Scripts</h3>
+        <button class="btn-kill" id="killScriptsBtn" title="Disable all dynamic scripts">Kill All</button>
+      </div>
+      <div class="script-list" id="scriptList">
+        <div class="script-empty" id="scriptEmpty">No scripts installed</div>
+      </div>
+    </section>
+
+    <!-- Actions -->
+    <footer class="footer">
+      <button class="btn btn-ghost" id="pauseBtn">⏸ Pause</button>
+      <button class="btn btn-danger" id="disconnectBtn">⏹ Disconnect</button>
+    </footer>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

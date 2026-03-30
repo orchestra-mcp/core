@@ -1,6 +1,7 @@
 import { expect, Page } from '@playwright/test'
-import { waitForApiResponse } from './wait-for-response.js'
+
 import { toUrl } from './to-url.js'
+import { waitForApiResponse } from './wait-for-response.js'
 
 export const createUserViaUI = async (page: Page, ref: string, email: string, password: string) => {
   // Open the Add user dropdown

@@ -1,19 +1,13 @@
 <script setup lang="ts">
-import { ref } from "vue"
-import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { ref } from 'vue'
 
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { createClient } from '@/lib/supabase/client'
 
-const email = ref("")
+const email = ref('')
 const error = ref<string | null>(null)
 const success = ref(false)
 const isLoading = ref(false)
@@ -26,12 +20,12 @@ const handleForgotPassword = async (e: Event) => {
 
   try {
     const { error: supabaseError } = await supabase.auth.resetPasswordForEmail(email.value, {
-      redirectTo: "http://localhost:3000/update-password",
+      redirectTo: 'http://localhost:3000/update-password',
     })
     if (supabaseError) throw supabaseError
     success.value = true
   } catch (err: unknown) {
-    error.value = err instanceof Error ? err.message : "An error occurred"
+    error.value = err instanceof Error ? err.message : 'An error occurred'
   } finally {
     isLoading.value = false
   }
@@ -64,17 +58,11 @@ const handleForgotPassword = async (e: Event) => {
           <div class="flex flex-col gap-6">
             <div class="grid gap-2">
               <Label for="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                required
-                v-model="email"
-              />
+              <Input id="email" type="email" placeholder="m@example.com" required v-model="email" />
             </div>
             <p v-if="error" class="text-sm text-red-500">{{ error }}</p>
             <Button type="submit" class="w-full" :disabled="isLoading">
-              {{ isLoading ? "Sending..." : "Send reset email" }}
+              {{ isLoading ? 'Sending...' : 'Send reset email' }}
             </Button>
           </div>
           <div class="mt-4 text-center text-sm">

@@ -1,14 +1,15 @@
 'use client'
 
+import { safeHistoryReplaceState } from '~/lib/historyUtils'
 import { useEffect, useReducer, useRef } from 'react'
-import { PhoneLoginsItems } from '../Navigation/NavigationMenu/NavigationMenu.constants'
-import { IconPanel } from 'ui-patterns/IconPanel'
 import { Dialog, DialogContent, DialogHeader, DialogSection, Heading } from 'ui'
+import { IconPanel } from 'ui-patterns/IconPanel'
+
+import { PhoneLoginsItems } from '../Navigation/NavigationMenu/NavigationMenu.constants'
 import MessageBird from './MessageBirdConfig.mdx'
+import TextLocal from './TextLocalConfig.mdx'
 import Twilio from './TwilioConfig.mdx'
 import Vonage from './VonageConfig.mdx'
-import TextLocal from './TextLocalConfig.mdx'
-import { safeHistoryReplaceState } from '~/lib/historyUtils'
 
 const reducer = (_, action: (typeof PhoneLoginsItems)[number] | undefined) => {
   const url = new URL(document.location.href)

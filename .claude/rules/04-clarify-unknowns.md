@@ -1,6 +1,6 @@
 ---
-description: "During planning, ask the user immediately about anything unclear using AskUserQuestion."
-globs: "*"
+description: 'During planning, ask the user immediately about anything unclear using AskUserQuestion.'
+globs: '*'
 alwaysApply: true
 ---
 

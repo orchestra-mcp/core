@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import { draftMode } from 'next/headers'
 
 import BlogPostClient from './BlogPostClient'
-import { SITE_ORIGIN } from '@/lib/constants'
 import { getAbsoluteBlogSocialImage } from '@/lib/blog-images'
+import { SITE_ORIGIN } from '@/lib/constants'
 import { getAllPostSlugs, getPostdata, getSortedPosts } from '@/lib/posts'
 import type { Blog, BlogData, PostReturnType } from '@/types/post'
 

@@ -1,5 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { DEFAULT_EXPOSED_SCHEMAS } from 'lib/api/self-hosted/constants'
+// Must import after mock setup
+import { getDebuggingOperations } from 'lib/api/self-hosted/mcp'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock getLints to capture what arguments the MCP operations pass
 const mockGetLints = vi.fn()
@@ -18,9 +20,6 @@ vi.mock('lib/api/self-hosted/settings', () => ({
     service_api_keys: [{ api_key: 'test', name: 'anon key', tags: 'anon' }],
   }),
 }))
-
-// Must import after mock setup
-import { getDebuggingOperations } from 'lib/api/self-hosted/mcp'
 
 describe('MCP advisor operations pass exposedSchemas to getLints', () => {
   const headers = { Authorization: 'Bearer test' }

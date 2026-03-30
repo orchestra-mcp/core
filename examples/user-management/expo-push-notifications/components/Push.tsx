@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react'
-import { Text, View, Button, Platform } from 'react-native'
+import { Session } from '@supabase/supabase-js'
+import Constants from 'expo-constants'
 import * as Device from 'expo-device'
 import * as Notifications from 'expo-notifications'
-import Constants from 'expo-constants'
-import { Session } from '@supabase/supabase-js'
+import { useEffect, useRef, useState } from 'react'
+import { Button, Platform, Text, View } from 'react-native'
+
 import { supabase } from '../lib/supabase'
 
 Notifications.setNotificationHandler({

@@ -1,4 +1,5 @@
 import { CubeIcon } from '@heroicons/react/outline'
+import { TwoColumnsSectionProps } from '~/components/Solutions/TwoColumnsSection'
 import { useBreakpoint } from 'common'
 import type { SecuritySectionProps } from 'components/Enterprise/Security'
 import { frameworks } from 'components/Hero/HeroFrameworks'
@@ -25,8 +26,8 @@ import {
   ShieldCheck,
   Sparkles,
   Timer,
-  UserX,
   Users,
+  UserX,
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { PRODUCT_SHORTNAMES } from 'shared-data/products'
@@ -34,14 +35,13 @@ import { Image } from 'ui'
 
 import MainProducts from '../MainProducts'
 import {
-  type FeaturesSection,
   FrameworkLink,
+  getEditors,
+  type FeaturesSection,
   type FrameworkLinkProps,
   type HeroSection,
   type Metadata,
-  getEditors,
 } from './solutions.utils'
-import { TwoColumnsSectionProps } from '~/components/Solutions/TwoColumnsSection'
 
 const AuthVisual = dynamic(() => import('components/Products/AuthVisual'))
 const FunctionsVisual = dynamic(() => import('components/Products/FunctionsVisual'))

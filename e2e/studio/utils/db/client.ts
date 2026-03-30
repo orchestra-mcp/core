@@ -1,4 +1,4 @@
-import { env } from "../../env.config.js"
+import { env } from '../../env.config.js'
 
 /**
  * Execute a SQL query against the local Supabase database via pg-meta.

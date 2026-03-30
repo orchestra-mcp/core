@@ -1,10 +1,10 @@
-import { ExternalLink } from 'lucide-react'
-import Link from 'next/link'
-import type { UseFormReturn } from 'react-hook-form'
 // End of third-party imports
 
 import { CLIENT_LIBRARIES } from 'common/constants'
 import { useIsFeatureEnabled } from 'hooks/misc/useIsFeatureEnabled'
+import { ExternalLink } from 'lucide-react'
+import Link from 'next/link'
+import type { UseFormReturn } from 'react-hook-form'
 import {
   Button,
   cn,
@@ -18,6 +18,7 @@ import {
   SelectValue_Shadcn_,
 } from 'ui'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
+
 import type { ExtendedSupportCategories } from './Support.constants'
 import type { SupportFormValues } from './SupportForm.schema'
 

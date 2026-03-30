@@ -1,8 +1,8 @@
 'use client'
 
+import { REFERENCES } from '~/content/navigation.references'
 import { ChevronDown } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-
 import {
   Badge,
   DropdownMenu,
@@ -11,8 +11,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from 'ui'
-
-import { REFERENCES } from '~/content/navigation.references'
 
 const RevVersionDropdown = ({
   library,

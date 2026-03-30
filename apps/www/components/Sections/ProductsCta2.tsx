@@ -1,9 +1,9 @@
-import Link from 'next/link'
-import React from 'react'
-import { Button, cn } from 'ui'
 import SectionContainer from '~/components/Layouts/SectionContainer'
 import MagnifiedProducts from '~/components/MagnifiedProducts'
 import { PRODUCT_SHORTNAMES } from '~/lib/constants'
+import Link from 'next/link'
+import React from 'react'
+import { Button, cn } from 'ui'
 
 export type Products = PRODUCT_SHORTNAMES
 

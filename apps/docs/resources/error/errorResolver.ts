@@ -1,5 +1,4 @@
 import * as Sentry from '@sentry/nextjs'
-import { GraphQLError, GraphQLNonNull, GraphQLResolveInfo, GraphQLString } from 'graphql'
 import type {
   ErrorCollection,
   RootQueryTypeErrorArgs,
@@ -8,6 +7,8 @@ import type {
 } from '~/__generated__/graphql'
 import { ApiError, convertUnknownToApiError, extractMessageFromAnyError } from '~/app/api/utils'
 import { Result } from '~/features/helpers.fn'
+import { GraphQLError, GraphQLNonNull, GraphQLResolveInfo, GraphQLString } from 'graphql'
+
 import {
   createCollectionType,
   GraphQLCollectionBuilder,

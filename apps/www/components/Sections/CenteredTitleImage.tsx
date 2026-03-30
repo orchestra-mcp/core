@@ -1,5 +1,5 @@
-import React from 'react'
 import SectionContainer from '~/components/Layouts/SectionContainer'
+import React from 'react'
 
 interface Props {
   title: string

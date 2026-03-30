@@ -1,4 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import {
+  SupaSquadApplication,
+  supaSquadApplicationSchema,
+} from '~/data/open-source/contributing/supasquad.utils'
 import { AlertCircle } from 'lucide-react'
 import { FC, memo, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -32,10 +36,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from 'ui/src/components/shadcn/ui/alert-dialog'
-import {
-  SupaSquadApplication,
-  supaSquadApplicationSchema,
-} from '~/data/open-source/contributing/supasquad.utils'
+
 import { CountrySelector } from '../Supasquad/CountrySelector'
 
 interface FormItem_Shadcn_ {

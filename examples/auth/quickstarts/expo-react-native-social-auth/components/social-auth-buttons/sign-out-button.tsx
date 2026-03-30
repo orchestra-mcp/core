@@ -1,6 +1,7 @@
-import { supabase } from '@/lib/supabase'
 import React from 'react'
 import { Button } from 'react-native'
+
+import { supabase } from '@/lib/supabase'
 
 async function onSignOutButtonPress() {
   const { error } = await supabase.auth.signOut()

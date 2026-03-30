@@ -1,8 +1,8 @@
-import Link from 'next/link'
-
-import { ChevronLeft } from 'lucide-react'
 import { BASE_PATH } from '~/lib/constants'
 import clientLibsCommon from '~/spec/common-cli.yml' with { type: 'yml' }
+import { ChevronLeft } from 'lucide-react'
+import Link from 'next/link'
+
 import * as NavItems from './NavigationMenu.constants'
 
 const NavigationMenuCliList = ({ currentLevel, setLevel, id }) => {

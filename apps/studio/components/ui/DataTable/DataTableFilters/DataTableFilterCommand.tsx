@@ -1,9 +1,8 @@
 import { formatDistanceToNow } from 'date-fns'
+import { useLocalStorage } from 'hooks/misc/useLocalStorage'
 import { LoaderCircle, Search, X } from 'lucide-react'
 import { ParserBuilder } from 'nuqs'
 import { useEffect, useMemo, useRef, useState } from 'react'
-
-import { useLocalStorage } from 'hooks/misc/useLocalStorage'
 import {
   cn,
   Command_Shadcn_ as Command,
@@ -15,6 +14,7 @@ import {
   CommandSeparator_Shadcn_ as CommandSeparator,
   Separator,
 } from 'ui'
+
 import type { DataTableFilterField } from '../DataTable.types'
 import { formatCompactNumber } from '../DataTable.utils'
 import { Kbd } from '../primitives/Kbd'

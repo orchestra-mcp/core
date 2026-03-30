@@ -1,4 +1,4 @@
-import { SurveyChart, buildWhereClause } from '../SurveyChart'
+import { buildWhereClause, SurveyChart } from '../SurveyChart'
 
 function generateBiggestChallengeSQL(activeFilters: Record<string, string>) {
   const whereClause = buildWhereClause(activeFilters, ['biggest_challenge IS NOT NULL'])

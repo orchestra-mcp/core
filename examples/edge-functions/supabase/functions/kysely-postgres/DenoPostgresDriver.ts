@@ -1,3 +1,4 @@
+import { Pool, PoolClient } from 'https://deno.land/x/postgres@v0.17.0/mod.ts'
 import {
   CompiledQuery,
   DatabaseConnection,
@@ -8,7 +9,6 @@ import {
 } from 'https://esm.sh/kysely@0.23.4'
 import { freeze, isFunction } from 'https://esm.sh/kysely@0.23.4/dist/esm/util/object-utils.js'
 import { extendStackTrace } from 'https://esm.sh/kysely@0.23.4/dist/esm/util/stack-trace-utils.js'
-import { Pool, PoolClient } from 'https://deno.land/x/postgres@v0.17.0/mod.ts'
 
 export interface PostgresDialectConfig {
   pool: Pool | (() => Promise<Pool>)

@@ -1,7 +1,3 @@
-import dayjs from 'dayjs'
-import Link from 'next/link'
-import { useEffect, useRef } from 'react'
-
 import { useParams } from 'common'
 import { AdvisorWidget } from 'components/interfaces/Home/AdvisorWidget'
 import { ClientLibrary } from 'components/interfaces/Home/ClientLibrary'
@@ -19,11 +15,14 @@ import { useEdgeFunctionsQuery } from 'data/edge-functions/edge-functions-query'
 import { useProjectDetailQuery } from 'data/projects/project-detail-query'
 import { useReadReplicasQuery } from 'data/read-replicas/replicas-query'
 import { useTablesQuery } from 'data/tables/tables-query'
+import dayjs from 'dayjs'
 import { useCustomContent } from 'hooks/custom-content/useCustomContent'
 import { useIsFeatureEnabled } from 'hooks/misc/useIsFeatureEnabled'
 import { useSelectedOrganizationQuery } from 'hooks/misc/useSelectedOrganization'
 import { useIsOrioleDb, useSelectedProjectQuery } from 'hooks/misc/useSelectedProject'
 import { DOCS_URL, IS_PLATFORM, PROJECT_STATUS } from 'lib/constants'
+import Link from 'next/link'
+import { useEffect, useRef } from 'react'
 import { useAppStateSnapshot } from 'state/app-state'
 import {
   Badge,

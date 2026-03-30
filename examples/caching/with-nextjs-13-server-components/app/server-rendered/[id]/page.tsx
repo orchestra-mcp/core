@@ -1,5 +1,6 @@
-import supabase from '../../../utils/supabase'
 import { notFound } from 'next/navigation'
+
+import supabase from '../../../utils/supabase'
 
 // do not cache this page
 export const revalidate = 0

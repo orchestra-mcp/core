@@ -1,5 +1,6 @@
-import { UserData } from './use-conf-data'
 import useConfData from '~/components/LaunchWeek/hooks/use-conf-data'
+
+import { UserData } from './use-conf-data'
 
 function calculateWinChances(userData: UserData): number {
   // Just signing up gives you 1

@@ -1,8 +1,7 @@
-import { isbot } from 'isbot'
-import { NextResponse, type NextRequest } from 'next/server'
-
 import { clientSdkIds } from '~/content/navigation.references'
 import { BASE_PATH } from '~/lib/constants'
+import { isbot } from 'isbot'
+import { NextResponse, type NextRequest } from 'next/server'
 
 const REFERENCE_PATH = `${BASE_PATH ?? ''}/reference`
 

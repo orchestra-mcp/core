@@ -1,14 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PermissionAction } from '@supabase/shared-types/out/constants'
-import Link from 'next/link'
-import { useState } from 'react'
-import { SubmitHandler, useForm } from 'react-hook-form'
-import { toast } from 'sonner'
-import * as z from 'zod'
-
 import { useParams } from 'common'
 import AlertError from 'components/ui/AlertError'
-import { IS_PLATFORM } from 'lib/constants'
 import { ToggleSpendCapButton } from 'components/ui/ToggleSpendCapButton'
 import { UpgradePlanButton } from 'components/ui/UpgradePlanButton'
 import { useDatabasePoliciesQuery } from 'data/database-policies/database-policies-query'
@@ -21,6 +14,11 @@ import {
 import { useAsyncCheckPermissions } from 'hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from 'hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from 'hooks/misc/useSelectedProject'
+import { IS_PLATFORM } from 'lib/constants'
+import Link from 'next/link'
+import { useState } from 'react'
+import { SubmitHandler, useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import {
   Button,
   Card,
@@ -37,6 +35,7 @@ import {
 import { Admonition } from 'ui-patterns'
 import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
+import * as z from 'zod'
 
 const formId = 'realtime-configuration-form'
 

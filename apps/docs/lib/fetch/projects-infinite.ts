@@ -1,6 +1,7 @@
 import { useInfiniteQuery, UseInfiniteQueryOptions } from '@tanstack/react-query'
-import { components } from 'api-types'
 import type { ResponseError } from '~/types/fetch'
+import { components } from 'api-types'
+
 import { get } from './fetchWrappers'
 
 const DEFAULT_LIMIT = 10

@@ -114,7 +114,14 @@ export function MobileMenuContent({
   )
 
   const allTopLevelRoutes = useMemo(
-    () => [homeRoute, ...toolRoutes, ...productRoutes, ...orchestraRoutes, ...otherRoutes, ...settingsRoutes],
+    () => [
+      homeRoute,
+      ...toolRoutes,
+      ...productRoutes,
+      ...orchestraRoutes,
+      ...otherRoutes,
+      ...settingsRoutes,
+    ],
     [homeRoute, toolRoutes, productRoutes, orchestraRoutes, otherRoutes, settingsRoutes]
   )
 

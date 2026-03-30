@@ -1,0 +1,555 @@
+[
+  {
+    "type": "plugin",
+    "name": "Gmail Monitor",
+    "slug": "gmail-monitor",
+    "description": "Monitor Gmail inbox — unread count and new email detection with sender, subject, and language tagging",
+    "category": "email",
+    "tags": ["gmail", "email", "google", "monitoring", "inbox"],
+    "version": "1.0.0",
+    "content": {
+      "domain": "mail.google.com",
+      "code": "/**\n * Orchestra Twin Bridge — Gmail Content Script\n */\n\n(() => {\n  if (window.__TwinGmailLoaded) return;\n  window.__TwinGmailLoaded = true;\n\n  const monitor = new TwinMonitor('gmail');\n\n  // Load selectors from config (embedded for performance)\n  const SEL = {\n    unreadBadge: '.bsU',\n    conversationList: '.zA',\n    openConversation: '.h7',\n    sender: '.yW span[email]',\n    subject: '.hP',\n    preview: '.y2',\n  };\n\n  // ─── Unread Count ──────────────────────────────────────────────────────────\n\n  const sendUnreadCount = monitor.debounce(() => {\n    const badge = document.querySelector(SEL.unreadBadge);\n    const count = badge ? parseInt(badge.textContent.trim(), 10) || 0 : 0;\n\n    if (monitor.hasChanged('unreadCount', count)) {\n      monitor.send('GMAIL_UNREAD_COUNT', { count, url: location.href });\n    }\n  }, 1500);\n\n  // ─── New Email Detection ───────────────────────────────────────────────────\n\n  const sendNewEmails = monitor.debounce(() => {\n    const rows = document.querySelectorAll(`${SEL.conversationList}.zE`); // .zE = unread\n    const emails = Array.from(rows).slice(0, 5).map((row) => {\n      const senderEl = row.querySelector(SEL.sender);\n      const subjectEl = row.querySelector(SEL.subject);\n      const previewEl = row.querySelector(SEL.preview);\n      const lang = TwinLanguage.detectLanguage(subjectEl?.textContent || '');\n      return {\n        sender: senderEl?.getAttribute('email') || senderEl?.textContent?.trim(),\n        subject: subjectEl?.textContent?.trim(),\n        preview: previewEl?.textContent?.trim()?.slice(0, 100),\n        lang,\n      };\n    });\n\n    if (emails.length > 0 && monitor.hasChanged('unreadEmails', emails)) {\n      monitor.send('GMAIL_NEW_EMAILS', { emails, count: rows.length });\n    }\n  }, 2000);\n\n  // ─── Watchers ──────────────────────────────────────────────────────────────\n\n  monitor.watch(SEL.conversationList, () => {\n    sendUnreadCount();\n    sendNewEmails();\n  }, { observeId: 'inbox', childList: true, subtree: false });\n\n  // Also watch badge directly\n  monitor.watch(SEL.unreadBadge, () => {\n    sendUnreadCount();\n  }, { observeId: 'badge', childList: true, characterData: true, subtree: true });\n\n  // ─── Initial Scan ──────────────────────────────────────────────────────────\n\n  sendUnreadCount();\n  sendNewEmails();\n})();",
+      "mode": "passive",
+      "selectors": {
+        "version": "2026-03",
+        "unread": ".aim .bsU",
+        "unreadBadge": ".bsU",
+        "inboxCount": "div[data-tooltip='Inbox'] .bsU",
+        "conversationList": ".zA",
+        "openConversation": ".h7",
+        "sender": ".yW span[email]",
+        "subject": ".hP",
+        "preview": ".y2",
+        "composeButton": ".T-I.J-J5-Ji.T-I-KE.L3",
+        "notificationBanner": ".pE"
+      }
+    },
+    "readme": "# Gmail Monitor\n\nMonitors your Gmail inbox in real time and surfaces unread counts and new email metadata to your Orchestra AI agents.\n\n## What it tracks\n\n- **Unread email count** — badge value from the Gmail sidebar, updated on every inbox change\n- **New emails** — up to 5 most recent unread threads with sender address, subject line, preview snippet (100 chars), and detected language\n\n## How it works\n\nThe plugin injects a passive content script into `mail.google.com`. It attaches `MutationObserver` watchers to the unread badge and conversation list. Changes are debounced (1.5–2 s) and sent to the Orchestra service worker only when the value has actually changed — no duplicate events.\n\n## Events emitted\n\n| Event | Payload |\n|---|---|\n| `GMAIL_UNREAD_COUNT` | `{ count, url }` |\n| `GMAIL_NEW_EMAILS` | `{ emails: [{ sender, subject, preview, lang }], count }` |\n\n## Privacy\n\nOnly metadata is captured — sender address, subject, and a 100-character preview. Email body content is never read or transmitted.",
+    "pricing": "free",
+    "visibility": "public",
+    "status": "published",
+    "featured": true
+  },
+  {
+    "type": "plugin",
+    "name": "Slack Monitor",
+    "slug": "slack-monitor",
+    "description": "Monitor Slack workspace — unread channel count, mention count, and new message detection with sender and language tagging",
+    "category": "messaging",
+    "tags": ["slack", "messaging", "team", "monitoring", "mentions"],
+    "version": "1.0.0",
+    "content": {
+      "domain": "app.slack.com",
+      "code": "/**\n * Orchestra Twin Bridge — Slack Content Script\n */\n\n(() => {\n  if (window.__TwinSlackLoaded) return;\n  window.__TwinSlackLoaded = true;\n\n  const monitor = new TwinMonitor('slack');\n\n  const SEL = {\n    unreadChannels: '.p-channel_sidebar__channel--unread',\n    mentionBadge: '.p-channel_sidebar__badge--mention',\n    messageList: \"[data-qa='virtual-list-scroll-container']\",\n    message: \"[data-qa='message_content']\",\n    senderName: \"[data-qa='message_sender_name']\",\n    typingIndicator: \"[data-qa='typing_indicator']\",\n  };\n\n  // ─── Unread Summary ────────────────────────────────────────────────────────\n\n  const sendUnreadSummary = monitor.debounce(() => {\n    const unreadChannels = document.querySelectorAll(SEL.unreadChannels);\n    const mentions = document.querySelectorAll(SEL.mentionBadge);\n    const mentionCount = Array.from(mentions).reduce((acc, el) => {\n      return acc + (parseInt(el.textContent, 10) || 0);\n    }, 0);\n\n    const summary = {\n      unreadChannelCount: unreadChannels.length,\n      mentionCount,\n    };\n\n    if (monitor.hasChanged('unreadSummary', summary)) {\n      monitor.send('SLACK_UNREAD_SUMMARY', summary);\n    }\n  }, 1500);\n\n  // ─── New Message Detection ─────────────────────────────────────────────────\n\n  const sendNewMessage = monitor.debounce(() => {\n    const messages = document.querySelectorAll(SEL.message);\n    const last = messages[messages.length - 1];\n    if (!last) return;\n\n    const sender = last.closest('[data-qa=\"message_container\"]')\n      ?.querySelector(SEL.senderName)?.textContent?.trim();\n    const text = last.textContent?.trim()?.slice(0, 200);\n    const lang = TwinLanguage.detectLanguage(text || '');\n\n    const msgKey = `${sender}:${text?.slice(0, 40)}`;\n    if (monitor.hasChanged('lastMessage', msgKey)) {\n      monitor.send('SLACK_NEW_MESSAGE', { sender, text, lang, channel: location.pathname });\n    }\n  }, 2000);\n\n  // ─── Watchers ──────────────────────────────────────────────────────────────\n\n  monitor.watch('.p-channel_sidebar', sendUnreadSummary, {\n    observeId: 'sidebar',\n    childList: true,\n    subtree: true,\n    attributes: true,\n    attributeFilter: ['class'],\n  });\n\n  monitor.watch(SEL.messageList, sendNewMessage, {\n    observeId: 'messages',\n    childList: true,\n    subtree: false,\n  });\n\n  sendUnreadSummary();\n})();",
+      "mode": "passive",
+      "selectors": {
+        "version": "2026-03",
+        "unreadBadge": ".p-channel_sidebar__badge",
+        "channelList": ".p-channel_sidebar__channel",
+        "activeChannel": ".p-channel_sidebar__channel--selected",
+        "messageInput": "[data-qa='message_input']",
+        "messageList": "[data-qa='virtual-list-scroll-container']",
+        "message": "[data-qa='message_content']",
+        "senderName": "[data-qa='message_sender_name']",
+        "unreadChannels": ".p-channel_sidebar__channel--unread",
+        "mentionBadge": ".p-channel_sidebar__badge--mention",
+        "typingIndicator": "[data-qa='typing_indicator']"
+      }
+    },
+    "readme": "# Slack Monitor\n\nMonitors your Slack workspace for unread activity and new messages, keeping your Orchestra agents informed of team communication.\n\n## What it tracks\n\n- **Unread channel count** — number of channels with unread messages in the sidebar\n- **Mention count** — total `@mention` badges summed across all channels\n- **New messages** — most recent message with sender name, text (200 chars), language, and current channel path\n\n## How it works\n\nThe plugin attaches two `MutationObserver` instances: one on the sidebar (for unread/mention counts) and one on the virtual message list (for new message detection). Changes are debounced and de-duplicated before being forwarded to Orchestra.\n\n## Events emitted\n\n| Event | Payload |\n|---|---|\n| `SLACK_UNREAD_SUMMARY` | `{ unreadChannelCount, mentionCount }` |\n| `SLACK_NEW_MESSAGE` | `{ sender, text, lang, channel }` |\n\n## Privacy\n\nOnly the last visible message is captured — sender name and a 200-character text snippet. Message history is never bulk-read.",
+    "pricing": "free",
+    "visibility": "public",
+    "status": "published",
+    "featured": true
+  },
+  {
+    "type": "plugin",
+    "name": "Discord Monitor",
+    "slug": "discord-monitor",
+    "description": "Monitor Discord — unread channel count and mention badge totals across all servers and DMs",
+    "category": "messaging",
+    "tags": ["discord", "messaging", "gaming", "community", "monitoring"],
+    "version": "1.0.0",
+    "content": {
+      "domain": "discord.com",
+      "code": "/**\n * Orchestra Twin Bridge — Discord Content Script\n */\n\n(() => {\n  if (window.__TwinDiscordLoaded) return;\n  window.__TwinDiscordLoaded = true;\n\n  const monitor = new TwinMonitor('discord');\n\n  const sendUnreadSummary = monitor.debounce(() => {\n    const unread = document.querySelectorAll('[class*=\"unread\"]');\n    const mentions = document.querySelectorAll('[class*=\"badge\"]');\n\n    let mentionCount = 0;\n    mentions.forEach((el) => {\n      const n = parseInt(el.textContent, 10);\n      if (!isNaN(n)) mentionCount += n;\n    });\n\n    if (monitor.hasChanged('discord_unread', { unread: unread.length, mentionCount })) {\n      monitor.send('DISCORD_UNREAD_SUMMARY', {\n        unreadChannels: unread.length,\n        mentionCount,\n        url: location.href,\n      });\n    }\n  }, 2000);\n\n  monitor.watch('[class*=\"sidebar\"]', sendUnreadSummary, {\n    observeId: 'sidebar',\n    childList: true,\n    subtree: true,\n    attributes: true,\n    attributeFilter: ['class'],\n  });\n\n  sendUnreadSummary();\n})();",
+      "mode": "passive",
+      "selectors": {
+        "version": "2026-03",
+        "serverList": "nav[aria-label='Servers sidebar'] ul",
+        "channelList": "[data-list-id='channels']",
+        "unreadChannel": "[class*='unread']",
+        "mentionBadge": "[class*='badge']",
+        "messageList": "ol[data-list-id='chat-messages']",
+        "message": "li[class*='messageListItem']",
+        "senderName": "[class*='username']",
+        "directMessages": "[href='/channels/@me']",
+        "dmList": "ul[aria-label='Direct Messages']",
+        "notificationBell": "[aria-label='Inbox']"
+      }
+    },
+    "readme": "# Discord Monitor\n\nMonitors your Discord client for unread channels and mention badges across all servers and direct messages.\n\n## What it tracks\n\n- **Unread channel count** — total elements with unread CSS class across all visible servers\n- **Mention count** — sum of all numeric badge values (server pings, DM pings, @mentions)\n\n## How it works\n\nDiscord heavily obfuscates its CSS class names with hashes. The plugin uses class-prefix matching (`[class*=\"unread\"]`, `[class*=\"badge\"]`) to survive Discord's frequent UI rebuilds. A MutationObserver on the sidebar fires on any DOM or attribute change, debounced to 2 seconds.\n\n## Events emitted\n\n| Event | Payload |\n|---|---|\n| `DISCORD_UNREAD_SUMMARY` | `{ unreadChannels, mentionCount, url }` |\n\n## Privacy\n\nOnly counts are captured — no message content, usernames, or server names are read or transmitted.",
+    "pricing": "free",
+    "visibility": "public",
+    "status": "published",
+    "featured": true
+  },
+  {
+    "type": "plugin",
+    "name": "WhatsApp Monitor",
+    "slug": "whatsapp-monitor",
+    "description": "Monitor WhatsApp Web — total unread message count and per-chat breakdown of active conversations",
+    "category": "messaging",
+    "tags": ["whatsapp", "messaging", "mobile", "monitoring", "chat"],
+    "version": "1.0.0",
+    "content": {
+      "domain": "web.whatsapp.com",
+      "code": "/**\n * Orchestra Twin Bridge — WhatsApp Web Content Script\n */\n\n(() => {\n  if (window.__TwinWhatsAppLoaded) return;\n  window.__TwinWhatsAppLoaded = true;\n\n  const monitor = new TwinMonitor('whatsapp');\n\n  const SEL = {\n    chatList: \"#pane-side [data-testid='chat-list']\",\n    unreadBadge: \"[data-testid='icon-unread-count']\",\n    chatTitle: \"[data-testid='cell-frame-title']\",\n  };\n\n  const sendUnreadSummary = monitor.debounce(() => {\n    const badges = document.querySelectorAll(SEL.unreadBadge);\n    let totalUnread = 0;\n    const chats = [];\n\n    badges.forEach((badge) => {\n      const count = parseInt(badge.textContent, 10) || 1;\n      totalUnread += count;\n      const row = badge.closest('[data-testid=\"cell-frame-container\"]');\n      const title = row?.querySelector(SEL.chatTitle)?.textContent?.trim();\n      if (title) chats.push({ title, count });\n    });\n\n    if (monitor.hasChanged('unreadTotal', totalUnread)) {\n      monitor.send('WHATSAPP_UNREAD_SUMMARY', {\n        totalUnread,\n        chatCount: chats.length,\n        chats: chats.slice(0, 5),\n      });\n    }\n  }, 2000);\n\n  monitor.watch(SEL.chatList, sendUnreadSummary, {\n    observeId: 'chatlist',\n    childList: true,\n    subtree: true,\n  });\n\n  sendUnreadSummary();\n})();",
+      "mode": "passive",
+      "selectors": {
+        "version": "2026-03",
+        "chatList": "#pane-side [data-testid='chat-list']",
+        "chatItem": "[data-testid='cell-frame-container']",
+        "unreadBadge": "[data-testid='icon-unread-count']",
+        "chatTitle": "[data-testid='cell-frame-title']",
+        "lastMessage": "[data-testid='last-msg-status']",
+        "activeChat": ".two",
+        "messageInput": "[data-testid='conversation-compose-box-input']",
+        "messageList": "[data-testid='conversation-panel-messages']",
+        "incomingMessage": "[data-testid='msg-container'][class*='message-in']",
+        "status": "[data-testid='status-v3']"
+      }
+    },
+    "readme": "# WhatsApp Monitor\n\nMonitors WhatsApp Web for unread messages and surfaces a per-chat breakdown to your Orchestra agents.\n\n## What it tracks\n\n- **Total unread count** — sum of all unread badge values across the chat list\n- **Per-chat breakdown** — up to 5 chats with their title and individual unread count\n- **Chat count** — number of conversations with unread messages\n\n## How it works\n\nThe plugin observes the WhatsApp Web chat list panel using a `MutationObserver`. When the unread badge total changes, it collects individual chat titles and counts and sends a summary event. Debounced to 2 seconds to avoid flooding during rapid notification arrivals.\n\n## Events emitted\n\n| Event | Payload |\n|---|---|\n| `WHATSAPP_UNREAD_SUMMARY` | `{ totalUnread, chatCount, chats: [{ title, count }] }` |\n\n## Privacy\n\nOnly chat names and unread counts are captured. Message content is never read or transmitted.",
+    "pricing": "free",
+    "visibility": "public",
+    "status": "published",
+    "featured": true
+  },
+  {
+    "type": "plugin",
+    "name": "Telegram Monitor",
+    "slug": "telegram-monitor",
+    "description": "Monitor Telegram Web — total unread message count and active chat count across all conversations",
+    "category": "messaging",
+    "tags": ["telegram", "messaging", "monitoring", "chat", "notifications"],
+    "version": "1.0.0",
+    "content": {
+      "domain": "web.telegram.org",
+      "code": "/**\n * Orchestra Twin Bridge — Telegram Web Content Script\n */\n\n(() => {\n  if (window.__TwinTelegramLoaded) return;\n  window.__TwinTelegramLoaded = true;\n\n  const monitor = new TwinMonitor('telegram');\n\n  const sendUnreadSummary = monitor.debounce(() => {\n    const badges = document.querySelectorAll('.badge');\n    let totalUnread = 0;\n    badges.forEach((badge) => {\n      const n = parseInt(badge.textContent, 10);\n      if (!isNaN(n)) totalUnread += n;\n    });\n\n    if (monitor.hasChanged('tg_unread', totalUnread)) {\n      monitor.send('TELEGRAM_UNREAD_SUMMARY', {\n        totalUnread,\n        chatCount: badges.length,\n        url: location.href,\n      });\n    }\n  }, 2000);\n\n  monitor.watch('.chatlist-container', sendUnreadSummary, {\n    observeId: 'chatlist',\n    childList: true,\n    subtree: true,\n  });\n\n  sendUnreadSummary();\n})();",
+      "mode": "passive",
+      "selectors": {
+        "version": "2026-03",
+        "chatList": ".chatlist-container",
+        "chatItem": ".chatlist-chat",
+        "unreadBadge": ".badge",
+        "chatTitle": ".fullName",
+        "lastMessage": ".message",
+        "activeChat": ".chatlist-chat.active",
+        "messageList": ".messages-list",
+        "incomingMessage": ".message.is-in",
+        "messageInput": "[contenteditable='true'].input-message-input",
+        "typingIndicator": ".peer-title + .peer-subtitle"
+      }
+    },
+    "readme": "# Telegram Monitor\n\nMonitors Telegram Web for unread messages across all chats, groups, and channels.\n\n## What it tracks\n\n- **Total unread count** — sum of all numeric badge values in the chat list\n- **Chat count** — number of conversations with active unread badges\n\n## How it works\n\nA `MutationObserver` on the `.chatlist-container` element fires whenever chats are added, removed, or updated. Badge values are parsed and summed. An event is only emitted when the total changes.\n\n## Events emitted\n\n| Event | Payload |\n|---|---|\n| `TELEGRAM_UNREAD_SUMMARY` | `{ totalUnread, chatCount, url }` |\n\n## Privacy\n\nOnly unread counts and chat counts are captured. Chat names and message content are never read or transmitted.",
+    "pricing": "free",
+    "visibility": "public",
+    "status": "published",
+    "featured": false
+  },
+  {
+    "type": "plugin",
+    "name": "X / Twitter Monitor",
+    "slug": "twitter-monitor",
+    "description": "Monitor X (Twitter) — notification count and direct message count from the navigation tab bar",
+    "category": "social",
+    "tags": ["twitter", "x", "social", "notifications", "dm", "monitoring"],
+    "version": "1.0.0",
+    "content": {
+      "domain": "x.com",
+      "code": "/**\n * Orchestra Twin Bridge — X / Twitter Content Script\n */\n\n(() => {\n  if (window.__TwinTwitterLoaded) return;\n  window.__TwinTwitterLoaded = true;\n\n  const monitor = new TwinMonitor('twitter');\n\n  const sendNotificationSummary = monitor.debounce(() => {\n    const notifBadge = document.querySelector(\"[data-testid='AppTabBar_Notifications_Link'] [data-testid='badge']\");\n    const dmBadge = document.querySelector(\"[data-testid='AppTabBar_DirectMessage_Link'] [data-testid='badge']\");\n\n    const notifCount = notifBadge ? parseInt(notifBadge.textContent, 10) || 0 : 0;\n    const dmCount = dmBadge ? parseInt(dmBadge.textContent, 10) || 0 : 0;\n\n    if (monitor.hasChanged('tw_counts', { notifCount, dmCount })) {\n      monitor.send('TWITTER_NOTIFICATION_SUMMARY', {\n        notificationCount: notifCount,\n        dmCount,\n        url: location.href,\n      });\n    }\n  }, 2000);\n\n  monitor.watch('[data-testid=\"AppTabBar_Home_Link\"]', sendNotificationSummary, {\n    observeId: 'nav',\n    childList: true,\n    subtree: true,\n    attributes: true,\n  });\n\n  // SPA navigation\n  const origPushState = history.pushState.bind(history);\n  history.pushState = function (...args) {\n    origPushState(...args);\n    setTimeout(sendNotificationSummary, 500);\n  };\n\n  sendNotificationSummary();\n})();",
+      "mode": "passive",
+      "selectors": {
+        "version": "2026-03",
+        "notificationsList": "[data-testid='notification']",
+        "unreadBadge": "[data-testid='badge']",
+        "navNotifications": "[data-testid='AppTabBar_Notifications_Link']",
+        "tweet": "[data-testid='tweet']",
+        "tweetText": "[data-testid='tweetText']",
+        "authorName": "[data-testid='User-Name']",
+        "trendsList": "[data-testid='trend']",
+        "dmBadge": "[data-testid='AppTabBar_DirectMessage_Link'] [data-testid='badge']",
+        "timeline": "[aria-label='Timeline: Your Home Timeline']"
+      }
+    },
+    "readme": "# X / Twitter Monitor\n\nMonitors X (formerly Twitter) for unread notification and direct message counts.\n\n## What it tracks\n\n- **Notification count** — badge value on the Notifications tab bar link\n- **DM count** — badge value on the Messages tab bar link\n\n## How it works\n\nThe plugin observes the navigation tab bar for DOM and attribute mutations. It also patches `history.pushState` to re-check counts after SPA navigation, ensuring accuracy when the user switches between pages.\n\n## Events emitted\n\n| Event | Payload |\n|---|---|\n| `TWITTER_NOTIFICATION_SUMMARY` | `{ notificationCount, dmCount, url }` |\n\n## Privacy\n\nOnly badge counts are captured from the navigation bar. Tweet content, follower data, and timeline content are never read.",
+    "pricing": "free",
+    "visibility": "public",
+    "status": "published",
+    "featured": true
+  },
+  {
+    "type": "plugin",
+    "name": "GitHub Monitor",
+    "slug": "github-monitor",
+    "description": "Monitor GitHub — notification count, unread status, and PR/issue context when viewing pull requests and issues",
+    "category": "project-management",
+    "tags": ["github", "git", "pr", "issues", "notifications", "code-review"],
+    "version": "1.0.0",
+    "content": {
+      "domain": "github.com",
+      "code": "/**\n * Orchestra Twin Bridge — GitHub Content Script\n */\n\n(() => {\n  if (window.__TwinGitHubLoaded) return;\n  window.__TwinGitHubLoaded = true;\n\n  const monitor = new TwinMonitor('github');\n\n  // ─── Notification Count ────────────────────────────────────────────────────\n\n  const sendNotificationCount = monitor.debounce(() => {\n    const badge = document.querySelector('.mail-status');\n    const hasUnread = !!document.querySelector('[aria-label=\"You have unread notifications\"]');\n    const count = badge ? parseInt(badge.textContent.trim(), 10) || 0 : 0;\n\n    if (monitor.hasChanged('notifCount', count)) {\n      monitor.send('GITHUB_NOTIFICATIONS', { count, hasUnread, url: location.href });\n    }\n  }, 2000);\n\n  // ─── PR / Issue Context ────────────────────────────────────────────────────\n\n  const sendPageContext = monitor.debounce(() => {\n    const path = location.pathname;\n\n    // Notification list page\n    if (path === '/notifications') {\n      const items = document.querySelectorAll('.notifications-list-item');\n      const unread = Array.from(items).filter((el) => el.classList.contains('unread'));\n      monitor.send('GITHUB_NOTIFICATION_LIST', {\n        total: items.length,\n        unread: unread.length,\n      });\n      return;\n    }\n\n    // PR or issue page\n    const prMatch = path.match(/\\/([^/]+)\\/([^/]+)\\/(pull|issues)\\/(\\d+)/);\n    if (prMatch) {\n      const [, owner, repo, type, number] = prMatch;\n      const title = document.querySelector('.js-issue-title')?.textContent?.trim();\n      const state = document.querySelector('.State')?.textContent?.trim();\n      const reviews = document.querySelectorAll('.review-summary-container').length;\n\n      monitor.send('GITHUB_PR_CONTEXT', {\n        owner, repo, type, number: parseInt(number, 10),\n        title, state, reviews,\n        url: location.href,\n      });\n    }\n  }, 1500);\n\n  // ─── Watchers ──────────────────────────────────────────────────────────────\n\n  monitor.watch('head title', () => {\n    sendNotificationCount();\n    sendPageContext();\n  }, {\n    observeId: 'title',\n    childList: true,\n    subtree: true,\n    characterData: true,\n  });\n\n  // Navigation events (GitHub is a SPA)\n  const origPushState = history.pushState.bind(history);\n  history.pushState = function (...args) {\n    origPushState(...args);\n    setTimeout(sendPageContext, 800);\n  };\n  window.addEventListener('popstate', () => setTimeout(sendPageContext, 800));\n\n  sendNotificationCount();\n  sendPageContext();\n})();",
+      "mode": "passive",
+      "selectors": {
+        "version": "2026-03",
+        "notificationsList": ".notifications-list-item",
+        "unreadCount": ".mail-status",
+        "notificationBell": "[aria-label='You have unread notifications']",
+        "prList": "[data-hovercard-type='pull_request']",
+        "issueList": "[data-hovercard-type='issue']",
+        "reviewRequests": ".notification-shelf",
+        "assignedItems": ".js-notification-shelf",
+        "mentionItems": ".notification-type-mention",
+        "checkStatus": ".octicon-check, .octicon-x, .octicon-clock",
+        "fileChanged": ".js-details-container"
+      }
+    },
+    "readme": "# GitHub Monitor\n\nMonitors GitHub for unread notifications and extracts contextual PR/issue data when you open a specific pull request or issue page.\n\n## What it tracks\n\n- **Notification count** — unread notification badge in the GitHub header\n- **Notification list** — total and unread count when on the `/notifications` page\n- **PR/Issue context** — owner, repo, type, number, title, state, and review count when viewing a PR or issue\n\n## How it works\n\nThe plugin watches the `<title>` element for changes (GitHub updates the title on navigation). It also patches `history.pushState` and `popstate` to handle SPA navigation. PR/issue data is extracted from URL path matching and DOM selectors.\n\n## Events emitted\n\n| Event | Payload |\n|---|---|\n| `GITHUB_NOTIFICATIONS` | `{ count, hasUnread, url }` |\n| `GITHUB_NOTIFICATION_LIST` | `{ total, unread }` |\n| `GITHUB_PR_CONTEXT` | `{ owner, repo, type, number, title, state, reviews, url }` |\n\n## Privacy\n\nOnly notification counts and PR/issue metadata visible on the current page are captured. Repository code and file contents are never read.",
+    "pricing": "free",
+    "visibility": "public",
+    "status": "published",
+    "featured": true
+  },
+  {
+    "type": "plugin",
+    "name": "Linear Monitor",
+    "slug": "linear-monitor",
+    "description": "Monitor Linear — inbox notification count and current issue context when viewing individual issues",
+    "category": "project-management",
+    "tags": ["linear", "project-management", "issues", "inbox", "engineering"],
+    "version": "1.0.0",
+    "content": {
+      "domain": "linear.app",
+      "code": "/**\n * Orchestra Twin Bridge — Linear Content Script\n */\n\n(() => {\n  if (window.__TwinLinearLoaded) return;\n  window.__TwinLinearLoaded = true;\n\n  const monitor = new TwinMonitor('linear');\n\n  const sendInboxSummary = monitor.debounce(() => {\n    const inboxItems = document.querySelectorAll(\"[data-testid='inbox-item']\");\n    const countEl = document.querySelector(\"[data-testid='inbox-count']\");\n    const count = countEl ? parseInt(countEl.textContent, 10) || inboxItems.length : inboxItems.length;\n\n    if (monitor.hasChanged('linear_inbox', count)) {\n      monitor.send('LINEAR_INBOX_COUNT', { count, url: location.href });\n    }\n  }, 2000);\n\n  const sendIssueContext = monitor.debounce(() => {\n    const path = location.pathname;\n    const issueMatch = path.match(/\\/issue\\/([A-Z]+-\\d+)/);\n    if (issueMatch) {\n      const issueId = issueMatch[1];\n      const title = document.title.replace(' - Linear', '').trim();\n      monitor.send('LINEAR_ISSUE_VIEWED', { issueId, title, url: location.href });\n    }\n  }, 1000);\n\n  monitor.watch('body', sendInboxSummary, {\n    observeId: 'inbox',\n    childList: true,\n    subtree: false,\n  });\n\n  const origPushState = history.pushState.bind(history);\n  history.pushState = function (...args) {\n    origPushState(...args);\n    setTimeout(() => { sendInboxSummary(); sendIssueContext(); }, 600);\n  };\n\n  sendInboxSummary();\n  sendIssueContext();\n})();",
+      "mode": "passive",
+      "selectors": {
+        "version": "2026-03",
+        "inboxList": "[data-testid='inbox-item']",
+        "inboxCount": "[data-testid='inbox-count']",
+        "issueList": "[data-testid='issue-list-item']",
+        "myIssues": "[data-testid='my-issues']",
+        "cycleProgress": "[data-testid='cycle-progress']",
+        "priorityBadge": "[data-testid='priority']",
+        "statusBadge": "[data-testid='status']",
+        "assignee": "[data-testid='assignee']",
+        "projectList": "[data-testid='project-list-item']",
+        "teamSelector": "[data-testid='team-selector']"
+      }
+    },
+    "readme": "# Linear Monitor\n\nMonitors Linear for inbox notifications and surfaces issue context when you navigate to individual issues.\n\n## What it tracks\n\n- **Inbox count** — number of unread inbox items (uses the badge count or DOM item count as fallback)\n- **Issue context** — issue ID (e.g. `ENG-123`) and title when viewing a specific issue page\n\n## How it works\n\nThe plugin observes the body element for top-level DOM changes and patches `history.pushState` for SPA navigation. Issue ID is extracted from the URL path via regex, and the page title is cleaned of the \" - Linear\" suffix.\n\n## Events emitted\n\n| Event | Payload |\n|---|---|\n| `LINEAR_INBOX_COUNT` | `{ count, url }` |\n| `LINEAR_ISSUE_VIEWED` | `{ issueId, title, url }` |\n\n## Privacy\n\nOnly the inbox count and issue ID/title visible in the browser tab are captured. Issue descriptions, comments, and team data are never read.",
+    "pricing": "free",
+    "visibility": "public",
+    "status": "published",
+    "featured": true
+  },
+  {
+    "type": "plugin",
+    "name": "Jira Monitor",
+    "slug": "jira-monitor",
+    "description": "Monitor Jira — issue context when viewing individual issues and card count on sprint boards",
+    "category": "project-management",
+    "tags": ["jira", "atlassian", "project-management", "issues", "sprint", "board"],
+    "version": "1.0.0",
+    "content": {
+      "domain": "*.atlassian.net",
+      "code": "/**\n * Orchestra Twin Bridge — Jira (Atlassian) Content Script\n */\n\n(() => {\n  if (window.__TwinJiraLoaded) return;\n  window.__TwinJiraLoaded = true;\n\n  const monitor = new TwinMonitor('jira');\n\n  const sendPageContext = monitor.debounce(() => {\n    const path = location.pathname;\n\n    // Issue page: /browse/PROJ-123\n    const issueMatch = path.match(/\\/browse\\/([A-Z]+-\\d+)/);\n    if (issueMatch) {\n      const issueKey = issueMatch[1];\n      const title = document.querySelector('[data-testid=\"issue.views.issue-base.foundation.summary.heading\"]')\n        ?.textContent?.trim() || document.title;\n      const statusEl = document.querySelector('[data-testid=\"issue.views.issue-base.foundation.status.status-field-wrapper\"]');\n      const status = statusEl?.textContent?.trim();\n\n      if (monitor.hasChanged('jira_issue', issueKey)) {\n        monitor.send('JIRA_ISSUE_VIEWED', { issueKey, title, status, url: location.href });\n      }\n      return;\n    }\n\n    // Board page\n    if (path.includes('/boards')) {\n      const cards = document.querySelectorAll('[data-testid=\"platform-board-kit.ui.card.card\"]');\n      if (monitor.hasChanged('jira_board', cards.length)) {\n        monitor.send('JIRA_BOARD_VIEWED', { cardCount: cards.length, url: location.href });\n      }\n    }\n  }, 1500);\n\n  // Navigation\n  const origPushState = history.pushState.bind(history);\n  history.pushState = function (...args) {\n    origPushState(...args);\n    setTimeout(sendPageContext, 800);\n  };\n  window.addEventListener('popstate', () => setTimeout(sendPageContext, 800));\n\n  sendPageContext();\n})();",
+      "mode": "passive",
+      "selectors": {
+        "version": "2026-03",
+        "boardList": "[data-testid='software-board.board-container']",
+        "issueCard": "[data-testid='platform-board-kit.ui.card.card']",
+        "sprintHeader": "[data-testid='software-board.header.title']",
+        "backlogItem": "[data-testid='software-backlog.backlog-item-renderer']",
+        "assigneeAvatar": "[data-testid='avatar-container']",
+        "statusDropdown": "[data-testid='issue-field-status.ui.status-lozenge']",
+        "notificationBell": "[data-testid='notifications-banner']",
+        "projectNav": "[data-testid='project-navigation']",
+        "filterBar": "[data-testid='software-board-filters']"
+      }
+    },
+    "readme": "# Jira Monitor\n\nMonitors Jira for issue context and sprint board activity as you navigate through your projects.\n\n## What it tracks\n\n- **Issue context** — issue key (e.g. `PROJ-42`), title, and status when viewing an issue at `/browse/PROJ-42`\n- **Board card count** — total number of cards visible on a sprint board when navigating to a `/boards` page\n\n## How it works\n\nThe plugin patches `history.pushState` and `popstate` to handle Jira's SPA navigation. Issue key is extracted from the URL path; title and status are read from Atlassian's `data-testid` attributes which are stable across Jira updates.\n\n## Events emitted\n\n| Event | Payload |\n|---|---|\n| `JIRA_ISSUE_VIEWED` | `{ issueKey, title, status, url }` |\n| `JIRA_BOARD_VIEWED` | `{ cardCount, url }` |\n\n## Privacy\n\nOnly issue key, title, and status are captured — all visible in the page title and status badge. Issue descriptions, comments, and attachments are never read.",
+    "pricing": "free",
+    "visibility": "public",
+    "status": "published",
+    "featured": false
+  },
+  {
+    "type": "plugin",
+    "name": "Google Calendar Monitor",
+    "slug": "gcal-monitor",
+    "description": "Monitor Google Calendar — event count loaded in the current view, helping agents stay aware of your schedule",
+    "category": "calendar",
+    "tags": ["google-calendar", "gcal", "calendar", "scheduling", "events"],
+    "version": "1.0.0",
+    "content": {
+      "domain": "calendar.google.com",
+      "code": "/**\n * Orchestra Twin Bridge — Google Calendar Content Script\n */\n\n(() => {\n  if (window.__TwinGCalLoaded) return;\n  window.__TwinGCalLoaded = true;\n\n  const monitor = new TwinMonitor('gcal');\n\n  const sendCalendarContext = monitor.debounce(() => {\n    const events = document.querySelectorAll('[data-eventid]');\n    const todayEvents = Array.from(events).slice(0, 10).map((el) => ({\n      title: el.getAttribute('data-eventid') || el.textContent?.trim()?.slice(0, 50),\n    }));\n\n    if (monitor.hasChanged('gcal_eventCount', events.length)) {\n      monitor.send('GCAL_EVENTS_LOADED', {\n        eventCount: events.length,\n        todayEventCount: todayEvents.length,\n        url: location.href,\n      });\n    }\n  }, 2000);\n\n  // Calendar re-renders on navigation\n  const observer = new MutationObserver(() => sendCalendarContext());\n  observer.observe(document.body, { childList: true, subtree: false });\n\n  sendCalendarContext();\n})();",
+      "mode": "passive",
+      "selectors": {
+        "version": "2026-03",
+        "eventList": "[data-eventid]",
+        "todayEvents": ".lv0Hdc",
+        "eventChip": ".v0nBnd",
+        "eventTitle": ".r4nke",
+        "eventTime": ".GSusSb",
+        "miniCalendar": "#mini-cal",
+        "currentDay": ".P0EEcb",
+        "createButton": "[data-testid='create-button']",
+        "viewSelector": "[data-view-type]",
+        "nextButton": "[data-dir='next']"
+      }
+    },
+    "readme": "# Google Calendar Monitor\n\nMonitors Google Calendar and tells your Orchestra agents how many events are loaded in the current calendar view.\n\n## What it tracks\n\n- **Event count** — total number of visible events in the current calendar view (day/week/month)\n- **Today event count** — up to 10 events from the current view snapshot\n\n## How it works\n\nGoogle Calendar re-renders the event grid on every navigation. The plugin attaches a `MutationObserver` to `document.body` for top-level DOM changes and re-counts `[data-eventid]` elements each time. The event is only emitted when the count changes.\n\n## Events emitted\n\n| Event | Payload |\n|---|---|\n| `GCAL_EVENTS_LOADED` | `{ eventCount, todayEventCount, url }` |\n\n## Privacy\n\nOnly the event count and event IDs are captured. Event titles, attendees, descriptions, and meeting links are never read.",
+    "pricing": "free",
+    "visibility": "public",
+    "status": "published",
+    "featured": false
+  },
+  {
+    "type": "plugin",
+    "name": "Cal.com Monitor",
+    "slug": "calcom-monitor",
+    "description": "Monitor Cal.com — total booking count and upcoming booking count on your bookings dashboard",
+    "category": "calendar",
+    "tags": ["calcom", "calendar", "bookings", "scheduling", "meetings"],
+    "version": "1.0.0",
+    "content": {
+      "domain": "app.cal.com",
+      "code": "/**\n * Orchestra Twin Bridge — Cal.com Content Script\n */\n\n(() => {\n  if (window.__TwinCalComLoaded) return;\n  window.__TwinCalComLoaded = true;\n\n  const monitor = new TwinMonitor('calcom');\n\n  const sendBookingSummary = monitor.debounce(() => {\n    const bookings = document.querySelectorAll(\"[data-testid='booking-item']\");\n    const upcoming = document.querySelectorAll(\"[data-testid='upcoming'] [data-testid='booking-item']\");\n\n    if (monitor.hasChanged('calcom_bookings', bookings.length)) {\n      monitor.send('CALCOM_BOOKINGS_LOADED', {\n        totalBookings: bookings.length,\n        upcomingCount: upcoming.length,\n        url: location.href,\n      });\n    }\n  }, 2000);\n\n  monitor.watch('main', sendBookingSummary, {\n    observeId: 'main',\n    childList: true,\n    subtree: false,\n  });\n\n  sendBookingSummary();\n})();",
+      "mode": "passive",
+      "selectors": {
+        "version": "2026-03",
+        "bookingList": "[data-testid='booking-item']",
+        "upcomingBookings": "[data-testid='upcoming']",
+        "pastBookings": "[data-testid='past']",
+        "bookingTitle": "[data-testid='booking-title']",
+        "bookingTime": "[data-testid='booking-time']",
+        "attendeeCount": "[data-testid='attendee-count']",
+        "availabilityCalendar": "[data-testid='availability-calendar']",
+        "newBookingBadge": ".new-booking-notification"
+      }
+    },
+    "readme": "# Cal.com Monitor\n\nMonitors your Cal.com bookings dashboard for total and upcoming booking counts.\n\n## What it tracks\n\n- **Total bookings** — all booking items visible on the current page\n- **Upcoming count** — bookings inside the `[data-testid='upcoming']` section\n\n## How it works\n\nThe plugin observes the `<main>` element for DOM changes (new bookings loaded, pagination). When the total booking count changes, a summary event is sent. Debounced to 2 seconds.\n\n## Events emitted\n\n| Event | Payload |\n|---|---|\n| `CALCOM_BOOKINGS_LOADED` | `{ totalBookings, upcomingCount, url }` |\n\n## Privacy\n\nOnly booking counts are captured. Attendee names, email addresses, and booking details are never read.",
+    "pricing": "free",
+    "visibility": "public",
+    "status": "published",
+    "featured": false
+  },
+  {
+    "type": "plugin",
+    "name": "Google Meet Monitor",
+    "slug": "gmeet-monitor",
+    "description": "Monitor Google Meet — meeting detection, participant tracking, and opt-in live caption extraction with speaker attribution",
+    "category": "meetings",
+    "tags": ["google-meet", "meetings", "video", "captions", "transcription", "participants"],
+    "version": "1.0.0",
+    "content": {
+      "domain": "meet.google.com",
+      "code": "/**\n * Orchestra Twin Bridge — Google Meet Content Script\n *\n * Monitors:\n * - Meeting start/end detection\n * - Live caption extraction via MutationObserver\n * - Participant list collection\n *\n * Privacy: all caption data stays local. Caption monitoring is OPT-IN.\n * A meeting_detected event is sent first; the service worker handles the\n * opt-in prompt before captions are forwarded.\n */\n\n(() => {\n  if (window.__TwinGMeetLoaded) return;\n  window.__TwinGMeetLoaded = true;\n\n  const monitor = new TwinMonitor('gmeet');\n  const detectLanguage = (text) => window.TwinLanguage?.detectLanguage(text) ?? 'unknown';\n\n  // ─── State ─────────────────────────────────────────────────────────────────\n\n  let meetingActive = false;\n  let captionsEnabled = false; // Only true after user opts in\n  let captionObserver = null;\n  let meetingId = null; // Ephemeral local ID for grouping captions\n\n  // ─── Helpers ───────────────────────────────────────────────────────────────\n\n  function getMeetingTitle() {\n    return (\n      document.querySelector('[data-meeting-title]')?.getAttribute('data-meeting-title') ||\n      document.querySelector('.u6vdEc')?.textContent?.trim() ||\n      document.querySelector('[data-meeting-code]')?.getAttribute('data-meeting-code') ||\n      document.title?.replace(' - Google Meet', '').trim() ||\n      null\n    );\n  }\n\n  function getParticipants() {\n    const names = new Set();\n    document.querySelectorAll('[data-participant-id]').forEach((el) => {\n      const name = el.querySelector('[data-self-name], .zWGUib, .NsV7d')?.textContent?.trim();\n      if (name) names.add(name);\n    });\n    document.querySelectorAll('[data-requested-participant-id], .rua5Nb .cS7sFc').forEach((el) => {\n      const name = el.querySelector('.zWGUib, .NsV7d, [data-name]')?.textContent?.trim();\n      if (name) names.add(name);\n    });\n    return [...names];\n  }\n\n  function isInMeeting() {\n    const hasTiles = document.querySelectorAll('[data-participant-id]').length > 0;\n    const hasToolbar = !!document.querySelector('[data-call-ended=\"false\"], [jscontroller=\"kAPMuc\"]');\n    return hasTiles || hasToolbar;\n  }\n\n  const CAPTION_CONTAINER_SELECTORS = ['.a4cQT', '[jsname=\"tgaKEf\"]', '[aria-label*=\"aption\"]', '[class*=\"caption-container\"]'];\n  const CAPTION_ITEM_SELECTORS = ['.TBMuR', '[jsname=\"YSg4Rb\"]', '[class*=\"caption-item\"]'];\n  const SPEAKER_SELECTORS = ['.zs7s8d', '[jsname=\"r4nke\"]', '[class*=\"speaker\"]'];\n  const TEXT_SELECTORS = ['.Mz6pEf', '[jsname=\"tC8NTb\"]', '[class*=\"caption-text\"]'];\n\n  function findCaptionContainer() {\n    for (const sel of CAPTION_CONTAINER_SELECTORS) {\n      const el = document.querySelector(sel);\n      if (el) return el;\n    }\n    return null;\n  }\n\n  function extractCaptionItems(container) {\n    for (const sel of CAPTION_ITEM_SELECTORS) {\n      const items = container.querySelectorAll(sel);\n      if (items.length > 0) return items;\n    }\n    return container.querySelectorAll(':scope > div');\n  }\n\n  function extractSpeakerText(item) {\n    let speaker = '';\n    let text = '';\n    for (const sel of SPEAKER_SELECTORS) {\n      const el = item.querySelector(sel);\n      if (el) { speaker = el.textContent?.trim() ?? ''; break; }\n    }\n    for (const sel of TEXT_SELECTORS) {\n      const el = item.querySelector(sel);\n      if (el) { text = el.textContent?.trim() ?? ''; break; }\n    }\n    if (!text && !speaker) {\n      const full = item.textContent?.trim() ?? '';\n      const colonIdx = full.indexOf(':');\n      if (colonIdx > 0 && colonIdx < 40) {\n        speaker = full.slice(0, colonIdx).trim();\n        text = full.slice(colonIdx + 1).trim();\n      } else {\n        text = full;\n      }\n    }\n    return { speaker, text };\n  }\n\n  let lastCaptionKey = '';\n\n  function processCaptionMutations(container) {\n    const items = extractCaptionItems(container);\n    items.forEach((item) => {\n      const { speaker, text } = extractSpeakerText(item);\n      if (!text || text.length < 2) return;\n      const key = `${speaker}:${text}`;\n      if (key === lastCaptionKey) return;\n      lastCaptionKey = key;\n      const lang = detectLanguage(text);\n      monitor.send('caption', { meetingId, speaker: speaker || 'Unknown', text, lang, ts: Date.now() });\n    });\n  }\n\n  function startCaptionMonitoring() {\n    if (captionObserver) return;\n    const container = findCaptionContainer();\n    if (!container) {\n      setTimeout(() => { if (captionsEnabled && meetingActive) startCaptionMonitoring(); }, 3000);\n      return;\n    }\n    captionObserver = new MutationObserver(() => processCaptionMutations(container));\n    captionObserver.observe(container, { childList: true, subtree: true, characterData: true });\n    processCaptionMutations(container);\n  }\n\n  function stopCaptionMonitoring() {\n    if (captionObserver) { captionObserver.disconnect(); captionObserver = null; }\n    lastCaptionKey = '';\n  }\n\n  chrome.runtime.onMessage.addListener((message) => {\n    if (message.type === 'MEETING_CAPTIONS_ENABLED' && message.source === 'gmeet') {\n      captionsEnabled = true;\n      if (meetingActive) startCaptionMonitoring();\n    }\n    if (message.type === 'MEETING_CAPTIONS_DISABLED' && message.source === 'gmeet') {\n      captionsEnabled = false;\n      stopCaptionMonitoring();\n    }\n  });\n\n  const sendMeetingState = monitor.debounce(() => {\n    const inMeeting = isInMeeting();\n    const participants = getParticipants();\n    const title = getMeetingTitle();\n\n    if (monitor.hasChanged('meet_state', { inMeeting, participantCount: participants.length })) {\n      if (inMeeting && !meetingActive) {\n        meetingActive = true;\n        meetingId = `gmeet_${Date.now()}`;\n        monitor.send('meeting_detected', { platform: 'google_meet', title, participants, meetingId, url: location.href });\n        monitor.send('meeting_started', { platform: 'google_meet', title, participants, meetingId, url: location.href, ts: Date.now() });\n        if (captionsEnabled) startCaptionMonitoring();\n      } else if (!inMeeting && meetingActive) {\n        meetingActive = false;\n        stopCaptionMonitoring();\n        monitor.send('meeting_ended', { platform: 'google_meet', meetingId, url: location.href, ts: Date.now() });\n        meetingId = null;\n        captionsEnabled = false;\n      } else if (inMeeting && monitor.hasChanged('meet_participants', participants.length)) {\n        monitor.send('GMEET_PARTICIPANT_UPDATE', { participantCount: participants.length, participants, url: location.href });\n      }\n    }\n  }, 3000);\n\n  monitor.watch('body', sendMeetingState, { observeId: 'meet_body', childList: true, subtree: false });\n\n  sendMeetingState();\n})();",
+      "mode": "active",
+      "selectors": {
+        "version": "2026-03",
+        "joinButton": "[data-idom-key='join-button']",
+        "participantList": "[data-participant-id]",
+        "participantCount": ".uGOf1d",
+        "micButton": "[data-mute-button]",
+        "cameraButton": "[data-camera-button]",
+        "handRaise": "[aria-label*='hand']",
+        "chatPanel": "[data-panel-id='chat']",
+        "captionContainer": ".a4cQT",
+        "meetingTitle": ".u6vdEc",
+        "leaveButton": "[data-idom-key='leave-button']"
+      }
+    },
+    "readme": "# Google Meet Monitor\n\nMonitors Google Meet for meeting lifecycle events, participant changes, and — with explicit user opt-in — live caption transcription with speaker attribution.\n\n## What it tracks\n\n- **Meeting detection** — fires when participant tiles or the call toolbar appear\n- **Meeting start/end** — sends timestamped events with title, participants, and a local meeting ID\n- **Participant updates** — emits when the participant count changes during an active meeting\n- **Live captions (opt-in)** — after user grants permission, extracts speaker name and caption text in real time with language detection\n\n## How it works\n\nThe plugin uses a `MutationObserver` on `document.body` to detect when the meeting UI mounts or unmounts. Participant names are collected from tile `[data-participant-id]` elements and the people panel sidebar. Caption extraction uses multiple selector fallbacks to survive Google Meet UI updates.\n\n## Events emitted\n\n| Event | Payload |\n|---|---|\n| `meeting_detected` | `{ platform, title, participants, meetingId, url }` |\n| `meeting_started` | `{ platform, title, participants, meetingId, url, ts }` |\n| `meeting_ended` | `{ platform, meetingId, url, ts }` |\n| `GMEET_PARTICIPANT_UPDATE` | `{ participantCount, participants, url }` |\n| `caption` (opt-in) | `{ meetingId, speaker, text, lang, ts }` |\n\n## Privacy\n\nCaption transcription is strictly opt-in. The service worker displays a consent prompt before any caption data is forwarded. Meeting detection and participant counts are sent automatically, but no audio or video data is ever accessed.",
+    "pricing": "free",
+    "visibility": "public",
+    "status": "published",
+    "featured": true
+  },
+  {
+    "type": "plugin",
+    "name": "Zoom Monitor",
+    "slug": "zoom-monitor",
+    "description": "Monitor Zoom web client — meeting detection, participant tracking, recording status, upcoming meetings, and opt-in live caption transcription",
+    "category": "meetings",
+    "tags": ["zoom", "meetings", "video", "captions", "transcription", "participants"],
+    "version": "1.0.0",
+    "content": {
+      "domain": "app.zoom.us",
+      "code": "/**\n * Orchestra Twin Bridge — Zoom Web Client Content Script\n *\n * Monitors:\n * - Meeting start/end detection (Zoom web client at app.zoom.us)\n * - Live closed caption extraction via MutationObserver\n * - Participant list collection\n *\n * Privacy: all caption data stays local. Caption monitoring is OPT-IN.\n * A meeting_detected event is sent first; the service worker handles the\n * opt-in prompt before captions are forwarded.\n */\n\n(() => {\n  if (window.__TwinZoomLoaded) return;\n  window.__TwinZoomLoaded = true;\n\n  const monitor = new TwinMonitor('zoom');\n  const detectLanguage = (text) => window.TwinLanguage?.detectLanguage(text) ?? 'unknown';\n\n  let meetingActive = false;\n  let captionsEnabled = false;\n  let captionObserver = null;\n  let meetingId = null;\n\n  function getMeetingTitle() {\n    return (\n      document.querySelector(\"[data-testid='meeting-title']\")?.textContent?.trim() ||\n      document.querySelector('.meeting-title')?.textContent?.trim() ||\n      document.querySelector('[aria-label*=\"meeting\"]')?.textContent?.trim() ||\n      document.title?.replace('Zoom Meeting', '').trim() ||\n      null\n    );\n  }\n\n  function getParticipants() {\n    const names = new Set();\n    document.querySelectorAll(\"[data-testid='participant-panel'] li\").forEach((li) => {\n      const name = li.querySelector('[data-testid=\"participant-name\"], .participant-name')?.textContent?.trim();\n      if (name) names.add(name);\n    });\n    document.querySelectorAll('[data-testid=\"video-tile\"] [data-testid=\"participant-name\"]').forEach((el) => {\n      const name = el.textContent?.trim();\n      if (name) names.add(name);\n    });\n    document.querySelectorAll('.participants-list-item__name, .attendee-name').forEach((el) => {\n      const name = el.textContent?.trim();\n      if (name) names.add(name);\n    });\n    return [...names];\n  }\n\n  function isInMeeting() {\n    const path = location.pathname;\n    if (!path.includes('/meeting') && !path.includes('/wc/')) return false;\n    const hasVideo = !!document.querySelector('[data-testid=\"video-tile\"], .video-tile');\n    const hasControls = !!document.querySelector(\"[data-testid='meeting-controls'], .meeting-controls, [data-testid='leave-btn']\");\n    return hasVideo || hasControls;\n  }\n\n  const CAPTION_CONTAINER_SELECTORS = [\"[data-testid='live-transcription']\", \"[data-testid='closed-caption']\", '.caption-container', '.zmWebSDKCCContainer', '[class*=\"caption-container\"]', '[class*=\"transcript-container\"]'];\n  const CAPTION_ITEM_SELECTORS = ['.transcript-item', '[data-testid=\"transcript-item\"]', '.caption-item', '.cc-item'];\n  const SPEAKER_SELECTORS = ['.transcript-speaker', '[data-testid=\"speaker-name\"]', '.speaker-name', '.cc-speaker'];\n  const TEXT_SELECTORS = ['.transcript-text', '[data-testid=\"transcript-text\"]', '.caption-text', '.cc-text'];\n\n  function findCaptionContainer() {\n    for (const sel of CAPTION_CONTAINER_SELECTORS) {\n      const el = document.querySelector(sel);\n      if (el) return el;\n    }\n    return null;\n  }\n\n  function extractCaptionItems(container) {\n    for (const sel of CAPTION_ITEM_SELECTORS) {\n      const items = container.querySelectorAll(sel);\n      if (items.length > 0) return items;\n    }\n    return container.querySelectorAll(':scope > div');\n  }\n\n  function extractSpeakerText(item) {\n    let speaker = '';\n    let text = '';\n    for (const sel of SPEAKER_SELECTORS) {\n      const el = item.querySelector(sel);\n      if (el) { speaker = el.textContent?.trim() ?? ''; break; }\n    }\n    for (const sel of TEXT_SELECTORS) {\n      const el = item.querySelector(sel);\n      if (el) { text = el.textContent?.trim() ?? ''; break; }\n    }\n    if (!text && !speaker) {\n      const full = item.textContent?.trim() ?? '';\n      const colonIdx = full.indexOf(':');\n      if (colonIdx > 0 && colonIdx < 40) {\n        speaker = full.slice(0, colonIdx).trim();\n        text = full.slice(colonIdx + 1).trim();\n      } else {\n        text = full;\n      }\n    }\n    return { speaker, text };\n  }\n\n  let lastCaptionKey = '';\n\n  function processCaptionMutations(container) {\n    const items = extractCaptionItems(container);\n    items.forEach((item) => {\n      const { speaker, text } = extractSpeakerText(item);\n      if (!text || text.length < 2) return;\n      const key = `${speaker}:${text}`;\n      if (key === lastCaptionKey) return;\n      lastCaptionKey = key;\n      const lang = detectLanguage(text);\n      monitor.send('caption', { meetingId, speaker: speaker || 'Unknown', text, lang, ts: Date.now() });\n    });\n  }\n\n  function startCaptionMonitoring() {\n    if (captionObserver) return;\n    const container = findCaptionContainer();\n    if (!container) {\n      setTimeout(() => { if (captionsEnabled && meetingActive) startCaptionMonitoring(); }, 3000);\n      return;\n    }\n    captionObserver = new MutationObserver(() => processCaptionMutations(container));\n    captionObserver.observe(container, { childList: true, subtree: true, characterData: true });\n    processCaptionMutations(container);\n  }\n\n  function stopCaptionMonitoring() {\n    if (captionObserver) { captionObserver.disconnect(); captionObserver = null; }\n    lastCaptionKey = '';\n  }\n\n  chrome.runtime.onMessage.addListener((message) => {\n    if (message.type === 'MEETING_CAPTIONS_ENABLED' && message.source === 'zoom') {\n      captionsEnabled = true;\n      if (meetingActive) startCaptionMonitoring();\n    }\n    if (message.type === 'MEETING_CAPTIONS_DISABLED' && message.source === 'zoom') {\n      captionsEnabled = false;\n      stopCaptionMonitoring();\n    }\n  });\n\n  const sendMeetingState = monitor.debounce(() => {\n    const inMeeting = isInMeeting();\n    const participants = getParticipants();\n    const title = getMeetingTitle();\n    const isRecording = !!document.querySelector(\"[data-testid='recording-status'], .recording-status\");\n\n    if (monitor.hasChanged('zoom_meeting_active', inMeeting)) {\n      if (inMeeting && !meetingActive) {\n        meetingActive = true;\n        meetingId = `zoom_${Date.now()}`;\n        monitor.send('meeting_detected', { platform: 'zoom', title, participants, meetingId, url: location.href });\n        monitor.send('meeting_started', { platform: 'zoom', title, participants, meetingId, isRecording, url: location.href, ts: Date.now() });\n        if (captionsEnabled) startCaptionMonitoring();\n      } else if (!inMeeting && meetingActive) {\n        meetingActive = false;\n        stopCaptionMonitoring();\n        monitor.send('meeting_ended', { platform: 'zoom', meetingId, url: location.href, ts: Date.now() });\n        meetingId = null;\n        captionsEnabled = false;\n      } else if (inMeeting && monitor.hasChanged('zoom_participants', participants.length)) {\n        monitor.send('ZOOM_PARTICIPANT_UPDATE', { participantCount: participants.length, participants, isRecording, url: location.href });\n      }\n    }\n\n    if (!inMeeting) {\n      const upcomingMeetings = document.querySelectorAll(\"[data-testid='upcoming-meetings'] [data-testid='meeting-item']\");\n      if (monitor.hasChanged('zoom_upcoming', upcomingMeetings.length)) {\n        monitor.send('ZOOM_UPCOMING_MEETINGS', { count: upcomingMeetings.length, url: location.href });\n      }\n    }\n  }, 2000);\n\n  const origPushState = history.pushState.bind(history);\n  history.pushState = function (...args) {\n    origPushState(...args);\n    setTimeout(sendMeetingState, 600);\n  };\n  window.addEventListener('popstate', () => setTimeout(sendMeetingState, 600));\n\n  monitor.watch('body', sendMeetingState, { observeId: 'zoom_body', childList: true, subtree: false });\n\n  sendMeetingState();\n})();",
+      "mode": "active",
+      "selectors": {
+        "version": "2026-03",
+        "meetingList": "[data-testid='meeting-item']",
+        "joinButton": "[data-testid='join-button']",
+        "participantPanel": "[data-testid='participant-panel']",
+        "chatPanel": "[data-testid='chat-panel']",
+        "recordingIndicator": "[data-testid='recording-status']",
+        "handRaiseList": "[data-testid='hand-raise']",
+        "meetingTitle": "[data-testid='meeting-title']",
+        "scheduledMeetings": "[data-testid='upcoming-meetings']"
+      }
+    },
+    "readme": "# Zoom Monitor\n\nMonitors the Zoom web client (`app.zoom.us`) for meeting lifecycle events, participant changes, recording status, upcoming meetings, and — with explicit user opt-in — live caption transcription.\n\n## What it tracks\n\n- **Meeting detection** — fires when video tiles or meeting controls appear in the DOM\n- **Meeting start/end** — timestamped events with title, participants, recording status, and local meeting ID\n- **Participant updates** — emits when participant count changes during an active call\n- **Recording status** — included in meeting_started and participant update events\n- **Upcoming meetings** — count of scheduled meetings on the Zoom home page\n- **Live captions (opt-in)** — after user grants permission, extracts speaker and caption text with language detection\n\n## How it works\n\nThe plugin patches `history.pushState` and `popstate` for SPA navigation and attaches a body-level `MutationObserver` for meeting UI mounting. Caption extraction supports Zoom Web SDK, the classic caption overlay, and the live transcription panel via multiple selector fallbacks.\n\n## Events emitted\n\n| Event | Payload |\n|---|---|\n| `meeting_detected` | `{ platform, title, participants, meetingId, url }` |\n| `meeting_started` | `{ platform, title, participants, meetingId, isRecording, url, ts }` |\n| `meeting_ended` | `{ platform, meetingId, url, ts }` |\n| `ZOOM_PARTICIPANT_UPDATE` | `{ participantCount, participants, isRecording, url }` |\n| `ZOOM_UPCOMING_MEETINGS` | `{ count, url }` |\n| `caption` (opt-in) | `{ meetingId, speaker, text, lang, ts }` |\n\n## Privacy\n\nCaption transcription is strictly opt-in. The service worker displays a consent prompt before any caption data is forwarded. No audio or video streams are accessed.",
+    "pricing": "free",
+    "visibility": "public",
+    "status": "published",
+    "featured": true
+  },
+  {
+    "type": "plugin",
+    "name": "GCP Billing Monitor",
+    "slug": "gcp-billing-monitor",
+    "description": "Monitor Google Cloud Platform billing — total cost, per-service breakdown, and project name from the GCP billing console",
+    "category": "cost-tracking",
+    "tags": ["gcp", "google-cloud", "billing", "cost", "cloud", "infrastructure"],
+    "version": "1.0.0",
+    "content": {
+      "domain": "console.cloud.google.com",
+      "code": "/**\n * Orchestra Twin Bridge — GCP Billing Content Script\n */\n\n(() => {\n  if (window.__TwinGcpBillingLoaded) return;\n  window.__TwinGcpBillingLoaded = true;\n\n  // Only run on billing-related pages\n  if (!location.pathname.includes('/billing')) return;\n\n  const monitor = new TwinMonitor('gcp');\n\n  const SEL = {\n    totalCost:    '[data-test-id=\"cost-summary-total\"], .cfc-billing-account-overview-cost-amount, [jsname=\"cost-amount\"]',\n    costCards:    '[data-test-id=\"cost-card\"], .cfc-billing-service-cost-card, .billing-summary-card',\n    serviceRows:  'table tr[data-test-id], .cfc-billing-account-cost-table tbody tr',\n    projectName:  '[data-test-id=\"project-name\"], .cfc-billing-account-name, .billing-account-display-name',\n    currency:     '[data-test-id=\"currency-code\"], .currency-code',\n  };\n\n  const parseCost = (text) => {\n    if (!text) return null;\n    const match = text.replace(/,/g, '').match(/[\\d.]+/);\n    return match ? parseFloat(match[0]) : null;\n  };\n\n  const sendCostUpdate = monitor.debounce(() => {\n    const totalEl    = document.querySelector(SEL.totalCost);\n    const projectEl  = document.querySelector(SEL.projectName);\n    const currencyEl = document.querySelector(SEL.currency);\n\n    const total    = parseCost(totalEl?.textContent);\n    const project  = projectEl?.textContent?.trim() || null;\n    const currency = currencyEl?.textContent?.trim() || 'USD';\n\n    const rows      = document.querySelectorAll(SEL.serviceRows);\n    const breakdown = Array.from(rows).slice(0, 10).reduce((acc, row) => {\n      const cells = row.querySelectorAll('td');\n      if (cells.length >= 2) {\n        const service = cells[0]?.textContent?.trim();\n        const cost    = parseCost(cells[cells.length - 1]?.textContent);\n        if (service && cost !== null) acc.push({ service, cost });\n      }\n      return acc;\n    }, []);\n\n    const payload = { total, currency, breakdown, project, url: location.href };\n\n    if (monitor.hasChanged('gcp_cost', payload)) {\n      monitor.send('cost_update', { source: 'gcp', type: 'cost_update', data: payload });\n    }\n  }, 2000);\n\n  monitor.watch('[data-test-id=\"billing-overview\"], .cfc-billing-account-overview, main', sendCostUpdate, {\n    observeId: 'billing-main',\n    childList: true,\n    subtree: true,\n  });\n\n  const origPushState = history.pushState.bind(history);\n  history.pushState = function (...args) {\n    origPushState(...args);\n    setTimeout(sendCostUpdate, 800);\n  };\n\n  sendCostUpdate();\n})();",
+      "mode": "passive",
+      "selectors": {
+        "version": "2026-03",
+        "totalCost": "[data-test-id='cost-summary-total'], .cfc-billing-account-overview-cost-amount, [jsname='cost-amount']",
+        "costCards": "[data-test-id='cost-card'], .cfc-billing-service-cost-card",
+        "serviceRows": "table tr[data-test-id], .cfc-billing-account-cost-table tbody tr",
+        "projectName": "[data-test-id='project-name'], .cfc-billing-account-name",
+        "currency": "[data-test-id='currency-code'], .currency-code",
+        "billingOverview": "[data-test-id='billing-overview'], .cfc-billing-account-overview",
+        "forecastAmount": "[data-test-id='forecast-amount'], .cfc-forecast-amount",
+        "budgetAlert": "[data-test-id='budget-alert'], .cfc-budget-alert"
+      }
+    },
+    "readme": "# GCP Billing Monitor\n\nMonitors the Google Cloud Platform billing console and forwards your current cloud spend to Orchestra agents for cost awareness and alerting.\n\n## What it tracks\n\n- **Total cost** — current billing period total from the billing overview summary\n- **Currency** — the billing currency code (default: USD)\n- **Per-service breakdown** — up to 10 services from the cost table with service name and cost\n- **Project name** — the GCP billing account or project name\n\n## How it works\n\nThe plugin only activates on GCP pages that include `/billing` in the path. It observes the billing overview container for DOM changes and re-extracts cost data. SPA navigation is handled by patching `history.pushState`. Cost values are parsed from text using a regex that strips currency symbols and commas.\n\n## Events emitted\n\n| Event | Payload |\n|---|---|\n| `cost_update` | `{ source: 'gcp', type: 'cost_update', data: { total, currency, breakdown, project, url } }` |\n\n## Privacy\n\nOnly cost figures and service names visible in the billing table are captured. Resource IDs, API keys, and project configurations are never read.",
+    "pricing": "free",
+    "visibility": "public",
+    "status": "published",
+    "featured": true
+  },
+  {
+    "type": "plugin",
+    "name": "Claude Usage Monitor",
+    "slug": "claude-usage-monitor",
+    "description": "Monitor Claude.ai usage — subscription plan, tokens used, credits remaining, billing period, and total cost from the settings page",
+    "category": "cost-tracking",
+    "tags": ["claude", "anthropic", "ai", "usage", "tokens", "billing", "cost-tracking"],
+    "version": "1.0.0",
+    "content": {
+      "domain": "claude.ai",
+      "code": "/**\n * Orchestra Twin Bridge — Claude.ai Usage Content Script\n */\n\n(() => {\n  if (window.__TwinClaudeUsageLoaded) return;\n  window.__TwinClaudeUsageLoaded = true;\n\n  // Only run on settings/usage pages\n  if (!location.pathname.startsWith('/settings') && !location.pathname.startsWith('/usage')) return;\n\n  const monitor = new TwinMonitor('claude');\n\n  const SEL = {\n    usageContainer: '[data-testid=\"usage-section\"], .usage-section, main [class*=\"usage\"]',\n    planBadge:      '[data-testid=\"plan-badge\"], [class*=\"plan-badge\"], [class*=\"subscription-tier\"]',\n    tokensUsed:     '[data-testid=\"tokens-used\"], [class*=\"tokens-used\"], [class*=\"usage-amount\"]',\n    creditsLeft:    '[data-testid=\"credits-remaining\"], [class*=\"credits-remaining\"]',\n    periodLabel:    '[data-testid=\"billing-period\"], [class*=\"billing-period\"], [class*=\"reset-date\"]',\n    totalCost:      '[data-testid=\"total-cost\"], [class*=\"total-cost\"], [class*=\"amount-due\"]',\n  };\n\n  const parseNumber = (text) => {\n    if (!text) return null;\n    const match = text.replace(/,/g, '').match(/[\\d.]+/);\n    return match ? parseFloat(match[0]) : null;\n  };\n\n  const sendUsageUpdate = monitor.debounce(() => {\n    const planEl    = document.querySelector(SEL.planBadge);\n    const tokensEl  = document.querySelector(SEL.tokensUsed);\n    const creditsEl = document.querySelector(SEL.creditsLeft);\n    const periodEl  = document.querySelector(SEL.periodLabel);\n    const totalEl   = document.querySelector(SEL.totalCost);\n\n    const payload = {\n      plan:              planEl?.textContent?.trim() || null,\n      tokens_used:       parseNumber(tokensEl?.textContent),\n      credits_remaining: parseNumber(creditsEl?.textContent),\n      period:            periodEl?.textContent?.trim() || null,\n      total:             parseNumber(totalEl?.textContent),\n      url:               location.href,\n    };\n\n    if (monitor.hasChanged('claude_usage', payload)) {\n      monitor.send('cost_update', { source: 'claude', type: 'cost_update', data: payload });\n    }\n  }, 2000);\n\n  monitor.watch(SEL.usageContainer, sendUsageUpdate, {\n    observeId: 'usage-main',\n    childList: true,\n    subtree: true,\n  });\n\n  const origPushState = history.pushState.bind(history);\n  history.pushState = function (...args) {\n    origPushState(...args);\n    setTimeout(sendUsageUpdate, 600);\n  };\n\n  sendUsageUpdate();\n})();",
+      "mode": "passive",
+      "selectors": {
+        "version": "2026-03",
+        "usageContainer": "[data-testid='usage-section'], .usage-section",
+        "planBadge": "[data-testid='plan-badge'], [class*='plan-badge'], [class*='subscription-tier']",
+        "tokensUsed": "[data-testid='tokens-used'], [class*='tokens-used'], [class*='usage-amount']",
+        "creditsRemaining": "[data-testid='credits-remaining'], [class*='credits-remaining']",
+        "periodLabel": "[data-testid='billing-period'], [class*='billing-period'], [class*='reset-date']",
+        "totalCost": "[data-testid='total-cost'], [class*='total-cost'], [class*='amount-due']"
+      }
+    },
+    "readme": "# Claude Usage Monitor\n\nMonitors your Claude.ai settings/usage page to keep Orchestra agents aware of your AI token consumption and billing status.\n\n## What it tracks\n\n- **Plan** — subscription tier (Free, Pro, Team, etc.)\n- **Tokens used** — total tokens consumed in the current billing period\n- **Credits remaining** — remaining credit balance\n- **Billing period** — current period or reset date label\n- **Total cost** — amount due or total billed\n\n## How it works\n\nThe plugin only activates on `/settings` and `/usage` paths on `claude.ai`. It observes the usage container for DOM changes and uses multiple selector fallbacks (data-testid attributes and class-name partial matches) to survive UI updates. Values are parsed from text content using a number extraction regex.\n\n## Events emitted\n\n| Event | Payload |\n|---|---|\n| `cost_update` | `{ source: 'claude', type: 'cost_update', data: { plan, tokens_used, credits_remaining, period, total, url } }` |\n\n## Privacy\n\nOnly usage numbers and plan name are captured from the settings page. Conversation content, API keys, and account details are never read.",
+    "pricing": "free",
+    "visibility": "public",
+    "status": "published",
+    "featured": true
+  },
+  {
+    "type": "plugin",
+    "name": "OpenAI Usage Monitor",
+    "slug": "openai-usage-monitor",
+    "description": "Monitor OpenAI Platform usage — total cost, daily average, API call count, credit balance, and billing period from the usage dashboard",
+    "category": "cost-tracking",
+    "tags": ["openai", "gpt", "ai", "usage", "api", "billing", "cost-tracking"],
+    "version": "1.0.0",
+    "content": {
+      "domain": "platform.openai.com",
+      "code": "/**\n * Orchestra Twin Bridge — OpenAI Platform Usage Content Script\n */\n\n(() => {\n  if (window.__TwinOpenAIUsageLoaded) return;\n  window.__TwinOpenAIUsageLoaded = true;\n\n  // Only run on usage/billing pages\n  if (!location.pathname.includes('/usage') && !location.pathname.includes('/billing')) return;\n\n  const monitor = new TwinMonitor('openai');\n\n  const SEL = {\n    totalCost:    '[data-testid=\"usage-total-cost\"], .usage-total-cost, [class*=\"total-cost\"], [class*=\"monthly-total\"]',\n    dailyRows:    '[data-testid=\"daily-usage-row\"], .daily-usage-row, table tbody tr',\n    apiCallCount: '[data-testid=\"api-call-count\"], [class*=\"api-calls\"], [class*=\"request-count\"]',\n    periodLabel:  '[data-testid=\"billing-period\"], [class*=\"billing-period\"]',\n    modelRows:    '[data-testid=\"model-usage-row\"], [class*=\"model-row\"]',\n    creditBalance:'[data-testid=\"credit-balance\"], [class*=\"credit-balance\"], [class*=\"credits-remaining\"]',\n  };\n\n  const parseCost = (text) => {\n    if (!text) return null;\n    const match = text.replace(/,/g, '').match(/[\\d.]+/);\n    return match ? parseFloat(match[0]) : null;\n  };\n\n  const sendUsageUpdate = monitor.debounce(() => {\n    const totalEl   = document.querySelector(SEL.totalCost);\n    const periodEl  = document.querySelector(SEL.periodLabel);\n    const apiEl     = document.querySelector(SEL.apiCallCount);\n    const creditEl  = document.querySelector(SEL.creditBalance);\n\n    const dailyRows = document.querySelectorAll(SEL.dailyRows);\n    const dailyCosts = Array.from(dailyRows).map((row) => {\n      const cells = row.querySelectorAll('td');\n      return parseCost(cells[cells.length - 1]?.textContent);\n    }).filter((v) => v !== null);\n    const dailyAvg = dailyCosts.length > 0\n      ? dailyCosts.reduce((a, b) => a + b, 0) / dailyCosts.length\n      : null;\n\n    const payload = {\n      total:          parseCost(totalEl?.textContent),\n      daily_avg:      dailyAvg ? parseFloat(dailyAvg.toFixed(4)) : null,\n      api_calls:      parseCost(apiEl?.textContent),\n      credit_balance: parseCost(creditEl?.textContent),\n      period:         periodEl?.textContent?.trim() || null,\n      url:            location.href,\n    };\n\n    if (monitor.hasChanged('openai_usage', payload)) {\n      monitor.send('cost_update', { source: 'openai', type: 'cost_update', data: payload });\n    }\n  }, 2000);\n\n  monitor.watch('[data-testid=\"usage-container\"], .usage-container, main', sendUsageUpdate, {\n    observeId: 'usage-main',\n    childList: true,\n    subtree: true,\n  });\n\n  const origPushState = history.pushState.bind(history);\n  history.pushState = function (...args) {\n    origPushState(...args);\n    setTimeout(sendUsageUpdate, 600);\n  };\n\n  sendUsageUpdate();\n})();",
+      "mode": "passive",
+      "selectors": {
+        "version": "2026-03",
+        "totalCost": "[data-testid='usage-total-cost'], .usage-total-cost, [class*='total-cost']",
+        "dailyRows": "[data-testid='daily-usage-row'], .daily-usage-row, table tbody tr",
+        "apiCallCount": "[data-testid='api-call-count'], [class*='api-calls'], [class*='request-count']",
+        "periodLabel": "[data-testid='billing-period'], [class*='billing-period']",
+        "modelRows": "[data-testid='model-usage-row'], [class*='model-row']",
+        "creditBalance": "[data-testid='credit-balance'], [class*='credit-balance']",
+        "usageContainer": "[data-testid='usage-container'], .usage-container"
+      }
+    },
+    "readme": "# OpenAI Usage Monitor\n\nMonitors the OpenAI Platform usage dashboard to keep Orchestra agents aware of your API spend and credit balance.\n\n## What it tracks\n\n- **Total cost** — current period total from the usage summary\n- **Daily average** — computed from the daily usage table rows\n- **API call count** — total API requests in the period\n- **Credit balance** — remaining prepaid credit balance\n- **Billing period** — current period label\n\n## How it works\n\nThe plugin only activates on `/usage` and `/billing` paths on `platform.openai.com`. It observes the usage container for DOM changes and computes the daily average by parsing all visible daily cost table rows. Multiple selector fallbacks handle OpenAI's periodic UI updates.\n\n## Events emitted\n\n| Event | Payload |\n|---|---|\n| `cost_update` | `{ source: 'openai', type: 'cost_update', data: { total, daily_avg, api_calls, credit_balance, period, url } }` |\n\n## Privacy\n\nOnly aggregated usage figures are captured from the dashboard. API keys, organization details, and model outputs are never read.",
+    "pricing": "free",
+    "visibility": "public",
+    "status": "published",
+    "featured": true
+  },
+  {
+    "type": "plugin",
+    "name": "Perplexity Usage Monitor",
+    "slug": "perplexity-usage-monitor",
+    "description": "Monitor Perplexity.ai usage — subscription plan, Pro queries used and remaining, and renewal date from the account settings page",
+    "category": "cost-tracking",
+    "tags": ["perplexity", "ai", "search", "usage", "queries", "billing", "cost-tracking"],
+    "version": "1.0.0",
+    "content": {
+      "domain": "www.perplexity.ai",
+      "code": "/**\n * Orchestra Twin Bridge — Perplexity.ai Usage Content Script\n */\n\n(() => {\n  if (window.__TwinPerplexityUsageLoaded) return;\n  window.__TwinPerplexityUsageLoaded = true;\n\n  // Only run on settings/account pages\n  if (!location.pathname.includes('/settings') && !location.pathname.includes('/account')) return;\n\n  const monitor = new TwinMonitor('perplexity');\n\n  const SEL = {\n    settingsContainer: '[data-testid=\"settings-container\"], [class*=\"settings-container\"], main',\n    planBadge:         '[data-testid=\"plan-name\"], [class*=\"plan-name\"], [class*=\"subscription-plan\"]',\n    queriesUsed:       '[data-testid=\"queries-used\"], [class*=\"queries-used\"], [class*=\"pro-queries-used\"]',\n    queriesRemaining:  '[data-testid=\"queries-remaining\"], [class*=\"queries-remaining\"], [class*=\"pro-queries-left\"]',\n    renewalDate:       '[data-testid=\"renewal-date\"], [class*=\"renewal-date\"], [class*=\"next-renewal\"]',\n    usageBar:          '[data-testid=\"usage-progress\"], [class*=\"usage-progress\"], [role=\"progressbar\"]',\n  };\n\n  const parseNumber = (text) => {\n    if (!text) return null;\n    const match = text.replace(/,/g, '').match(/[\\d.]+/);\n    return match ? parseFloat(match[0]) : null;\n  };\n\n  const sendUsageUpdate = monitor.debounce(() => {\n    const planEl      = document.querySelector(SEL.planBadge);\n    const usedEl      = document.querySelector(SEL.queriesUsed);\n    const remainingEl = document.querySelector(SEL.queriesRemaining);\n    const renewalEl   = document.querySelector(SEL.renewalDate);\n    const barEl       = document.querySelector(SEL.usageBar);\n\n    const barValue = barEl\n      ? parseNumber(barEl.getAttribute('aria-valuenow') || barEl.getAttribute('value'))\n      : null;\n    const barMax = barEl\n      ? parseNumber(barEl.getAttribute('aria-valuemax') || barEl.getAttribute('max'))\n      : null;\n\n    const payload = {\n      plan:              planEl?.textContent?.trim() || null,\n      queries_used:      parseNumber(usedEl?.textContent) ?? barValue,\n      queries_remaining: parseNumber(remainingEl?.textContent) ?? (barMax && barValue !== null ? barMax - barValue : null),\n      renewal_date:      renewalEl?.textContent?.trim() || null,\n      url:               location.href,\n    };\n\n    if (monitor.hasChanged('perplexity_usage', payload)) {\n      monitor.send('cost_update', { source: 'perplexity', type: 'cost_update', data: payload });\n    }\n  }, 2000);\n\n  monitor.watch(SEL.settingsContainer, sendUsageUpdate, {\n    observeId: 'settings-main',\n    childList: true,\n    subtree: true,\n  });\n\n  const origPushState = history.pushState.bind(history);\n  history.pushState = function (...args) {\n    origPushState(...args);\n    setTimeout(sendUsageUpdate, 600);\n  };\n\n  sendUsageUpdate();\n})();",
+      "mode": "passive",
+      "selectors": {
+        "version": "2026-03",
+        "settingsContainer": "[data-testid='settings-container'], [class*='settings-container']",
+        "planBadge": "[data-testid='plan-name'], [class*='plan-name'], [class*='subscription-plan']",
+        "queriesUsed": "[data-testid='queries-used'], [class*='queries-used'], [class*='pro-queries-used']",
+        "queriesRemaining": "[data-testid='queries-remaining'], [class*='queries-remaining']",
+        "renewalDate": "[data-testid='renewal-date'], [class*='renewal-date'], [class*='next-renewal']",
+        "usageBar": "[data-testid='usage-progress'], [class*='usage-progress'], [role='progressbar']"
+      }
+    },
+    "readme": "# Perplexity Usage Monitor\n\nMonitors your Perplexity.ai account settings page to track Pro query consumption and subscription renewal date.\n\n## What it tracks\n\n- **Plan** — subscription plan name (Free, Pro, etc.)\n- **Queries used** — Pro queries consumed in the current period (falls back to progress bar `aria-valuenow`)\n- **Queries remaining** — remaining Pro queries (computed from bar max - used if DOM element not found)\n- **Renewal date** — next billing or reset date\n\n## How it works\n\nThe plugin only activates on `/settings` and `/account` paths on `perplexity.ai`. It reads both explicit DOM elements and falls back to ARIA attributes on progress bars for resilience. Changes are de-duplicated and debounced to 2 seconds.\n\n## Events emitted\n\n| Event | Payload |\n|---|---|\n| `cost_update` | `{ source: 'perplexity', type: 'cost_update', data: { plan, queries_used, queries_remaining, renewal_date, url } }` |\n\n## Privacy\n\nOnly plan name, query counts, and renewal date are captured. Search history and conversation content are never read.",
+    "pricing": "free",
+    "visibility": "public",
+    "status": "published",
+    "featured": false
+  },
+  {
+    "type": "plugin",
+    "name": "X Premium Monitor",
+    "slug": "x-premium-monitor",
+    "description": "Monitor X Premium subscription — plan name, subscription status, renewal date, and monthly cost from the X settings page",
+    "category": "cost-tracking",
+    "tags": ["x", "twitter", "premium", "subscription", "billing", "cost-tracking"],
+    "version": "1.0.0",
+    "content": {
+      "domain": "x.com",
+      "code": "/**\n * Orchestra Twin Bridge — X Premium Content Script\n */\n\n(() => {\n  if (window.__TwinXPremiumLoaded) return;\n  window.__TwinXPremiumLoaded = true;\n\n  // Only run on premium/subscription settings pages\n  if (!location.pathname.includes('/premium') && !location.pathname.includes('/settings/subscription')) return;\n\n  const monitor = new TwinMonitor('x-premium');\n\n  const SEL = {\n    premiumContainer: '[data-testid=\"premium-container\"], [data-testid=\"subscriptions-page\"], main',\n    planName:         '[data-testid=\"premium-plan-name\"], [data-testid=\"subscription-tier\"]',\n    statusBadge:      '[data-testid=\"subscription-status\"], [data-testid=\"premium-status\"]',\n    renewalDate:      '[data-testid=\"renewal-date\"], [data-testid=\"next-billing-date\"]',\n    monthlyCost:      '[data-testid=\"subscription-price\"], [data-testid=\"billing-amount\"]',\n    featureList:      '[data-testid=\"premium-feature\"], [data-testid=\"feature-item\"]',\n  };\n\n  const parseCost = (text) => {\n    if (!text) return null;\n    const match = text.replace(/,/g, '').match(/[\\d.]+/);\n    return match ? parseFloat(match[0]) : null;\n  };\n\n  const sendPremiumUpdate = monitor.debounce(() => {\n    const planEl    = document.querySelector(SEL.planName);\n    const statusEl  = document.querySelector(SEL.statusBadge);\n    const renewalEl = document.querySelector(SEL.renewalDate);\n    const costEl    = document.querySelector(SEL.monthlyCost);\n\n    const payload = {\n      plan:          planEl?.textContent?.trim() || null,\n      status:        statusEl?.textContent?.trim() || null,\n      renewal_date:  renewalEl?.textContent?.trim() || null,\n      monthly_cost:  parseCost(costEl?.textContent),\n      url:           location.href,\n    };\n\n    if (monitor.hasChanged('x_premium', payload)) {\n      monitor.send('cost_update', { source: 'x-premium', type: 'cost_update', data: payload });\n    }\n  }, 2000);\n\n  monitor.watch(SEL.premiumContainer, sendPremiumUpdate, {\n    observeId: 'premium-main',\n    childList: true,\n    subtree: true,\n  });\n\n  const origPushState = history.pushState.bind(history);\n  history.pushState = function (...args) {\n    origPushState(...args);\n    if (location.pathname.includes('/premium') || location.pathname.includes('/settings/subscription')) {\n      setTimeout(sendPremiumUpdate, 600);\n    }\n  };\n\n  sendPremiumUpdate();\n})();",
+      "mode": "passive",
+      "selectors": {
+        "version": "2026-03",
+        "premiumContainer": "[data-testid='premium-container'], [data-testid='subscriptions-page']",
+        "planName": "[data-testid='premium-plan-name'], [data-testid='subscription-tier']",
+        "statusBadge": "[data-testid='subscription-status'], [data-testid='premium-status']",
+        "renewalDate": "[data-testid='renewal-date'], [data-testid='next-billing-date']",
+        "monthlyCost": "[data-testid='subscription-price'], [data-testid='billing-amount']",
+        "featureList": "[data-testid='premium-feature'], [data-testid='feature-item']"
+      }
+    },
+    "readme": "# X Premium Monitor\n\nMonitors your X (Twitter) Premium subscription settings to keep Orchestra aware of your subscription status and billing cycle.\n\n## What it tracks\n\n- **Plan name** — subscription tier (Basic, Premium, Premium+)\n- **Status** — subscription status (Active, Cancelled, Past Due, etc.)\n- **Renewal date** — next billing date\n- **Monthly cost** — subscription price parsed from the billing amount\n\n## How it works\n\nThe plugin only activates on `/premium` and `/settings/subscription` paths on `x.com`. It observes the subscription container for DOM changes and patches `history.pushState` to re-check path after SPA navigation. An event is only emitted when the payload actually changes.\n\n## Events emitted\n\n| Event | Payload |\n|---|---|\n| `cost_update` | `{ source: 'x-premium', type: 'cost_update', data: { plan, status, renewal_date, monthly_cost, url } }` |\n\n## Privacy\n\nOnly subscription metadata visible on the settings page is captured. Timeline content, DMs, and account credentials are never read.",
+    "pricing": "free",
+    "visibility": "public",
+    "status": "published",
+    "featured": false
+  }
+]

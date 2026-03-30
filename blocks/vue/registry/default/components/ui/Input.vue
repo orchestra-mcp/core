@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { cn } from "../../lib/utils"
+import { cn } from '../../lib/utils'
 
 defineProps<{
   type?: string
@@ -7,8 +7,8 @@ defineProps<{
 }>()
 
 const props = defineProps({
-  type: { type: String, default: "text" },
-  class: { type: String, default: "" },
+  type: { type: String, default: 'text' },
+  class: { type: String, default: '' },
 })
 </script>
 

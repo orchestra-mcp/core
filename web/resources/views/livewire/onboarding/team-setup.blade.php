@@ -8,7 +8,7 @@
 
     {{-- Add Email Form --}}
     <div class="space-y-3">
-        <div class="flex gap-2">
+        <div class="flex flex-col sm:flex-row gap-2">
             <div class="flex-1">
                 <input
                     wire:model="email"
@@ -18,21 +18,23 @@
                     wire:keydown.enter="addEmail"
                 >
             </div>
-            <select
-                wire:model="role"
-                class="px-3 py-2 bg-[#202020] border border-[#333333] rounded-md text-sm text-[#ededed] focus:outline-none focus:ring-1 focus:ring-[#00E5FF]/40 focus:border-[#00E5FF] transition-colors"
-            >
-                <option value="admin">Admin</option>
-                <option value="member">Member</option>
-                <option value="viewer">Viewer</option>
-            </select>
-            <button
-                wire:click="addEmail"
-                type="button"
-                class="gradient-bg text-white font-medium px-4 py-2 rounded-md hover:opacity-90 transition text-sm cursor-pointer"
-            >
-                Add
-            </button>
+            <div class="flex gap-2">
+                <select
+                    wire:model="role"
+                    class="flex-1 sm:flex-none px-3 py-2 bg-[#202020] border border-[#333333] rounded-md text-sm text-[#ededed] focus:outline-none focus:ring-1 focus:ring-[#00E5FF]/40 focus:border-[#00E5FF] transition-colors"
+                >
+                    <option value="admin">Admin</option>
+                    <option value="member">Member</option>
+                    <option value="viewer">Viewer</option>
+                </select>
+                <button
+                    wire:click="addEmail"
+                    type="button"
+                    class="gradient-bg text-white font-medium px-4 py-2 rounded-md hover:opacity-90 transition text-sm cursor-pointer"
+                >
+                    Add
+                </button>
+            </div>
         </div>
         @error('email')
             <p class="text-xs text-red-400">{{ $message }}</p>

@@ -3,21 +3,26 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
 	"github.com/orchestra-mcp/server/internal/auth"
+	"github.com/orchestra-mcp/server/internal/config"
 	"github.com/orchestra-mcp/server/internal/db"
 	"github.com/orchestra-mcp/server/internal/embedding"
 	"github.com/orchestra-mcp/server/internal/logging"
+	"github.com/orchestra-mcp/server/internal/marketplace"
 	"github.com/orchestra-mcp/server/internal/mcp"
 	"github.com/orchestra-mcp/server/internal/notifications"
 	"github.com/orchestra-mcp/server/internal/realtime"
 	"github.com/orchestra-mcp/server/internal/tools"
+	"github.com/orchestra-mcp/server/internal/twin"
 )
 
 const (
@@ -50,6 +55,14 @@ func main() {
 	}
 
 	// --- Initialize embedding client ---
+	// Required env vars for embedding/semantic search:
+	//   EMBEDDING_API_KEY      — API key for the embedding provider (required to enable)
+	//   EMBEDDING_PROVIDER     — Provider name: "openai" (default), or any OpenAI-compatible endpoint
+	//   EMBEDDING_MODEL        — Model name: "text-embedding-3-small" (default)
+	//
+	// When EMBEDDING_API_KEY is set, memory_store and decision_log generate vector
+	// embeddings alongside stored content. The memory_search and decision_search
+	// tools currently use PostgreSQL ILIKE text search as a fallback; see TODO below.
 	embProvider := os.Getenv("EMBEDDING_PROVIDER")
 	embAPIKey := os.Getenv("EMBEDDING_API_KEY")
 	embModel := os.Getenv("EMBEDDING_MODEL")
@@ -66,6 +79,16 @@ func main() {
 		slog.Info("embedding client initialized", "provider", embProvider, "model", embModel)
 	} else {
 		slog.Warn("EMBEDDING_API_KEY not set — embedding client disabled")
+	}
+
+	// --- GitHub token encryption ---
+	// Required env var for GitHub token decryption:
+	//   GITHUB_ENCRYPTION_KEY  — 32-byte AES-256 key for decrypting github_connections.access_token_encrypted
+	//                            If not set, tokens are used as-is (plaintext mode for dev/testing).
+	if os.Getenv("GITHUB_ENCRYPTION_KEY") != "" {
+		slog.Info("GitHub token decryption enabled")
+	} else {
+		slog.Warn("GITHUB_ENCRYPTION_KEY not set — GitHub tokens used as plaintext (dev mode)")
 	}
 
 	// --- Initialize auth middleware ---
@@ -127,6 +150,10 @@ func main() {
 	} else {
 		slog.Warn("TELEGRAM_BOT_TOKEN not set — Telegram notifications disabled")
 	}
+
+	// --- Initialize marketplace store ---
+	marketplaceStore := marketplace.NewStore(dbClient)
+	slog.Info("marketplace store initialized")
 
 	// --- Build tool registry ---
 	registry := mcp.NewToolRegistry()
@@ -191,6 +218,9 @@ func main() {
 		tools.RegisterGitHubTools(registry, dbClient)
 		slog.Info("registered GitHub tools")
 
+		tools.RegisterCommentTools(registry, dbClient)
+		slog.Info("registered comment tools")
+
 		tools.RegisterUsageTools(registry, dbClient)
 		slog.Info("registered usage tools")
 
@@ -210,6 +240,9 @@ func main() {
 		tools.RegisterNotificationControlTools(registry)
 		slog.Info("registered init + notification control tools")
 
+		tools.RegisterContextTools(registry, dbClient)
+		slog.Info("registered context tools")
+
 		// Memory and decision tools accept an optional embedding client.
 		// They degrade gracefully (no semantic search) when embClient is nil.
 		tools.RegisterMemoryTools(registry, dbClient, embClient)
@@ -217,7 +250,78 @@ func main() {
 
 		tools.RegisterDecisionTools(registry, dbClient, embClient)
 		slog.Info("registered decision tools")
+
+		tools.RegisterMeetingTools(registry, dbClient)
+		slog.Info("registered meeting tools")
+
+		tools.RegisterRequestTools(registry, dbClient)
+		slog.Info("registered request tools")
+
+		tools.RegisterConfigTools(registry, dbClient)
+		slog.Info("registered config tools")
+
+		tools.RegisterCloudRAGTools(registry, dbClient)
+		slog.Info("registered cloud RAG tools")
+
+		tools.RegisterMarketplaceTools(registry, marketplaceStore)
+		slog.Info("registered marketplace tools (20 tools)")
 	}
+
+	// Register save_response tool (no DB dependency).
+	tools.RegisterSaveResponseTool(registry)
+	slog.Info("registered save_response tool")
+
+	// Register desktop_install tool (no DB dependency).
+	tools.RegisterDesktopTools(registry)
+	slog.Info("registered desktop tools")
+
+	// --- Initialize Twin Bridge (routes integrated into main server) ---
+	// The bridge no longer runs on its own port — it shares the main server's
+	// port (defaulting to 3001). Routes are registered on the main mux below.
+	twinBridge := twin.NewTwinBridge(twin.Config{
+		MaxAlerts: 500,
+	})
+
+	// Determine the numeric port for the discovery file.
+	mainPort := 3001
+	if port != defaultPort {
+		// PORT env was set; best-effort parse to int for the discovery file.
+		if p, err := strconv.Atoi(port); err == nil {
+			mainPort = p
+		}
+	} else if p, err := strconv.Atoi(defaultPort); err == nil {
+		mainPort = p
+	}
+
+	if err := twinBridge.Init(mainPort); err != nil {
+		slog.Error("twin bridge init failed", "error", err)
+		os.Exit(1)
+	}
+	slog.Info("twin bridge initialized", "port", mainPort)
+
+	// Wire DB client so /twin/domains can serve from Supabase
+	if dbClient != nil {
+		twinBridge.SetDB(dbClient)
+	}
+
+	// Register twin MCP tools backed by the bridge's alert store.
+	tools.RegisterTwinTools(registry, twinBridge.Store())
+	slog.Info("registered twin tools (twin_alerts, twin_status, twin_mark_read)")
+
+	// Register browser meeting tools backed by the bridge's meeting store.
+	// These are local-only — captions never go to the cloud.
+	tools.RegisterBrowserMeetingTools(registry, twinBridge.Meetings())
+	slog.Info("registered browser meeting tools (meeting_list_browser, meeting_summary, meeting_captions)")
+
+	// Register cloud sync tools (twin_sync, twin_restore, twin_digest).
+	// These tools encrypt data locally before sending to the cloud — the raw
+	// encryption key never leaves the user's machine.
+	tools.RegisterSyncTools(registry, twinBridge.Store())
+	slog.Info("registered twin sync tools (twin_sync, twin_restore, twin_digest)")
+
+	// NOTE: browser_* tools (browser_open, browser_read, etc.) have been moved
+	// to the Rust Desktop MCP server (port 9998) — they require direct access
+	// to the Chrome extension WS bridge (port 9997) which lives in the Desktop app.
 
 	// Keep slack_notify for backwards compatibility.
 	tools.RegisterSlackTools(registry, notifyRouter.Slack)
@@ -226,21 +330,6 @@ func main() {
 	// Register unified notify + per-provider tools (discord_notify, telegram_notify).
 	tools.RegisterNotifyTools(registry, notifyRouter)
 	slog.Info("registered notification tools (notify, discord_notify, telegram_notify)")
-
-	// --- Initialize browser CDP client (auto-launches Chrome if needed) ---
-	chromeCDPURL := os.Getenv("CHROME_CDP_URL")
-	if chromeCDPURL == "" {
-		chromeCDPURL = "http://localhost:9222"
-	}
-
-	browserClient, err := tools.NewBrowserClient(chromeCDPURL)
-	if err != nil {
-		slog.Info("browser tools disabled", "url", chromeCDPURL, "error", err)
-	} else {
-		defer browserClient.Close()
-		tools.RegisterBrowserTools(registry, browserClient)
-		slog.Info("browser bridge connected", "cdp_url", chromeCDPURL)
-	}
 
 	// --- Create MCP server (with DB client for audit logging) ---
 	server := mcp.NewServer(registry, dbLogger, dbClient)
@@ -263,6 +352,12 @@ func main() {
 
 	// WebSocket endpoint (placeholder).
 	mux.HandleFunc("/mcp/ws", server.HandleWebSocket)
+
+	// Twin bridge routes — shared on main server port.
+	// GET /twin        — WebSocket (Chrome extension connects here)
+	// GET /twin/health — Health check for the bridge
+	// GET /twin/pair   — Token pairing (localhost only, enforced by handler)
+	twinBridge.RegisterRoutes(mux)
 
 	// Catch-all: return JSON 404 instead of plain text (Claude Code expects JSON)
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -305,6 +400,23 @@ func main() {
 		}
 	}()
 
+	// --- Auto-update .mcp.json with the current token ---
+	// When MCP_TOKEN is set (e.g. by the desktop launcher or a dev .env), the
+	// server writes the correct token URL into .mcp.json so Claude Code always
+	// has the up-to-date connection string after a restart.
+	//
+	// Environment variables:
+	//   MCP_TOKEN       — token to embed in the URL (required to trigger update)
+	//   MCP_SERVER_NAME — key inside mcpServers (default: "orchestra-mcp")
+	if mcpToken := os.Getenv("MCP_TOKEN"); mcpToken != "" {
+		serverName := os.Getenv("MCP_SERVER_NAME")
+		if serverName == "" {
+			serverName = serviceName // "orchestra-mcp"
+		}
+		mcpURL := fmt.Sprintf("http://localhost:%s/mcp?token=%s", port, mcpToken)
+		config.UpdateMCPJSON(serverName, mcpURL)
+	}
+
 	<-ctx.Done()
 	slog.Info("shutting down server")
 	if dbLogger != nil {
@@ -313,6 +425,11 @@ func main() {
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+
+	// Clean up twin bridge discovery file.
+	if err := twinBridge.Shutdown(shutdownCtx); err != nil {
+		slog.Warn("twin bridge shutdown error", "error", err)
+	}
 
 	if err := srv.Shutdown(shutdownCtx); err != nil {
 		slog.Error("shutdown failed", "error", err)

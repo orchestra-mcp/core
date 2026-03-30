@@ -28,7 +28,9 @@ export async function getOrchestraDashboardMetrics(
     signal
   )
 
-  return result?.[0] ?? { active_connections: 0, tasks_today: 0, total_agents: 0, total_memories: 0 }
+  return (
+    result?.[0] ?? { active_connections: 0, tasks_today: 0, total_agents: 0, total_memories: 0 }
+  )
 }
 
 export type OrchestraDashboardData = Awaited<ReturnType<typeof getOrchestraDashboardMetrics>>

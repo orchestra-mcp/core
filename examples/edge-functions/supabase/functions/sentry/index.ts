@@ -1,11 +1,11 @@
+import * as Sentry from 'https://deno.land/x/sentry@7.102.0/index.mjs'
+import { createClient } from 'npm:supabase-js@2'
+
 // Follow this setup guide to integrate the Deno language server with your editor:
 // https://deno.land/manual/getting_started/setup_your_environment
 // This enables autocomplete, go to definition, etc.
 
 console.log('Hello from the Sentry Functions Challenge!')
-
-import { createClient } from 'npm:supabase-js@2'
-import * as Sentry from 'https://deno.land/x/sentry@7.102.0/index.mjs'
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,

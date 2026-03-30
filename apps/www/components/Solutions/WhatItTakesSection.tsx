@@ -1,7 +1,7 @@
-import Link from 'next/link'
-import { ArrowUpRight } from 'lucide-react'
-import { Button } from 'ui'
 import SectionContainer from 'components/Layouts/SectionContainer'
+import { ArrowUpRight } from 'lucide-react'
+import Link from 'next/link'
+import { Button } from 'ui'
 
 export interface WhatItTakesItem {
   id: string

@@ -1,3 +1,4 @@
+import Layout from '~/components/Layouts/Default'
 import Container from 'components/Container'
 import CountUp from 'components/CountUp'
 import CTABanner from 'components/CTABanner/index'
@@ -7,11 +8,10 @@ import authors from 'lib/authors.json'
 import { APP_NAME, DEFAULT_META_DESCRIPTION } from 'lib/constants'
 import { NextSeo } from 'next-seo'
 import Head from 'next/head'
-import Link from 'next/link'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useEffect, useRef, useState } from 'react'
-import Layout from '~/components/Layouts/Default'
 
 const site_title = `${APP_NAME} | We are now in Beta`
 

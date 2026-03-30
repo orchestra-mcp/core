@@ -1,28 +1,26 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useProfileIdentitiesQuery } from 'data/profile/profile-identities-query'
+import { useProfileUpdateMutation } from 'data/profile/profile-update-mutation'
+import { useProfile } from 'lib/profile'
+import { groupBy } from 'lodash'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import type { FormSchema } from 'types'
 import {
   Button,
   Card,
   CardContent,
   CardFooter,
+  Form_Shadcn_,
   FormControl_Shadcn_,
   FormField_Shadcn_,
-  Form_Shadcn_,
   Input_Shadcn_,
+  Select_Shadcn_,
   SelectContent_Shadcn_,
   SelectItem_Shadcn_,
   SelectTrigger_Shadcn_,
   SelectValue_Shadcn_,
-  Select_Shadcn_,
 } from 'ui'
-import z from 'zod'
-
-import { useProfileIdentitiesQuery } from 'data/profile/profile-identities-query'
-import { useProfileUpdateMutation } from 'data/profile/profile-update-mutation'
-import { useProfile } from 'lib/profile'
-import { groupBy } from 'lodash'
-import type { FormSchema } from 'types'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
 import {
   PageSection,
@@ -31,6 +29,7 @@ import {
   PageSectionSummary,
   PageSectionTitle,
 } from 'ui-patterns/PageSection'
+import z from 'zod'
 
 const FormSchema = z.object({
   first_name: z.string().optional(),

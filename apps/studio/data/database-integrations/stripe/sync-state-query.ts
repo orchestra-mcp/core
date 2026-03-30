@@ -1,7 +1,7 @@
 import { QueryClient, useQuery, UseQueryOptions } from '@tanstack/react-query'
+import { executeSql, ExecuteSqlError } from 'data/sql/execute-sql-query'
 import { z } from 'zod'
 
-import { executeSql, ExecuteSqlError } from 'data/sql/execute-sql-query'
 import { stripeSyncKeys } from './keys'
 
 export type DbConnection = {

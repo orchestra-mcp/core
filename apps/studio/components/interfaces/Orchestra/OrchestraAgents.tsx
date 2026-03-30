@@ -13,17 +13,10 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
-import {
-  Badge,
-  Button,
-  Card,
-  CardContent,
-  Input_Shadcn_,
-  Skeleton,
-} from 'ui'
+import { Badge, Button, Card, CardContent, Input_Shadcn_, Skeleton } from 'ui'
 
-import { useOrchestraAgentsQuery } from '@/data/orchestra/orchestra-agents-query'
 import { CreateAgentModal } from './CreateAgentModal'
+import { useOrchestraAgentsQuery } from '@/data/orchestra/orchestra-agents-query'
 
 dayjs.extend(relativeTime)
 

@@ -1,7 +1,7 @@
-import { XCircle } from 'lucide-react'
-import { type FC, type PropsWithChildren, useState } from 'react'
-import { CollapsibleContent_Shadcn_, CollapsibleTrigger_Shadcn_, Collapsible_Shadcn_, cn } from 'ui'
 import ApiSchema from '~/components/ApiSchema'
+import { XCircle } from 'lucide-react'
+import { useState, type FC, type PropsWithChildren } from 'react'
+import { cn, Collapsible_Shadcn_, CollapsibleContent_Shadcn_, CollapsibleTrigger_Shadcn_ } from 'ui'
 
 interface IOptions {
   name?: string

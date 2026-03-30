@@ -1,6 +1,6 @@
-import Link from 'next/link'
-import { ArrowRight, Check } from 'lucide-react'
 import SectionContainer from 'components/Layouts/SectionContainer'
+import { ArrowRight, Check } from 'lucide-react'
+import Link from 'next/link'
 
 export interface CustomerEvidenceCustomer {
   name: string

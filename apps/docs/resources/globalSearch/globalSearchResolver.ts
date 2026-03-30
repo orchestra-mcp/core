@@ -1,17 +1,18 @@
 import * as Sentry from '@sentry/nextjs'
 import {
+  type RootQueryTypeSearchDocsArgs,
+  type SearchResultCollection,
+} from '~/__generated__/graphql'
+import { convertUnknownToApiError, type ApiErrorGeneric } from '~/app/api/utils'
+import { Result } from '~/features/helpers.fn'
+import {
   GraphQLError,
   GraphQLInt,
   GraphQLNonNull,
   GraphQLString,
   type GraphQLResolveInfo,
 } from 'graphql'
-import {
-  type RootQueryTypeSearchDocsArgs,
-  type SearchResultCollection,
-} from '~/__generated__/graphql'
-import { convertUnknownToApiError, type ApiErrorGeneric } from '~/app/api/utils'
-import { Result } from '~/features/helpers.fn'
+
 import { createCollectionType, GraphQLCollectionBuilder } from '../utils/connections'
 import { graphQLFields } from '../utils/fields'
 import { SearchResultModel } from './globalSearchModel'

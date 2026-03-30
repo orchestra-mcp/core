@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from 'react'
-import { useTheme } from 'next-themes'
 import { DEFAULT_EASE } from '~/lib/animations'
-import { LazyMotion, domAnimation, m } from 'framer-motion'
+import { domAnimation, LazyMotion, m } from 'framer-motion'
+import { useTheme } from 'next-themes'
+import React, { useEffect, useRef } from 'react'
 
 const PGvectorImg = ({ isHovered }: { isHovered: boolean }) => {
   const { resolvedTheme } = useTheme()

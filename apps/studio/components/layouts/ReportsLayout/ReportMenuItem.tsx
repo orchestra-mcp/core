@@ -1,10 +1,9 @@
 import { PermissionAction } from '@supabase/shared-types/out/constants'
-import { ChevronDown, Edit2, Trash } from 'lucide-react'
-import Link from 'next/link'
-
 import { ContentBase } from 'data/content/content-query'
 import { useAsyncCheckPermissions } from 'hooks/misc/useCheckPermissions'
 import { useProfile } from 'lib/profile'
+import { ChevronDown, Edit2, Trash } from 'lucide-react'
+import Link from 'next/link'
 import type { Dashboards } from 'types'
 import {
   Button,

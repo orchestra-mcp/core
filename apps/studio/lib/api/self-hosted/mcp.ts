@@ -9,6 +9,7 @@ import {
   GetLogsOptions,
 } from '@supabase/mcp-server-supabase/platform'
 import { ResponseError } from 'types'
+
 import { DEFAULT_EXPOSED_SCHEMAS } from './constants'
 import { generateTypescriptTypes } from './generate-types'
 import { getLints } from './lints'

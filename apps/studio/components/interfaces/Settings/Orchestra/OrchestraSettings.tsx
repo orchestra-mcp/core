@@ -7,11 +7,11 @@
  */
 
 import { useParams } from 'common'
-import { Copy, Eye, EyeOff, Loader2, RefreshCw, Save, AlertTriangle } from 'lucide-react'
+import { getOrchSupabaseClient, ORCH_AUTH_ENABLED } from 'lib/orch-auth'
+import { AlertTriangle, Copy, Eye, EyeOff, Loader2, RefreshCw, Save } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Button, Input_Shadcn_, Switch } from 'ui'
-import { getOrchSupabaseClient, ORCH_AUTH_ENABLED } from 'lib/orch-auth'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -60,9 +60,7 @@ function SettingField({
     <div className="grid grid-cols-12 gap-4 items-start py-3">
       <div className="col-span-4">
         <label className="text-sm text-foreground">{label}</label>
-        {description && (
-          <p className="text-xs text-foreground-lighter mt-0.5">{description}</p>
-        )}
+        {description && <p className="text-xs text-foreground-lighter mt-0.5">{description}</p>}
       </div>
       <div className="col-span-8 flex gap-2">
         <div className="relative flex-1">
@@ -120,9 +118,7 @@ function ToggleField({
     <div className="grid grid-cols-12 gap-4 items-center py-3">
       <div className="col-span-4">
         <label className="text-sm text-foreground">{label}</label>
-        {description && (
-          <p className="text-xs text-foreground-lighter mt-0.5">{description}</p>
-        )}
+        {description && <p className="text-xs text-foreground-lighter mt-0.5">{description}</p>}
       </div>
       <div className="col-span-8">
         <Switch
@@ -155,13 +151,9 @@ function SettingsSection({
     <div className="bg-surface-100 border rounded-lg overflow-hidden">
       <div className="px-6 py-4 border-b">
         <h3 className="text-base font-medium text-foreground">{title}</h3>
-        {description && (
-          <p className="text-sm text-foreground-lighter mt-0.5">{description}</p>
-        )}
+        {description && <p className="text-sm text-foreground-lighter mt-0.5">{description}</p>}
       </div>
-      <div className="px-6 py-2 divide-y divide-border">
-        {children}
-      </div>
+      <div className="px-6 py-2 divide-y divide-border">{children}</div>
       <div className="px-6 py-3 border-t bg-surface-200 flex items-center justify-between">
         <p className="text-xs text-foreground-muted flex items-center gap-1.5">
           <AlertTriangle size={12} />
@@ -247,9 +239,7 @@ export function OrchestraSettings() {
         const supabase = getOrchSupabaseClient()
 
         // Upsert each changed key
-        const changedKeys = keys.filter(
-          (k) => (settings[k] ?? '') !== (originalSettings[k] ?? '')
-        )
+        const changedKeys = keys.filter((k) => (settings[k] ?? '') !== (originalSettings[k] ?? ''))
 
         if (changedKeys.length === 0) {
           toast('No changes to save')
@@ -379,9 +369,7 @@ export function OrchestraSettings() {
       <SettingsSection
         title="Authentication Keys"
         description="JWT and API key configuration for Supabase auth"
-        onSave={() =>
-          saveSection('auth', authKeys, ['jwt_secret', 'anon_key', 'service_role_key'])
-        }
+        onSave={() => saveSection('auth', authKeys, ['jwt_secret', 'anon_key', 'service_role_key'])}
         isSaving={savingSections['auth'] ?? false}
         hasChanges={getSectionChanges(authKeys)}
       >
@@ -416,12 +404,7 @@ export function OrchestraSettings() {
           description="Server-side key with elevated privileges"
         />
         <div className="py-3">
-          <Button
-            type="default"
-            size="small"
-            onClick={generateKeys}
-            icon={<RefreshCw size={14} />}
-          >
+          <Button type="default" size="small" onClick={generateKeys} icon={<RefreshCw size={14} />}>
             Generate New Keys
           </Button>
         </div>
@@ -431,9 +414,7 @@ export function OrchestraSettings() {
       <SettingsSection
         title="Supabase Connection"
         description="Database and API connection settings"
-        onSave={() =>
-          saveSection('supabase', supabaseKeys, ['postgres_connection_string'])
-        }
+        onSave={() => saveSection('supabase', supabaseKeys, ['postgres_connection_string'])}
         isSaving={savingSections['supabase'] ?? false}
         hasChanges={getSectionChanges(supabaseKeys)}
       >
@@ -461,9 +442,7 @@ export function OrchestraSettings() {
       <SettingsSection
         title="GitHub OAuth Provider"
         description="Enable GitHub login via Supabase GoTrue"
-        onSave={() =>
-          saveSection('github', githubKeys, ['github_client_secret'])
-        }
+        onSave={() => saveSection('github', githubKeys, ['github_client_secret'])}
         isSaving={savingSections['github'] ?? false}
         hasChanges={getSectionChanges(githubKeys)}
       >
@@ -496,9 +475,7 @@ export function OrchestraSettings() {
       <SettingsSection
         title="Google OAuth Provider"
         description="Enable Google login via Supabase GoTrue"
-        onSave={() =>
-          saveSection('google', googleKeys, ['google_client_secret'])
-        }
+        onSave={() => saveSection('google', googleKeys, ['google_client_secret'])}
         isSaving={savingSections['google'] ?? false}
         hasChanges={getSectionChanges(googleKeys)}
       >
@@ -531,9 +508,7 @@ export function OrchestraSettings() {
       <SettingsSection
         title="Email / SMTP"
         description="Configure email delivery for auth confirmations"
-        onSave={() =>
-          saveSection('smtp', smtpKeys, ['smtp_password'])
-        }
+        onSave={() => saveSection('smtp', smtpKeys, ['smtp_password'])}
         isSaving={savingSections['smtp'] ?? false}
         hasChanges={getSectionChanges(smtpKeys)}
       >
@@ -595,9 +570,7 @@ export function OrchestraSettings() {
       <SettingsSection
         title="Storage"
         description="File storage backend configuration"
-        onSave={() =>
-          saveSection('storage', storageKeys, ['s3_secret_key'])
-        }
+        onSave={() => saveSection('storage', storageKeys, ['s3_secret_key'])}
         isSaving={savingSections['storage'] ?? false}
         hasChanges={getSectionChanges(storageKeys)}
       >
@@ -650,9 +623,7 @@ export function OrchestraSettings() {
       <SettingsSection
         title="Cloudflare"
         description="Cloudflare API configuration for TLS and DNS"
-        onSave={() =>
-          saveSection('cloudflare', cloudflareKeys, ['cloudflare_api_token'])
-        }
+        onSave={() => saveSection('cloudflare', cloudflareKeys, ['cloudflare_api_token'])}
         isSaving={savingSections['cloudflare'] ?? false}
         hasChanges={getSectionChanges(cloudflareKeys)}
       >

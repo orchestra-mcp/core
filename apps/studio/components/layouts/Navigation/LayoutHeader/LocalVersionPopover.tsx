@@ -1,8 +1,7 @@
-import dayjs from 'dayjs'
-
 import { DocsButton } from 'components/ui/DocsButton'
 import { InlineLink } from 'components/ui/InlineLink'
 import { useCLIReleaseVersionQuery } from 'data/misc/cli-release-version-query'
+import dayjs from 'dayjs'
 import { DOCS_URL } from 'lib/constants'
 import {
   Badge,
@@ -24,6 +23,7 @@ import {
   TabsTrigger_Shadcn_,
 } from 'ui'
 import { Admonition } from 'ui-patterns'
+
 import { getSemver, semverGte, semverLte } from './LocalVersionPopover.utils'
 
 export const LocalVersionPopover = () => {

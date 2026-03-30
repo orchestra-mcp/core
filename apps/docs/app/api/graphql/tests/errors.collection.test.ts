@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest'
 import { supabase } from '~/lib/supabase'
+import { describe, expect, it } from 'vitest'
+
 import { POST } from '../route'
 
 describe('/api/graphql errors collection', () => {

@@ -1,19 +1,17 @@
 import type { PostgresTable } from '@supabase/postgres-meta'
-import { debounce, noop } from 'lodash'
-import { useCallback, useEffect, useState } from 'react'
-import { toast } from 'sonner'
-
 import { useParams } from 'common'
 import { useSendEventMutation } from 'data/telemetry/send-event-mutation'
 import { useChanged } from 'hooks/misc/useChanged'
 import { useSelectedOrganizationQuery } from 'hooks/misc/useSelectedOrganization'
+import { debounce, noop } from 'lodash'
+import { useCallback, useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { useTableEditorStateSnapshot } from 'state/table-editor'
 import { SidePanel, Tabs } from 'ui'
+
 import { ActionBar } from '../ActionBar'
 import type { ImportContent } from '../TableEditor/TableEditor.types'
 import SpreadSheetFileUpload from './SpreadSheetFileUpload'
-import SpreadsheetImportConfiguration from './SpreadSheetImportConfiguration'
-import SpreadSheetTextInput from './SpreadSheetTextInput'
 import { EMPTY_SPREADSHEET_DATA } from './SpreadsheetImport.constants'
 import type { SpreadsheetData } from './SpreadsheetImport.types'
 import {
@@ -21,7 +19,9 @@ import {
   parseSpreadsheet,
   parseSpreadsheetText,
 } from './SpreadsheetImport.utils'
+import SpreadsheetImportConfiguration from './SpreadSheetImportConfiguration'
 import { SpreadsheetImportPreview } from './SpreadsheetImportPreview'
+import SpreadSheetTextInput from './SpreadSheetTextInput'
 
 interface SpreadsheetImportProps {
   debounceDuration?: number

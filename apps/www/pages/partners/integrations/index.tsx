@@ -1,15 +1,16 @@
-import { Loader, Search } from 'lucide-react'
-import { NextSeo } from 'next-seo'
-import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
-import { Input } from 'ui'
-import { useDebounce } from 'use-debounce'
 import DefaultLayout from '~/components/Layouts/Default'
 import SectionContainer from '~/components/Layouts/SectionContainer'
 import BecomeAPartner from '~/components/Partners/BecomeAPartner'
 import PartnerLinkBox from '~/components/Partners/PartnerLinkBox'
 import supabase from '~/lib/supabaseMisc'
 import type { Partner } from '~/types/partners'
+import { Loader, Search } from 'lucide-react'
+import { NextSeo } from 'next-seo'
+import { useRouter } from 'next/router'
+import { useEffect, useState } from 'react'
+import { Input } from 'ui'
+import { useDebounce } from 'use-debounce'
+
 import TileGrid from '../../../components/Partners/TileGrid'
 
 export async function getStaticProps() {

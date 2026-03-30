@@ -1,11 +1,10 @@
-import Link from 'next/link'
-import { useMemo } from 'react'
-
 import Panel from 'components/ui/Panel'
 import { PricingMetric } from 'data/analytics/org-daily-stats-query'
 import type { OrgSubscription } from 'data/subscriptions/types'
 import { OrgUsageResponse } from 'data/usage/org-usage-query'
 import { formatBytes } from 'lib/helpers'
+import Link from 'next/link'
+import { useMemo } from 'react'
 import {
   Alert_Shadcn_,
   AlertDescription_Shadcn_,
@@ -14,6 +13,7 @@ import {
   CriticalIcon,
 } from 'ui'
 import { InfoTooltip } from 'ui-patterns/info-tooltip'
+
 import { SectionContent } from '../SectionContent'
 import { CategoryAttribute } from '../Usage.constants'
 

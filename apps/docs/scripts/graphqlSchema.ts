@@ -1,7 +1,8 @@
-import { printSchema } from 'graphql'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { printSchema } from 'graphql'
+
 import { rootGraphQLSchema } from '../resources/rootSchema.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))

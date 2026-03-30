@@ -1,10 +1,11 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
 import { MenuId } from '~/components/Navigation/NavigationMenu/NavigationMenu'
 import type { ICommonItem } from '~/components/reference/Reference.types'
 import type { Json } from '~/features/helpers.types'
+import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
+
 import { menuState } from '../../../hooks/useMenuState'
 
 export function getPathWithoutHash(relativePath: string) {

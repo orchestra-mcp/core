@@ -1,4 +1,5 @@
 import { allDocs } from 'contentlayer/generated'
+
 import { courses } from '@/config/docs'
 import { SidebarNavItem } from '@/types/nav'
 

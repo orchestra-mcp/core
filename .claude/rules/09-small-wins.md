@@ -1,6 +1,6 @@
 ---
-description: "Every feature must have a small win — the minimum deliverable that proves value. Never deliver without a real win."
-globs: "*"
+description: 'Every feature must have a small win — the minimum deliverable that proves value. Never deliver without a real win.'
+globs: '*'
 alwaysApply: true
 ---
 
@@ -13,8 +13,8 @@ alwaysApply: true
 
 ## Small Win Examples
 
-| Bad (too big) | Good (small win) |
-|---------------|------------------|
-| "Build the entire auth system" | "User can register and see dashboard" |
-| "Implement all CRUD operations" | "User can create and list items" |
-| "Full API integration" | "One endpoint works end-to-end with test" |
+| Bad (too big)                   | Good (small win)                          |
+| ------------------------------- | ----------------------------------------- |
+| "Build the entire auth system"  | "User can register and see dashboard"     |
+| "Implement all CRUD operations" | "User can create and list items"          |
+| "Full API integration"          | "One endpoint works end-to-end with test" |

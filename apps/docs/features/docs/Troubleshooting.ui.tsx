@@ -1,18 +1,18 @@
 import Link from 'next/link'
 import { Fragment } from 'react'
-
 import { cn } from 'ui'
+
 import { TroubleshootingFilter } from './Troubleshooting.ui.client'
 import {
-  type ITroubleshootingEntry,
-  type ITroubleshootingMetadata,
   getArticleSlug,
   getTroubleshootingUpdatedDates,
+  type ITroubleshootingEntry,
+  type ITroubleshootingMetadata,
 } from './Troubleshooting.utils'
 import {
   formatError,
-  TROUBLESHOOTING_DATA_ATTRIBUTES,
   TROUBLESHOOTING_CONTAINER_ID,
+  TROUBLESHOOTING_DATA_ATTRIBUTES,
 } from './Troubleshooting.utils.shared'
 
 export async function TroubleshootingPreview({ entry }: { entry: ITroubleshootingEntry }) {

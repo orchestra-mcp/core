@@ -1,7 +1,7 @@
+import throughputTable from '~/data/realtime/throughput.json'
 import { ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 import { Button, Collapsible, Select } from 'ui'
-import throughputTable from '~/data/realtime/throughput.json'
 
 export default function RealtimeLimitsEstimater({}) {
   const findTableValue = ({ computeAddOn, filters, rls, concurrency }) => {

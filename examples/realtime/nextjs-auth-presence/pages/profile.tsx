@@ -1,6 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
-import { serialize } from 'cookie'
 import { User } from '@supabase/supabase-js'
+import { serialize } from 'cookie'
 import { GetServerSidePropsContext } from 'next'
 import Link from 'next/link'
 

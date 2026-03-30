@@ -1,10 +1,9 @@
-import { UseFormReturn } from 'react-hook-form'
-
 import { InlineLink } from 'components/ui/InlineLink'
 import Panel from 'components/ui/Panel'
 import { instanceSizeSpecs } from 'data/projects/new-project.constants'
 import { getCloudProviderArchitecture } from 'lib/cloudprovider-utils'
 import { DOCS_URL } from 'lib/constants'
+import { UseFormReturn } from 'react-hook-form'
 import { CloudProvider } from 'shared-data'
 import {
   FormField_Shadcn_,
@@ -17,6 +16,7 @@ import {
 } from 'ui'
 import { ComputeBadge } from 'ui-patterns'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
+
 import { sizes } from './ProjectCreation.constants'
 import { CreateProjectForm } from './ProjectCreation.schema'
 

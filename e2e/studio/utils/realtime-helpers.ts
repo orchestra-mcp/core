@@ -1,4 +1,5 @@
 import { expect, Page } from '@playwright/test'
+
 import { toUrl } from './to-url.js'
 
 export async function navigateToRealtimeInspector(page: Page, ref: string) {
@@ -44,7 +45,10 @@ export async function openBroadcastModal(page: Page) {
 
 export async function waitForRealtimeMessage(page: Page, options?: { timeout?: number }) {
   const timeout = options?.timeout ?? 30000
-  const gridRow = page.getByRole('row').filter({ hasText: /^\d{4}-\d{2}-\d{2}/ }).first()
+  const gridRow = page
+    .getByRole('row')
+    .filter({ hasText: /^\d{4}-\d{2}-\d{2}/ })
+    .first()
   await expect(gridRow).toBeVisible({ timeout })
   return gridRow
 }

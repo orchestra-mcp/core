@@ -1,16 +1,10 @@
 <script setup lang="ts">
-import { ref } from "vue"
-import { createClient } from "@/lib/supabase/client"
-import { cn } from "@/lib/utils"
+import { ref } from 'vue'
 
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { createClient } from '@/lib/supabase/client'
+import { cn } from '@/lib/utils'
 
 const error = ref<string | null>(null)
 const isLoading = ref(false)
@@ -23,13 +17,13 @@ const handleSocialLogin = async (e: Event) => {
 
   try {
     const { error: supabaseError } = await supabase.auth.signInWithOAuth({
-      provider: "github",
+      provider: 'github',
     })
 
     if (supabaseError) throw supabaseError
-    window.location.href = "/protected"
+    window.location.href = '/protected'
   } catch (err: unknown) {
-    error.value = err instanceof Error ? err.message : "An error occurred"
+    error.value = err instanceof Error ? err.message : 'An error occurred'
     isLoading.value = false
   }
 }
@@ -47,7 +41,7 @@ const handleSocialLogin = async (e: Event) => {
           <div class="flex flex-col gap-6">
             <p v-if="error" class="text-sm text-destructive-500">{{ error }}</p>
             <Button type="submit" class="w-full" :disabled="isLoading">
-              {{ isLoading ? "Logging in..." : "Continue with GitHub" }}
+              {{ isLoading ? 'Logging in...' : 'Continue with GitHub' }}
             </Button>
           </div>
         </form>

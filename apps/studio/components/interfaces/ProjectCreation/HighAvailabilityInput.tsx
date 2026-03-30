@@ -1,10 +1,10 @@
-import Link from 'next/link'
-import { UseFormReturn } from 'react-hook-form'
-
 import Panel from 'components/ui/Panel'
 import { useCheckEntitlements } from 'hooks/misc/useCheckEntitlements'
+import Link from 'next/link'
+import { UseFormReturn } from 'react-hook-form'
 import { FormControl_Shadcn_, FormField_Shadcn_, Switch } from 'ui'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
+
 import { CreateProjectForm } from './ProjectCreation.schema'
 
 interface HighAvailabilityInputProps {

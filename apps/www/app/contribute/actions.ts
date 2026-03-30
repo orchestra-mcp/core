@@ -2,8 +2,8 @@
 
 import { createContributeServerClient } from '~/lib/supabaseContribute.server'
 import type {
-  SimilarThreadFeedbackSubmission,
   SimilarThreadFeedbackResult,
+  SimilarThreadFeedbackSubmission,
 } from '~/types/contribute'
 
 const CONTRIBUTE_FEEDBACK_FN = 'contribute-feedback'

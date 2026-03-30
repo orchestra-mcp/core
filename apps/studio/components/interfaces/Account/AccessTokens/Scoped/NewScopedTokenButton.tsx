@@ -1,7 +1,7 @@
-import { useState } from 'react'
-
-import { Button } from 'ui'
 import { type NewScopedAccessToken } from 'data/scoped-access-tokens/scoped-access-token-create-mutation'
+import { useState } from 'react'
+import { Button } from 'ui'
+
 import { NewScopedTokenSheet } from './NewScopedTokenSheet'
 
 export interface NewScopedTokenButtonProps {

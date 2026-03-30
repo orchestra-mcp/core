@@ -1,6 +1,7 @@
 import fs from 'fs'
-import matter from 'gray-matter'
 import path from 'path'
+import matter from 'gray-matter'
+
 import { validateBlogFrontmatterImages } from './blog-images'
 import { generateReadingTime } from './helpers'
 

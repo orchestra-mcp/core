@@ -1,15 +1,15 @@
 <div>
     {{-- Page heading --}}
-    <div class="flex items-center justify-between mb-8">
+    <div class="flex items-center justify-between mb-6">
         <div>
-            <h1 class="text-2xl font-semibold text-[#ededed]">AI Agents</h1>
-            <p class="mt-1 text-sm text-[#999999]">Manage your organization's AI agents and their profiles.</p>
+            <h1 class="text-[14px] font-semibold" style="color: var(--color-text-primary);">AI Agents</h1>
+            <p class="mt-1 text-[13px]" style="color: var(--color-text-muted);">Manage your organization's AI agents and their profiles.</p>
         </div>
         <button
             wire:click="openCreateModal"
-            class="inline-flex items-center gap-2 px-4 py-2 gradient-bg text-white text-sm font-medium rounded-md hover:opacity-90 transition-opacity cursor-pointer"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 btn-primary rounded text-[12px] font-medium cursor-pointer"
         >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
             Create Agent
@@ -18,7 +18,7 @@
 
     {{-- Success flash --}}
     @if (session('agent-created'))
-        <div class="mb-6 flex items-center gap-2 px-4 py-3 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm">
+        <div class="mb-6 flex items-center gap-2 px-4 py-3 rounded text-[13px]" style="background: hsl(153.1 60.2% 52.7% / 0.08); border: 1px solid hsl(153.1 60.2% 52.7% / 0.2); color: hsl(153.1 60.2% 52.7%);">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
             </svg>
@@ -27,21 +27,22 @@
     @endif
 
     {{-- Search and filter bar --}}
-    <div class="flex items-center gap-3 mb-6">
+    <div class="flex items-center gap-3 mb-5">
         <div class="relative flex-1">
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#666666]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style="color: var(--color-text-faint);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
             </svg>
             <input
                 wire:model.live.debounce.300ms="search"
                 type="text"
                 placeholder="Search agents by name, role, or type..."
-                class="w-full pl-10 pr-4 py-2 rounded-md border border-[#333333] bg-[#202020] text-[13px] text-[#ededed] placeholder-[#555555] focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF]/25 focus:outline-none transition-colors"
+                class="w-full pl-8 pr-4 py-1.5 studio-field text-[13px]"
             >
         </div>
         <select
             wire:model.live="statusFilter"
-            class="px-3 py-2 rounded-md border border-[#333333] bg-[#202020] text-[13px] text-[#ededed] focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF]/25 focus:outline-none transition-colors cursor-pointer"
+            class="px-3 py-1.5 studio-field text-[13px] cursor-pointer"
+            style="width: auto;"
         >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -52,51 +53,45 @@
 
     {{-- Agent grid --}}
     @if (count($agents) > 0)
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             @foreach ($agents as $agent)
-                <div class="bg-[#252525] rounded-lg border border-[#333333] p-5 hover:border-[#444444] transition-colors group">
-                    <div class="flex items-start gap-4">
-                        {{-- Avatar --}}
-                        <div class="w-12 h-12 rounded-full bg-gradient-to-br {{ $agent['avatar_color'] ?? 'from-cyan-500 to-purple-500' }} flex items-center justify-center text-white text-lg font-bold shrink-0">
+                <div class="rounded-lg p-4 transition-colors group"
+                     style="background: var(--color-bg-sidebar); border: 1px solid var(--color-border);">
+                    <div class="flex items-start gap-3.5">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0 {{ $agent['avatar_color'] ?? 'gradient-bg' }}">
                             {{ $agent['initial'] }}
                         </div>
-
-                        {{-- Info --}}
                         <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2 mb-1">
-                                <h3 class="text-sm font-semibold text-[#ededed] truncate">{{ $agent['name'] }}</h3>
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium {{ $agent['status_classes'] }}">
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <h3 class="text-[13px] font-semibold truncate" style="color: var(--color-text-primary);">{{ $agent['name'] }}</h3>
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium {{ $agent['status_classes'] }}">
                                     {{ $agent['status_label'] }}
                                 </span>
                             </div>
                             @if ($agent['role'])
-                                <p class="text-[13px] text-[#999999] truncate">{{ $agent['role'] }}</p>
+                                <p class="text-[12px] truncate" style="color: var(--color-text-muted);">{{ $agent['role'] }}</p>
                             @endif
-                            <div class="flex items-center gap-3 mt-2">
-                                <span class="inline-flex items-center gap-1 text-[11px] text-[#666666]">
+                            <div class="flex items-center gap-3 mt-1.5">
+                                <span class="inline-flex items-center gap-1 text-[11px]" style="color: var(--color-text-faint);">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/>
                                     </svg>
                                     {{ $agent['type'] }}
                                 </span>
                                 @if (count($agent['skills'] ?? []) > 0)
-                                    <span class="inline-flex items-center gap-1 text-[11px] text-[#666666]">
+                                    <span class="inline-flex items-center gap-1 text-[11px]" style="color: var(--color-text-faint);">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                                         </svg>
                                         {{ count($agent['skills']) }} skills
                                     </span>
                                 @endif
-                                <span class="text-[11px] text-[#555555]">{{ $agent['created_at'] }}</span>
+                                <span class="text-[10px]" style="color: var(--color-text-faint);">{{ $agent['created_at'] }}</span>
                             </div>
                         </div>
-
-                        {{-- View Profile button --}}
-                        <a
-                            href="{{ route('dashboard.agent-profile', $agent['id']) }}"
-                            class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-[#333333] bg-[#2a2a2a] text-[12px] font-medium text-[#999999] hover:text-[#ededed] hover:border-[#444444] transition-colors opacity-0 group-hover:opacity-100"
-                        >
-                            View Profile
+                        <a href="{{ route('dashboard.agent-profile', $agent['id']) }}" wire:navigate
+                           class="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-medium sm:opacity-0 sm:group-hover:opacity-100 transition-opacity btn-secondary">
+                            View
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
@@ -106,14 +101,13 @@
             @endforeach
         </div>
     @else
-        {{-- Empty state --}}
-        <div class="bg-[#252525] rounded-lg border border-[#333333] p-12 text-center">
-            <div class="flex items-center justify-center w-12 h-12 rounded-full bg-[#2a2a2a] mx-auto mb-4">
-                <svg class="w-6 h-6 text-[#666666]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="rounded-lg p-12 text-center" style="border: 1px solid var(--color-border); background: var(--color-bg-sidebar);">
+            <div class="flex items-center justify-center w-12 h-12 rounded-full mx-auto mb-4" style="background: var(--color-bg-surface);">
+                <svg class="w-6 h-6" style="color: var(--color-text-faint);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                 </svg>
             </div>
-            <p class="text-sm text-[#999999] mb-4">
+            <p class="text-[13px]" style="color: var(--color-text-muted);">
                 @if ($search || $statusFilter !== 'all')
                     No agents match your search criteria.
                 @else
@@ -121,10 +115,8 @@
                 @endif
             </p>
             @if (!$search && $statusFilter === 'all')
-                <button
-                    wire:click="openCreateModal"
-                    class="inline-flex items-center gap-2 px-4 py-2 gradient-bg text-white text-sm font-medium rounded-md hover:opacity-90 transition-opacity cursor-pointer"
-                >
+                <button wire:click="openCreateModal"
+                    class="mt-4 inline-flex items-center gap-2 px-3 py-1.5 btn-primary rounded text-[13px] font-medium cursor-pointer">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                     </svg>
@@ -134,71 +126,38 @@
         </div>
     @endif
 
-    {{-- Create Agent Modal --}}
+    {{-- Create Agent Modal (Studio style) --}}
     @if ($showCreateModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center">
-            {{-- Backdrop --}}
-            <div wire:click="closeCreateModal" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-
-            {{-- Modal --}}
-            <div class="relative w-full max-w-lg mx-4 bg-[#252525] rounded-lg border border-[#333333] shadow-2xl">
-                {{-- Header --}}
-                <div class="flex items-center justify-between px-6 py-4 border-b border-[#333333]">
-                    <h2 class="text-base font-semibold text-[#ededed]">Create New Agent</h2>
-                    <button wire:click="closeCreateModal" class="text-[#666666] hover:text-[#ededed] transition-colors cursor-pointer">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div wire:click="closeCreateModal" class="absolute inset-0" style="background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);"></div>
+            <div class="relative w-full max-w-lg mx-4 rounded-lg shadow-2xl" style="background: var(--color-bg-default); border: 1px solid var(--color-border);">
+                <div class="flex items-center justify-between px-6 py-4" style="border-bottom: 1px solid var(--color-border);">
+                    <h2 class="text-[14px] font-semibold" style="color: var(--color-text-primary);">Create New Agent</h2>
+                    <button wire:click="closeCreateModal" class="cursor-pointer p-1 rounded" style="color: var(--color-text-muted);">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
                     </button>
                 </div>
-
-                {{-- Body --}}
                 <form wire:submit="createAgent" class="px-6 py-5 space-y-4">
-                    {{-- Name --}}
                     <div>
-                        <label for="newName" class="block text-[13px] font-medium text-[#999999] mb-1.5">Agent Name</label>
-                        <input
-                            wire:model.live.debounce.300ms="newName"
-                            id="newName"
-                            type="text"
-                            placeholder="e.g. Backend Developer"
-                            class="w-full px-3 py-2 rounded-md border border-[#333333] bg-[#202020] text-[13px] text-[#ededed] placeholder-[#555555] focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF]/25 focus:outline-none transition-colors"
-                        >
-                        @error('newName') <p class="mt-1 text-xs text-red-400">{{ $message }}</p> @enderror
+                        <label for="newName" class="block text-[13px] mb-1.5" style="color: var(--color-text-muted);">Agent Name</label>
+                        <input wire:model.live.debounce.300ms="newName" id="newName" type="text" placeholder="e.g. Backend Developer" class="studio-field">
+                        @error('newName') <p class="mt-1 text-[12px]" style="color: var(--color-destructive);">{{ $message }}</p> @enderror
                     </div>
-
-                    {{-- Slug --}}
                     <div>
-                        <label for="newSlug" class="block text-[13px] font-medium text-[#999999] mb-1.5">Slug</label>
-                        <input
-                            wire:model="newSlug"
-                            id="newSlug"
-                            type="text"
-                            placeholder="backend-developer"
-                            class="w-full px-3 py-2 rounded-md border border-[#333333] bg-[#202020] text-[13px] text-[#ededed] placeholder-[#555555] focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF]/25 focus:outline-none transition-colors font-mono"
-                        >
-                        @error('newSlug') <p class="mt-1 text-xs text-red-400">{{ $message }}</p> @enderror
+                        <label for="newSlug" class="block text-[13px] mb-1.5" style="color: var(--color-text-muted);">Slug</label>
+                        <input wire:model="newSlug" id="newSlug" type="text" placeholder="backend-developer" class="studio-field font-mono">
+                        @error('newSlug') <p class="mt-1 text-[12px]" style="color: var(--color-destructive);">{{ $message }}</p> @enderror
                     </div>
-
-                    {{-- Role + Type (side by side) --}}
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label for="newRole" class="block text-[13px] font-medium text-[#999999] mb-1.5">Role</label>
-                            <input
-                                wire:model="newRole"
-                                id="newRole"
-                                type="text"
-                                placeholder="e.g. Laravel Developer"
-                                class="w-full px-3 py-2 rounded-md border border-[#333333] bg-[#202020] text-[13px] text-[#ededed] placeholder-[#555555] focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF]/25 focus:outline-none transition-colors"
-                            >
+                            <label for="newRole" class="block text-[13px] mb-1.5" style="color: var(--color-text-muted);">Role</label>
+                            <input wire:model="newRole" id="newRole" type="text" placeholder="e.g. Laravel Developer" class="studio-field">
                         </div>
                         <div>
-                            <label for="newType" class="block text-[13px] font-medium text-[#999999] mb-1.5">Type</label>
-                            <select
-                                wire:model="newType"
-                                id="newType"
-                                class="w-full px-3 py-2 rounded-md border border-[#333333] bg-[#202020] text-[13px] text-[#ededed] focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF]/25 focus:outline-none transition-colors cursor-pointer"
-                            >
+                            <label for="newType" class="block text-[13px] mb-1.5" style="color: var(--color-text-muted);">Type</label>
+                            <select wire:model="newType" id="newType" class="studio-field cursor-pointer">
                                 <option value="general">General</option>
                                 <option value="backend">Backend</option>
                                 <option value="frontend">Frontend</option>
@@ -211,45 +170,18 @@
                             </select>
                         </div>
                     </div>
-
-                    {{-- Persona --}}
                     <div>
-                        <label for="newPersona" class="block text-[13px] font-medium text-[#999999] mb-1.5">Persona <span class="text-[#555555]">(optional)</span></label>
-                        <textarea
-                            wire:model="newPersona"
-                            id="newPersona"
-                            rows="2"
-                            placeholder="Describe the agent's personality and communication style..."
-                            class="w-full px-3 py-2 rounded-md border border-[#333333] bg-[#202020] text-[13px] text-[#ededed] placeholder-[#555555] focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF]/25 focus:outline-none transition-colors resize-none"
-                        ></textarea>
+                        <label for="newPersona" class="block text-[13px] mb-1.5" style="color: var(--color-text-muted);">Persona <span style="color: var(--color-text-faint);">(optional)</span></label>
+                        <textarea wire:model="newPersona" id="newPersona" rows="2" placeholder="Describe the agent's personality..." class="studio-field resize-none"></textarea>
                     </div>
-
-                    {{-- System Prompt --}}
                     <div>
-                        <label for="newSystemPrompt" class="block text-[13px] font-medium text-[#999999] mb-1.5">System Prompt <span class="text-[#555555]">(optional)</span></label>
-                        <textarea
-                            wire:model="newSystemPrompt"
-                            id="newSystemPrompt"
-                            rows="3"
-                            placeholder="The base instructions for this agent..."
-                            class="w-full px-3 py-2 rounded-md border border-[#333333] bg-[#202020] text-[13px] text-[#ededed] placeholder-[#555555] focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF]/25 focus:outline-none transition-colors resize-none"
-                        ></textarea>
+                        <label for="newSystemPrompt" class="block text-[13px] mb-1.5" style="color: var(--color-text-muted);">System Prompt <span style="color: var(--color-text-faint);">(optional)</span></label>
+                        <textarea wire:model="newSystemPrompt" id="newSystemPrompt" rows="3" placeholder="The base instructions..." class="studio-field resize-none"></textarea>
                     </div>
-
-                    {{-- Footer --}}
                     <div class="flex items-center justify-end gap-3 pt-2">
-                        <button
-                            type="button"
-                            wire:click="closeCreateModal"
-                            class="px-4 py-2 rounded-md border border-[#333333] bg-[#2a2a2a] text-[13px] font-medium text-[#999999] hover:text-[#ededed] hover:border-[#444444] transition-colors cursor-pointer"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            class="inline-flex items-center gap-2 px-4 py-2 gradient-bg text-white text-[13px] font-medium rounded-md hover:opacity-90 transition-opacity cursor-pointer"
-                        >
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button type="button" wire:click="closeCreateModal" class="px-3 py-1.5 btn-secondary rounded text-[13px] font-medium cursor-pointer">Cancel</button>
+                        <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-1.5 btn-primary rounded text-[13px] font-medium cursor-pointer">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                             </svg>
                             Create Agent

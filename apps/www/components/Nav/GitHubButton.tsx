@@ -1,6 +1,6 @@
-import { Button } from 'ui'
-import { useSendTelemetryEvent } from '~/lib/telemetry'
 import staticContent from '.generated/staticContent/_index.json'
+import { useSendTelemetryEvent } from '~/lib/telemetry'
+import { Button } from 'ui'
 
 const GitHubButton = () => {
   const sendTelemetryEvent = useSendTelemetryEvent()

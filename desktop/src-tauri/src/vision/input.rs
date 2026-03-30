@@ -1,4 +1,4 @@
-// Vision: Input Injection — macOS CGEvent implementation
+// Vision: Input Injection — cross-platform implementation using enigo
 
 use serde::{Deserialize, Serialize};
 
@@ -10,177 +10,178 @@ pub struct ClickResult {
     pub success: bool,
 }
 
-#[cfg(target_os = "macos")]
-pub mod macos {
-    use core_graphics::event::{
-        CGEvent, CGEventTapLocation, CGEventType, CGMouseButton, CGEventFlags,
-    };
-    use core_graphics::event_source::CGEventSource;
-    use core_graphics::geometry::CGPoint;
-
-    fn event_source() -> CGEventSource {
-        CGEventSource::new(core_graphics::event_source::CGEventSourceStateID::HIDSystemState)
-            .expect("Failed to create event source")
-    }
-
-    pub fn mouse_move(x: f64, y: f64) -> Result<(), String> {
-        let point = CGPoint::new(x, y);
-        let event = CGEvent::new_mouse_event(
-            event_source(),
-            CGEventType::MouseMoved,
-            point,
-            CGMouseButton::Left,
-        ).map_err(|_| "Failed to create mouse move event".to_string())?;
-        event.post(CGEventTapLocation::HID);
-        Ok(())
-    }
-
-    pub fn mouse_click(x: f64, y: f64, button: &str) -> Result<(), String> {
-        let point = CGPoint::new(x, y);
-        let (btn, down_type, up_type) = match button {
-            "right" => (CGMouseButton::Right, CGEventType::RightMouseDown, CGEventType::RightMouseUp),
-            _ => (CGMouseButton::Left, CGEventType::LeftMouseDown, CGEventType::LeftMouseUp),
-        };
-
-        let down = CGEvent::new_mouse_event(event_source(), down_type, point, btn)
-            .map_err(|_| "Failed to create mouse down".to_string())?;
-        let up = CGEvent::new_mouse_event(event_source(), up_type, point, btn)
-            .map_err(|_| "Failed to create mouse up".to_string())?;
-
-        down.post(CGEventTapLocation::HID);
-        std::thread::sleep(std::time::Duration::from_millis(50));
-        up.post(CGEventTapLocation::HID);
-        Ok(())
-    }
-
-    pub fn mouse_drag(from_x: f64, from_y: f64, to_x: f64, to_y: f64) -> Result<(), String> {
-        let down = CGEvent::new_mouse_event(
-            event_source(), CGEventType::LeftMouseDown, CGPoint::new(from_x, from_y), CGMouseButton::Left,
-        ).map_err(|_| "Failed to create drag start".to_string())?;
-        down.post(CGEventTapLocation::HID);
-        std::thread::sleep(std::time::Duration::from_millis(50));
-
-        let drag = CGEvent::new_mouse_event(
-            event_source(), CGEventType::LeftMouseDragged, CGPoint::new(to_x, to_y), CGMouseButton::Left,
-        ).map_err(|_| "Failed to create drag move".to_string())?;
-        drag.post(CGEventTapLocation::HID);
-        std::thread::sleep(std::time::Duration::from_millis(50));
-
-        let up = CGEvent::new_mouse_event(
-            event_source(), CGEventType::LeftMouseUp, CGPoint::new(to_x, to_y), CGMouseButton::Left,
-        ).map_err(|_| "Failed to create drag end".to_string())?;
-        up.post(CGEventTapLocation::HID);
-        Ok(())
-    }
-
-    pub fn mouse_scroll(delta_x: i32, delta_y: i32) -> Result<(), String> {
-        let event = CGEvent::new_scroll_event(
-            event_source(),
-            core_graphics::event::ScrollEventUnit::PIXEL,
-            2, delta_y, delta_x, 0,
-        ).map_err(|_| "Failed to create scroll event".to_string())?;
-        event.post(CGEventTapLocation::HID);
-        Ok(())
-    }
-
-    pub fn keyboard_type(text: &str) -> Result<(), String> {
-        for ch in text.chars() {
-            let event = CGEvent::new_keyboard_event(event_source(), 0, true)
-                .map_err(|_| "Failed to create key event".to_string())?;
-            let mut buf = [0u16; 2];
-            let encoded: Vec<u16> = ch.encode_utf16(&mut buf).to_vec();
-            event.set_string_from_utf16_unchecked(&encoded);
-            event.post(CGEventTapLocation::HID);
-            std::thread::sleep(std::time::Duration::from_millis(10));
-        }
-        Ok(())
-    }
-
-    pub fn keyboard_press(keys: &str) -> Result<(), String> {
-        let parts: Vec<String> = keys.split('+').map(|s| s.trim().to_lowercase()).collect();
-
-        let mut flags = CGEventFlags::empty();
-        let mut keycode: u16 = 0;
-
-        for part in &parts {
-            match part.as_str() {
-                "cmd" | "command" | "meta" => flags |= CGEventFlags::CGEventFlagCommand,
-                "ctrl" | "control" => flags |= CGEventFlags::CGEventFlagControl,
-                "alt" | "option" => flags |= CGEventFlags::CGEventFlagAlternate,
-                "shift" => flags |= CGEventFlags::CGEventFlagShift,
-                k => keycode = key_to_code(k),
-            }
-        }
-
-        let down = CGEvent::new_keyboard_event(event_source(), keycode, true)
-            .map_err(|_| "Failed to create key down".to_string())?;
-        down.set_flags(flags);
-        down.post(CGEventTapLocation::HID);
-        std::thread::sleep(std::time::Duration::from_millis(50));
-
-        let up = CGEvent::new_keyboard_event(event_source(), keycode, false)
-            .map_err(|_| "Failed to create key up".to_string())?;
-        up.set_flags(flags);
-        up.post(CGEventTapLocation::HID);
-        Ok(())
-    }
-
-    fn key_to_code(key: &str) -> u16 {
-        match key {
-            "a" => 0, "b" => 11, "c" => 8, "d" => 2, "e" => 14, "f" => 3,
-            "g" => 5, "h" => 4, "i" => 34, "j" => 38, "k" => 40, "l" => 37,
-            "m" => 46, "n" => 45, "o" => 31, "p" => 35, "q" => 12, "r" => 15,
-            "s" => 1, "t" => 17, "u" => 32, "v" => 9, "w" => 13, "x" => 7,
-            "y" => 16, "z" => 6,
-            "0" => 29, "1" => 18, "2" => 19, "3" => 20, "4" => 21,
-            "5" => 23, "6" => 22, "7" => 26, "8" => 28, "9" => 25,
-            "return" | "enter" => 36, "tab" => 48, "space" => 49,
-            "delete" | "backspace" => 51, "escape" | "esc" => 53,
-            "up" => 126, "down" => 125, "left" => 123, "right" => 124,
-            _ => 0,
-        }
-    }
+/// Create a new Enigo instance with default settings.
+fn new_enigo() -> Result<enigo::Enigo, String> {
+    enigo::Enigo::new(&enigo::Settings::default())
+        .map_err(|e| format!("Failed to create input controller: {}", e))
 }
 
-// Platform dispatch
 pub fn mouse_move(x: f64, y: f64) -> Result<(), String> {
-    #[cfg(target_os = "macos")]
-    return macos::mouse_move(x, y);
-    #[cfg(not(target_os = "macos"))]
-    Err("Not supported on this platform".to_string())
+    use enigo::{Coordinate, Mouse};
+    let mut enigo = new_enigo()?;
+    enigo
+        .move_mouse(x as i32, y as i32, Coordinate::Abs)
+        .map_err(|e| format!("Failed to move mouse: {}", e))
 }
 
 pub fn mouse_click(x: f64, y: f64, button: &str) -> Result<(), String> {
-    #[cfg(target_os = "macos")]
-    return macos::mouse_click(x, y, button);
-    #[cfg(not(target_os = "macos"))]
-    Err("Not supported".to_string())
+    use enigo::{Button, Coordinate, Direction, Mouse};
+    let mut enigo = new_enigo()?;
+
+    // Move to position first
+    enigo
+        .move_mouse(x as i32, y as i32, Coordinate::Abs)
+        .map_err(|e| format!("Failed to move mouse: {}", e))?;
+
+    let btn = match button {
+        "right" => Button::Right,
+        "middle" => Button::Middle,
+        _ => Button::Left,
+    };
+
+    enigo
+        .button(btn, Direction::Click)
+        .map_err(|e| format!("Failed to click mouse: {}", e))
 }
 
 pub fn mouse_drag(from_x: f64, from_y: f64, to_x: f64, to_y: f64) -> Result<(), String> {
-    #[cfg(target_os = "macos")]
-    return macos::mouse_drag(from_x, from_y, to_x, to_y);
-    #[cfg(not(target_os = "macos"))]
-    Err("Not supported".to_string())
+    use enigo::{Button, Coordinate, Direction, Mouse};
+    let mut enigo = new_enigo()?;
+
+    // Move to start position
+    enigo
+        .move_mouse(from_x as i32, from_y as i32, Coordinate::Abs)
+        .map_err(|e| format!("Failed to move to drag start: {}", e))?;
+
+    // Press left button
+    enigo
+        .button(Button::Left, Direction::Press)
+        .map_err(|e| format!("Failed to press for drag: {}", e))?;
+
+    std::thread::sleep(std::time::Duration::from_millis(50));
+
+    // Move to end position
+    enigo
+        .move_mouse(to_x as i32, to_y as i32, Coordinate::Abs)
+        .map_err(|e| format!("Failed to move during drag: {}", e))?;
+
+    std::thread::sleep(std::time::Duration::from_millis(50));
+
+    // Release left button
+    enigo
+        .button(Button::Left, Direction::Release)
+        .map_err(|e| format!("Failed to release after drag: {}", e))
 }
 
 pub fn mouse_scroll(delta_x: i32, delta_y: i32) -> Result<(), String> {
-    #[cfg(target_os = "macos")]
-    return macos::mouse_scroll(delta_x, delta_y);
-    #[cfg(not(target_os = "macos"))]
-    Err("Not supported".to_string())
+    use enigo::{Axis, Mouse};
+    let mut enigo = new_enigo()?;
+
+    if delta_y != 0 {
+        enigo
+            .scroll(delta_y, Axis::Vertical)
+            .map_err(|e| format!("Failed to scroll vertically: {}", e))?;
+    }
+    if delta_x != 0 {
+        enigo
+            .scroll(delta_x, Axis::Horizontal)
+            .map_err(|e| format!("Failed to scroll horizontally: {}", e))?;
+    }
+
+    Ok(())
 }
 
 pub fn keyboard_type(text: &str) -> Result<(), String> {
-    #[cfg(target_os = "macos")]
-    return macos::keyboard_type(text);
-    #[cfg(not(target_os = "macos"))]
-    Err("Not supported".to_string())
+    use enigo::Keyboard;
+    let mut enigo = new_enigo()?;
+    enigo
+        .text(text)
+        .map_err(|e| format!("Failed to type text: {}", e))
 }
 
 pub fn keyboard_press(keys: &str) -> Result<(), String> {
-    #[cfg(target_os = "macos")]
-    return macos::keyboard_press(keys);
-    #[cfg(not(target_os = "macos"))]
-    Err("Not supported".to_string())
+    use enigo::{Direction, Key, Keyboard};
+    let mut enigo = new_enigo()?;
+
+    let parts: Vec<String> = keys.split('+').map(|s| s.trim().to_lowercase()).collect();
+
+    // Separate modifiers from the final key
+    let mut modifiers: Vec<Key> = Vec::new();
+    let mut final_key: Option<Key> = None;
+
+    for part in &parts {
+        match part.as_str() {
+            "cmd" | "command" | "meta" => modifiers.push(Key::Meta),
+            "ctrl" | "control" => modifiers.push(Key::Control),
+            "alt" | "option" => modifiers.push(Key::Alt),
+            "shift" => modifiers.push(Key::Shift),
+            k => final_key = Some(str_to_key(k)),
+        }
+    }
+
+    // Press all modifiers
+    for m in &modifiers {
+        enigo
+            .key(*m, Direction::Press)
+            .map_err(|e| format!("Failed to press modifier: {}", e))?;
+    }
+
+    // Click the final key (press + release)
+    if let Some(key) = final_key {
+        enigo
+            .key(key, Direction::Click)
+            .map_err(|e| format!("Failed to press key: {}", e))?;
+    }
+
+    // Release all modifiers in reverse order
+    for m in modifiers.iter().rev() {
+        enigo
+            .key(*m, Direction::Release)
+            .map_err(|e| format!("Failed to release modifier: {}", e))?;
+    }
+
+    Ok(())
+}
+
+/// Convert a string key name to an enigo Key.
+fn str_to_key(key: &str) -> enigo::Key {
+    use enigo::Key;
+
+    match key {
+        "return" | "enter" => Key::Return,
+        "tab" => Key::Tab,
+        "space" => Key::Space,
+        "delete" | "backspace" => Key::Backspace,
+        "escape" | "esc" => Key::Escape,
+        "up" => Key::UpArrow,
+        "down" => Key::DownArrow,
+        "left" => Key::LeftArrow,
+        "right" => Key::RightArrow,
+        "home" => Key::Home,
+        "end" => Key::End,
+        "pageup" => Key::PageUp,
+        "pagedown" => Key::PageDown,
+        "f1" => Key::F1,
+        "f2" => Key::F2,
+        "f3" => Key::F3,
+        "f4" => Key::F4,
+        "f5" => Key::F5,
+        "f6" => Key::F6,
+        "f7" => Key::F7,
+        "f8" => Key::F8,
+        "f9" => Key::F9,
+        "f10" => Key::F10,
+        "f11" => Key::F11,
+        "f12" => Key::F12,
+        // Single character — use Unicode key
+        s if s.len() == 1 => Key::Unicode(s.chars().next().unwrap()),
+        // Unknown — try as single char anyway
+        s => {
+            if let Some(c) = s.chars().next() {
+                Key::Unicode(c)
+            } else {
+                Key::Return // fallback
+            }
+        }
+    }
 }

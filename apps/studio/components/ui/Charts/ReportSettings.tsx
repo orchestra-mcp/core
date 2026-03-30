@@ -9,6 +9,7 @@ import {
   Label_Shadcn_,
   Switch,
 } from 'ui'
+
 import { useChartHoverState } from './useChartHoverState'
 
 interface ReportSettingsProps {

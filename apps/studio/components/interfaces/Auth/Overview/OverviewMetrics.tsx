@@ -3,6 +3,7 @@ import { useParams } from 'common'
 import { SIDEBAR_KEYS } from 'components/layouts/ProjectLayout/LayoutSidebar/LayoutSidebarProvider'
 import AlertError from 'components/ui/AlertError'
 import { getStatusColor } from 'components/ui/DataTable/DataTable.utils'
+import { ErrorCodeTooltip } from 'components/ui/ErrorCodeTooltip/ErrorCodeTooltip'
 import { Service } from 'data/graphql/graphql'
 import dayjs from 'dayjs'
 import { BarChart2, Bot, ChevronRight, ExternalLink, Telescope } from 'lucide-react'
@@ -31,7 +32,6 @@ import {
   PageSectionTitle,
 } from 'ui-patterns/PageSection'
 
-import { ErrorCodeTooltip } from 'components/ui/ErrorCodeTooltip/ErrorCodeTooltip'
 import {
   AuthErrorCodeRow,
   fetchTopAuthErrorCodes,

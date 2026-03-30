@@ -1,9 +1,9 @@
-import { FC, useEffect, useState } from 'react'
-import Link from 'next/link'
+import { useSendTelemetryEvent } from '~/lib/telemetry'
 import { CircleAlert } from 'lucide-react'
+import Link from 'next/link'
+import { FC, useEffect, useState } from 'react'
 import { Button, cn, Input_Shadcn_, Label_Shadcn_, Separator, TextArea_Shadcn_ } from 'ui'
 import { Alert } from 'ui/src/components/shadcn/ui/alert'
-import { useSendTelemetryEvent } from '~/lib/telemetry'
 
 interface FormData {
   firstName: string

@@ -1,10 +1,10 @@
 'use client'
 
+import { ReferenceContentInitiallyScrolledContext } from '~/features/docs/Reference.navigation.client'
+import { safeHistoryReplaceState } from '~/lib/historyUtils'
 import type { HTMLAttributes, PropsWithChildren } from 'react'
 import { useContext, useEffect, useRef, useState } from 'react'
 import { useInView } from 'react-intersection-observer'
-import { safeHistoryReplaceState } from '~/lib/historyUtils'
-
 import {
   cn,
   Select_Shadcn_,
@@ -15,7 +15,6 @@ import {
   SelectValue_Shadcn_,
 } from 'ui'
 
-import { ReferenceContentInitiallyScrolledContext } from '~/features/docs/Reference.navigation.client'
 import { type IApiEndPoint } from './Reference.api.utils'
 import { API_REFERENCE_REQUEST_BODY_SCHEMA_DATA_ATTRIBUTES } from './Reference.ui.shared'
 

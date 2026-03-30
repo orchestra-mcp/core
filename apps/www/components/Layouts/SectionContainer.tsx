@@ -1,7 +1,7 @@
 'use client'
 
 import classNames from 'classnames'
-import { Ref, forwardRef } from 'react'
+import { forwardRef, Ref } from 'react'
 
 interface Props {
   children: React.ReactNode

@@ -27,12 +27,11 @@ export default async function timeoutRequest<T>(
         cleanup()
         throw err
       }),
-      timeoutPromise
+      timeoutPromise,
     ])
 
     cleanup()
     return result
-
   } catch (error) {
     cleanup()
     throw error

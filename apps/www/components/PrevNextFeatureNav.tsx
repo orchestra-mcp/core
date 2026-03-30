@@ -1,7 +1,8 @@
-import { PropsWithChildren, useEffect, useState } from 'react'
+import { features, type FeatureType } from '~/data/features'
+import { ArrowLeft, ArrowRight, List } from 'lucide-react'
 import Link, { LinkProps } from 'next/link'
 import { useRouter } from 'next/router'
-import { ArrowLeft, ArrowRight, List } from 'lucide-react'
+import { PropsWithChildren, useEffect, useState } from 'react'
 import {
   cn,
   DropdownMenu,
@@ -12,8 +13,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from 'ui'
-
-import { type FeatureType, features } from '~/data/features'
 
 interface Props {
   className?: string

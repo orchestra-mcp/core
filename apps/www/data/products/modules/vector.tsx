@@ -1,8 +1,8 @@
-import OpenAIImage from '~/components/Products/VectorAI/OpenAIImage'
-import SecureAndScalableImg from '~/components/Products/VectorAI/SecureAndScalableImg'
-import PGvectorImg from '~/components/Products/VectorAI/PGvectorImg'
 import DeployGlobally from '~/components/Products/VectorAI/DeployGlobally'
 import IntegrationsImage from '~/components/Products/VectorAI/IntegrationsImage'
+import OpenAIImage from '~/components/Products/VectorAI/OpenAIImage'
+import PGvectorImg from '~/components/Products/VectorAI/PGvectorImg'
+import SecureAndScalableImg from '~/components/Products/VectorAI/SecureAndScalableImg'
 import { PRODUCT_MODULES } from 'shared-data/products'
 
 export default (isMobile?: boolean) => ({
