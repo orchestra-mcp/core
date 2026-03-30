@@ -1,10 +1,10 @@
-import Link from 'next/link'
-import { PropsWithChildren, ReactNode, forwardRef } from 'react'
-import { LoadingLine, cn } from 'ui'
-
 import { withAuth } from 'hooks/misc/withAuth'
 import { BASE_PATH } from 'lib/constants'
 import { Book, LifeBuoy, X } from 'lucide-react'
+import Link from 'next/link'
+import { forwardRef, PropsWithChildren, ReactNode } from 'react'
+import { cn, LoadingLine } from 'ui'
+
 import { ScaffoldContainer } from '../Scaffold'
 
 export type IntegrationWindowLayoutProps = {

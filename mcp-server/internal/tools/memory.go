@@ -179,7 +179,37 @@ func makeMemorySearch(dbClient *db.Client, embedder *embedding.Client) mcp.ToolH
 			p.MatchThreshold = 0.7
 		}
 
-		// Use PostgreSQL text search instead of vector embeddings
+		// Attempt vector similarity search via pgvector.
+		vec, embErr := embedder.Embed(ctx, p.Query)
+		if embErr == nil {
+			// Build RPC params matching the search_memory() function signature.
+			rpcParams := map[string]interface{}{
+				"query_embedding": floats32ToAny(vec),
+				"p_org_id":        userCtx.OrgID,
+				"match_count":     p.MatchCount,
+				"match_threshold": p.MatchThreshold,
+			}
+			if p.AgentID != "" {
+				rpcParams["p_agent_id"] = p.AgentID
+			}
+			if p.ProjectID != "" {
+				rpcParams["p_project_id"] = p.ProjectID
+			}
+
+			raw, err := dbClient.RPC(ctx, "search_memory", rpcParams)
+			if err != nil {
+				slog.Warn("vector search RPC failed, falling back to text search", "error", err)
+			} else {
+				return jsonResult(map[string]interface{}{
+					"memories":    json.RawMessage(raw),
+					"search_type": "vector",
+				})
+			}
+		} else {
+			slog.Warn("embedding generation failed, falling back to text search", "error", embErr)
+		}
+
+		// Fallback: PostgreSQL ILIKE text search.
 		searchQ := strings.ReplaceAll(p.Query, " ", "%20")
 		qstr := fmt.Sprintf("organization_id=eq.%s&order=created_at.desc&limit=%d&select=id,title,content,summary,source,tags,created_at&or=(title.ilike.*%s*,content.ilike.*%s*)", userCtx.OrgID, p.MatchCount, searchQ, searchQ)
 		if p.AgentID != "" {
@@ -193,7 +223,10 @@ func makeMemorySearch(dbClient *db.Client, embedder *embedding.Client) mcp.ToolH
 		if err != nil {
 			return errorResult("search failed: " + err.Error()), nil
 		}
-		return jsonResult(map[string]json.RawMessage{"memories": raw})
+		return jsonResult(map[string]interface{}{
+			"memories":    json.RawMessage(raw),
+			"search_type": "text",
+		})
 	}
 }
 

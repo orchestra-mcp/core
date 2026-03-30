@@ -1,3 +1,5 @@
+import { DocsButton } from 'components/ui/DocsButton'
+import { DOCS_URL } from 'lib/constants'
 import { Badge } from 'ui'
 import {
   PageSection,
@@ -9,8 +11,6 @@ import {
   PageSectionTitle,
 } from 'ui-patterns/PageSection'
 
-import { DocsButton } from 'components/ui/DocsButton'
-import { DOCS_URL } from 'lib/constants'
 import { CustomAuthProvidersList } from './CustomAuthProvidersList'
 
 export const CustomAuthProviders = () => {

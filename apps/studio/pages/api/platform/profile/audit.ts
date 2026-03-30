@@ -1,7 +1,6 @@
-import { NextApiRequest, NextApiResponse } from 'next'
-
 import apiWrapper from 'lib/api/apiWrapper'
 import { executeQuery } from 'lib/api/self-hosted/query'
+import { NextApiRequest, NextApiResponse } from 'next'
 
 export default (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
 

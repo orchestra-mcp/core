@@ -1,9 +1,8 @@
-import RefSubLayout from '~/layouts/ref/RefSubLayout'
-
-import spec from '~/spec/cli_v1_commands.yaml' with { type: 'yaml' }
 import Param from '~/components/Params'
-import { isFeatureEnabled } from 'common'
+import RefSubLayout from '~/layouts/ref/RefSubLayout'
 import { getCustomContent } from '~/lib/custom-content/getCustomContent'
+import spec from '~/spec/cli_v1_commands.yaml' with { type: 'yaml' }
+import { isFeatureEnabled } from 'common'
 
 const { cliDisableCustomProfiles } = isFeatureEnabled(['cli:disable_custom_profiles'])
 

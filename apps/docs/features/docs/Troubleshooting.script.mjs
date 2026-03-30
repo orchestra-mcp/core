@@ -9,10 +9,11 @@
 
 import '../../scripts/utils/dotenv.js'
 
+import { createHash } from 'crypto'
+import { readFile, writeFile } from 'node:fs/promises'
 import { createAppAuth } from '@octokit/auth-app'
 import { Octokit } from '@octokit/core'
 import { createClient } from '@supabase/supabase-js'
-import { createHash } from 'crypto'
 import matter from 'gray-matter'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { gfmFromMarkdown, gfmToMarkdown } from 'mdast-util-gfm'
@@ -20,7 +21,6 @@ import { mdxFromMarkdown, mdxToMarkdown } from 'mdast-util-mdx'
 import { toMarkdown } from 'mdast-util-to-markdown'
 import { gfm } from 'micromark-extension-gfm'
 import { mdxjs } from 'micromark-extension-mdxjs'
-import { readFile, writeFile } from 'node:fs/promises'
 import { parse, stringify } from 'smol-toml'
 
 import {

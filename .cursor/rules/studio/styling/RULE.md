@@ -1,5 +1,5 @@
 ---
-description: "Studio: styling rules (Tailwind + semantic tokens + typography/focus utilities)"
+description: 'Studio: styling rules (Tailwind + semantic tokens + typography/focus utilities)'
 globs:
   - apps/studio/**/*.{ts,tsx,scss}
 alwaysApply: false
@@ -13,4 +13,3 @@ alwaysApply: false
   - text: `text-foreground`, `text-foreground-light`, `text-foreground-lighter`, `text-warning`, `text-destructive`
 - Use existing typography utilities from `apps/studio/styles/typography.scss` instead of recreating styles.
 - Use existing focus utilities from `apps/studio/styles/focus.scss` for consistent keyboard focus styling.
-

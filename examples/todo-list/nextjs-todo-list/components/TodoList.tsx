@@ -1,7 +1,8 @@
-import { Database } from '@/lib/schema'
-import { supabase } from '@/lib/initSupabase'
 import { Session } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
+
+import { supabase } from '@/lib/initSupabase'
+import { Database } from '@/lib/schema'
 
 type Todos = Database['public']['Tables']['todos']['Row']
 

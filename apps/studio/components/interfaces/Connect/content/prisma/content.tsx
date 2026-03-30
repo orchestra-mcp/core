@@ -1,6 +1,4 @@
 import type { ContentFileProps } from 'components/interfaces/Connect/Connect.types'
-
-import { SimpleCodeBlock } from 'ui'
 import {
   ConnectTabContent,
   ConnectTabs,
@@ -8,6 +6,7 @@ import {
   ConnectTabTriggers,
 } from 'components/interfaces/Connect/ConnectTabs'
 import { IS_PLATFORM } from 'lib/constants'
+import { SimpleCodeBlock } from 'ui'
 
 const ContentFile = ({ connectionStringPooler }: ContentFileProps) => {
   return (

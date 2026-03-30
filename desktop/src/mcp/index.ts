@@ -1,1 +1,1 @@
-export { default as McpConnector } from "./McpConnector";
+export { default as McpConnector } from './McpConnector'

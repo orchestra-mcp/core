@@ -1,8 +1,7 @@
+import pricingFaq from '~/data/PricingFAQ.json'
 import React from 'react'
 import ReactMarkdown from 'react-markdown'
 import { Accordion } from 'ui'
-
-import pricingFaq from '~/data/PricingFAQ.json'
 
 const PricingFAQs = () => {
   return (

@@ -1,3 +1,5 @@
+import { Result } from '~/features/helpers.fn'
+import { nanoId } from '~/features/helpers.misc'
 import {
   GraphQLBoolean,
   GraphQLError,
@@ -5,11 +7,9 @@ import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
-  type GraphQLOutputType,
   GraphQLString,
+  type GraphQLOutputType,
 } from 'graphql'
-import { Result } from '~/features/helpers.fn'
-import { nanoId } from '~/features/helpers.misc'
 
 /**
  * Extracts the name from a GraphQLOutputType.

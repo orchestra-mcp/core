@@ -39,11 +39,10 @@ Import specific submodules to minimize overhead:
 ```tsx
 // Good: Import specific submodules
 import { Sheets } from 'npm:@googleapis/sheets'
+import * as googleAuth from 'npm:google-auth-library'
 import { JWT } from 'npm:google-auth-library/build/src/auth/jwtclient'
-
 // Avoid: Import entire package
 import * as googleapis from 'npm:googleapis'
-import * as googleAuth from 'npm:google-auth-library'
 ```
 
 ## Best practices

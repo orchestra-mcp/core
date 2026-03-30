@@ -1,5 +1,4 @@
 import * as Sentry from '@sentry/nextjs'
-
 import { CustomerioTrackClient } from '~/lib/customerio'
 
 const corsHeaders = {

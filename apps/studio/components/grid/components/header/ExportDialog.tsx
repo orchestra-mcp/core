@@ -1,5 +1,3 @@
-import { useState } from 'react'
-
 import { useParams } from 'common'
 import { Filter, Sort, SupaTable } from 'components/grid/types'
 import { getConnectionStrings } from 'components/interfaces/Connect/DatabaseSettings.utils'
@@ -7,6 +5,7 @@ import { useReadReplicasQuery } from 'data/read-replicas/replicas-query'
 import { getAllTableRowsSql } from 'data/table-rows/table-rows-query'
 import { pluckObjectFields } from 'lib/helpers'
 import { RoleImpersonationState, wrapWithRoleImpersonation } from 'lib/role-impersonation'
+import { useState } from 'react'
 import { useRoleImpersonationStateSnapshot } from 'state/role-impersonation-state'
 import {
   Button,

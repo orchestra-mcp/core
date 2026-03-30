@@ -1,19 +1,18 @@
 import 'swiper/css'
 
-import { useState, useEffect } from 'react'
+import { createClient, Session, SupabaseClient } from '@supabase/supabase-js'
+import { LaunchWeekLogoHeader } from '~/components/LaunchWeek/8/LaunchWeekLogoHeader'
+import LW8CalloutsSection from '~/components/LaunchWeek/8/LW8CalloutsSection'
+import { ConfDataContext, TicketState, UserData } from '~/components/LaunchWeek/hooks/use-conf-data'
+import DefaultLayout from '~/components/Layouts/Default'
+import SectionContainer from '~/components/Layouts/SectionContainer'
+import { LW_URL, SITE_ORIGIN } from '~/lib/constants'
+import { NextSeo } from 'next-seo'
 import dynamic from 'next/dynamic'
 import Head from 'next/head'
 import Image from 'next/image'
 import { useRouter } from 'next/router'
-import { NextSeo } from 'next-seo'
-import { createClient, Session, SupabaseClient } from '@supabase/supabase-js'
-import { SITE_ORIGIN, LW_URL } from '~/lib/constants'
-
-import DefaultLayout from '~/components/Layouts/Default'
-import { TicketState, ConfDataContext, UserData } from '~/components/LaunchWeek/hooks/use-conf-data'
-import SectionContainer from '~/components/Layouts/SectionContainer'
-import { LaunchWeekLogoHeader } from '~/components/LaunchWeek/8/LaunchWeekLogoHeader'
-import LW8CalloutsSection from '~/components/LaunchWeek/8/LW8CalloutsSection'
+import { useEffect, useState } from 'react'
 
 const LW8Releases = dynamic(() => import('~/components/LaunchWeek/8/Releases'))
 const LWArchive = dynamic(() => import('~/components/LaunchWeek/8/LWArchive'))

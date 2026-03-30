@@ -68,8 +68,8 @@ create table mongo_users_raw (
 Then, ingest the exported JSON data into this Supabase table using this custom script:
 
 ```jsx
-import { createClient } from '@supabase/supabase-js'
 import fs from 'fs'
+import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = 'YOUR_SUPABASE_URL'
 const supabaseKey = 'YOUR_SUPABASE_API_KEY'

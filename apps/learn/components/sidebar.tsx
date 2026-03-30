@@ -1,10 +1,10 @@
 import { Menu } from 'lucide-react'
-
-import SideNavigation from '@/components/side-navigation'
-import { getInternalContentPaths } from '@/lib/get-internal-content'
 import { Button, ScrollArea, SheetContent, SheetTrigger } from 'ui'
+
 import { MobileMenuSheet } from './mobile-menu-sheet'
 import { ThemeSwitcherDropdown } from './theme-switcher-dropdown'
+import SideNavigation from '@/components/side-navigation'
+import { getInternalContentPaths } from '@/lib/get-internal-content'
 
 export function Sidebar() {
   // Get internal content paths on server side

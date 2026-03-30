@@ -1,13 +1,13 @@
+import CTABanner from '~/components/CTABanner'
+import DefaultLayout from '~/components/Layouts/Default'
+import { getAbsoluteBlogSocialImage } from '~/lib/blog-images'
+import { generateReadingTime } from '~/lib/helpers'
 import authors from 'lib/authors.json'
 import { MDXRemote } from 'next-mdx-remote'
 import { NextSeo } from 'next-seo'
 import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
-import CTABanner from '~/components/CTABanner'
-import DefaultLayout from '~/components/Layouts/Default'
-import { getAbsoluteBlogSocialImage } from '~/lib/blog-images'
-import { generateReadingTime } from '~/lib/helpers'
 
 interface Props {
   components: React.ReactNode

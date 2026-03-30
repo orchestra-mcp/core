@@ -1,6 +1,3 @@
-import { Check, ChevronDown } from 'lucide-react'
-import { toast } from 'sonner'
-
 import { ButtonTooltip } from 'components/ui/ButtonTooltip'
 import { DocsButton } from 'components/ui/DocsButton'
 import InformationBox from 'components/ui/InformationBox'
@@ -10,14 +7,16 @@ import { useProjectPostgrestConfigUpdateMutation } from 'data/config/project-pos
 import { useSchemasQuery } from 'data/database/schemas-query'
 import { useSelectedProjectQuery } from 'hooks/misc/useSelectedProject'
 import { DOCS_URL } from 'lib/constants'
+import { Check, ChevronDown } from 'lucide-react'
+import { toast } from 'sonner'
 import {
+  Alert_Shadcn_,
   AlertDescription_Shadcn_,
   AlertTitle_Shadcn_,
-  Alert_Shadcn_,
   CodeBlock,
+  Collapsible_Shadcn_,
   CollapsibleContent_Shadcn_,
   CollapsibleTrigger_Shadcn_,
-  Collapsible_Shadcn_,
   Dialog,
   DialogContent,
   DialogDescription,

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { provide, inject } from 'vue'
+import { inject, provide } from 'vue'
+
 import { cn } from '@/lib/utils'
 
 interface File {

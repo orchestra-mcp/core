@@ -1,11 +1,10 @@
-import { useTheme } from 'next-themes'
-import { useEffect, useState } from 'react'
-import SVG from 'react-inlinesvg'
-
 import { LOCAL_STORAGE_KEYS } from 'common'
 import { DEFAULT_SIDEBAR_BEHAVIOR } from 'components/interfaces/Sidebar'
 import { useLocalStorageQuery } from 'hooks/misc/useLocalStorage'
 import { BASE_PATH } from 'lib/constants'
+import { useTheme } from 'next-themes'
+import { useEffect, useState } from 'react'
+import SVG from 'react-inlinesvg'
 import {
   Card,
   CardContent,

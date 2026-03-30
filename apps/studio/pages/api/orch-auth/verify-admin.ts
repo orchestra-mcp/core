@@ -26,8 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // Extract token from header or body
   const authHeader = req.headers.authorization
   const accessToken =
-    (authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null) ||
-    req.body?.access_token
+    (authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null) || req.body?.access_token
 
   if (!accessToken) {
     return res.status(400).json({ error: 'Missing access token' })
@@ -43,7 +42,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     })
 
     // Verify JWT and get user
-    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken)
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser(accessToken)
 
     if (authError || !user) {
       return res.status(401).json({ error: 'Invalid or expired token' })

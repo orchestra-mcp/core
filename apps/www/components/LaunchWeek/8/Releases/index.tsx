@@ -1,7 +1,8 @@
+import SectionContainer from '~/components/Layouts/SectionContainer'
+import { useBreakpoint } from 'common/hooks/useBreakpoint'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Accordion, cn } from 'ui'
-import { useBreakpoint } from 'common/hooks/useBreakpoint'
 
 import {
   AccordionHeader,
@@ -10,7 +11,6 @@ import {
   MultistepSectionHeader,
   SectionButtons,
 } from './components'
-import SectionContainer from '~/components/Layouts/SectionContainer'
 import days, { WeekDayProps } from './lw8_data'
 
 export default function LW8Releases() {

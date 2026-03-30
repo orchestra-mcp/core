@@ -4,12 +4,12 @@
 
 // Setup type definitions for built-in Supabase Runtime APIs
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
+
+import { Bot, webhookCallback } from 'https://deno.land/x/grammy@v1.34.0/mod.ts'
+import { ElevenLabsClient } from 'npm:elevenlabs@1.50.5'
 import { createClient } from 'npm:supabase-js@2'
 
 console.log(`Function "elevenlabs-scribe-bot" up and running!`)
-
-import { ElevenLabsClient } from 'npm:elevenlabs@1.50.5'
-import { Bot, webhookCallback } from 'https://deno.land/x/grammy@v1.34.0/mod.ts'
 
 const elevenLabsClient = new ElevenLabsClient({
   apiKey: Deno.env.get('ELEVENLABS_API_KEY') || '',

@@ -1,7 +1,3 @@
-import { ExternalLink, Loader, Monitor, Server } from 'lucide-react'
-import Link from 'next/link'
-import { useEffect, useRef } from 'react'
-
 import { useParams } from 'common'
 import ShimmerLine from 'components/ui/ShimmerLine'
 import {
@@ -11,6 +7,9 @@ import {
 } from 'data/projects/project-detail-query'
 import { DOCS_URL } from 'lib/constants'
 import pingPostgrest from 'lib/pingPostgrest'
+import { ExternalLink, Loader, Monitor, Server } from 'lucide-react'
+import Link from 'next/link'
+import { useEffect, useRef } from 'react'
 import { Badge, Button } from 'ui'
 
 export interface ConnectingStateProps {

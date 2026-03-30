@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query'
-
 import {
   getAuthServiceFlowQuery,
   getEdgeFunctionServiceFlowQuery,
@@ -10,6 +9,7 @@ import {
 import { QuerySearchParamsType } from 'components/interfaces/UnifiedLogs/UnifiedLogs.types'
 import { handleError, post } from 'data/fetchers'
 import type { ResponseError, UseCustomQueryOptions } from 'types'
+
 import { logsKeys } from './keys'
 import {
   getUnifiedLogsISOStartEnd,

@@ -1,9 +1,9 @@
 import { expect, Page } from '@playwright/test'
 
+import { createTableWithRLS, dropTable } from '../utils/db/queries.js'
 import { test, withSetupCleanup } from '../utils/test.js'
 import { toUrl } from '../utils/to-url.js'
 import { createApiResponseWaiter, waitForApiResponse } from '../utils/wait-for-response.js'
-import { createTableWithRLS, dropTable } from '../utils/db/queries.js'
 
 /**
  * Helper function to navigate to policies page and wait for it to load

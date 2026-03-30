@@ -1,5 +1,5 @@
-import { ref, watch, onUnmounted } from 'vue'
 import { REALTIME_SUBSCRIBE_STATES } from '@supabase/supabase-js'
+import { onUnmounted, ref, watch } from 'vue'
 
 import { useCurrentUserImage } from './useCurrentUserImage'
 import { useCurrentUserName } from './useCurrentUserName'

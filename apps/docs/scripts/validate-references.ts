@@ -10,9 +10,9 @@
  */
 
 import { readFileSync } from 'fs'
-import yaml from 'js-yaml'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
+import yaml from 'js-yaml'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const SPEC_DIR = join(__dirname, '../spec')

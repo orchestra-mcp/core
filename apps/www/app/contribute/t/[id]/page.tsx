@@ -1,9 +1,10 @@
-import { notFound } from 'next/navigation'
-import { Suspense } from 'react'
 import { ContributePageLayout } from '~/components/Contribute/ContributePageLayout'
 import { Conversation } from '~/components/Contribute/Conversation'
 import { getThreadById } from '~/data/contribute'
 import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
+
 import PageLoading from './page-loading'
 
 export const metadata: Metadata = {

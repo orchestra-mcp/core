@@ -1,7 +1,6 @@
+import { FIRST_REFERRER_COOKIE_NAME } from 'common/first-referrer-cookie'
 import { NextRequest } from 'next/server'
 import { describe, expect, it } from 'vitest'
-
-import { FIRST_REFERRER_COOKIE_NAME } from 'common/first-referrer-cookie'
 
 import { middleware } from './middleware'
 

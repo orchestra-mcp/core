@@ -1,4 +1,5 @@
 import Link from 'next/link'
+
 import supabase from '../../utils/supabase'
 
 export default async function Posts() {

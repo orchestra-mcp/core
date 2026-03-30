@@ -2,7 +2,6 @@
 // https://deno.land/manual/getting_started/setup_your_environment
 // This enables autocomplete, go to definition, etc.
 
-import { Pool } from 'postgres'
 import {
   Generated,
   Kysely,
@@ -10,6 +9,8 @@ import {
   PostgresIntrospector,
   PostgresQueryCompiler,
 } from 'kysely'
+import { Pool } from 'postgres'
+
 import { PostgresDriver } from './DenoPostgresDriver.ts'
 
 console.log(`Function "kysely-postgres" up and running!`)

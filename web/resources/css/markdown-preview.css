@@ -1,0 +1,478 @@
+/* ==========================================================================
+   Markdown Preview Styles — Orchestra Desktop-matching dark theme
+   Standalone CSS for the shared document viewer (Laravel)
+   ========================================================================== */
+
+:root {
+  --mp-font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --mp-font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+
+  /* Background */
+  --mp-bg-default: hsl(0 0% 7.1%);
+  --mp-bg-surface-75: hsl(0 0% 9%);
+  --mp-bg-surface-100: hsl(0 0% 12.2%);
+  --mp-bg-surface-200: hsl(0 0% 12.9%);
+  --mp-bg-surface-300: hsl(0 0% 16.1%);
+  --mp-bg-button: hsl(0 0% 18%);
+  --mp-bg-code: hsl(0 0% 10%);
+  --mp-bg-code-header: hsl(0 0% 11.5%);
+
+  /* Foreground */
+  --mp-fg-default: hsl(0 0% 98%);
+  --mp-fg-light: hsl(0 0% 70.6%);
+  --mp-fg-lighter: hsl(0 0% 53.7%);
+  --mp-fg-muted: hsl(0 0% 30.2%);
+
+  /* Border */
+  --mp-border-default: hsl(0 0% 18%);
+  --mp-border-muted: hsl(0 0% 14.1%);
+  --mp-border-strong: hsl(0 0% 21.2%);
+
+  /* Brand */
+  --mp-brand-default: hsl(277 100% 50%);
+  --mp-brand-600: hsl(277 100% 69%);
+  --mp-brand-link: hsl(277 100% 65%);
+
+  /* Radius */
+  --mp-radius-sm: 4px;
+  --mp-radius-lg: 8px;
+}
+
+/* ==========================================================================
+   Base markdown body
+   ========================================================================== */
+
+.markdown-preview {
+  color: var(--mp-fg-light);
+  font-family: var(--mp-font-body);
+  font-size: 0.875rem;
+  line-height: 1.75;
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+/* Headings */
+.markdown-preview h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--mp-fg-default);
+  margin: 1.25rem 0 0.75rem;
+  padding-bottom: 0.375rem;
+  border-bottom: 1px solid var(--mp-border-default);
+}
+
+.markdown-preview h2 {
+  font-size: 1.375rem;
+  font-weight: 600;
+  color: var(--mp-fg-default);
+  margin: 1rem 0 0.5rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid var(--mp-border-default);
+}
+
+.markdown-preview h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--mp-fg-light);
+  margin: 0.875rem 0 0.375rem;
+}
+
+.markdown-preview h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--mp-fg-light);
+  margin: 0.75rem 0 0.25rem;
+}
+
+.markdown-preview h5 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--mp-fg-lighter);
+  margin: 0.625rem 0 0.25rem;
+}
+
+.markdown-preview h6 {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--mp-fg-muted);
+  margin: 0.5rem 0 0.25rem;
+}
+
+/* Paragraphs */
+.markdown-preview p {
+  margin: 0.5rem 0;
+}
+
+/* Bold / Italic */
+.markdown-preview strong {
+  color: var(--mp-fg-default);
+  font-weight: 600;
+}
+
+.markdown-preview em {
+  font-style: italic;
+  color: var(--mp-fg-light);
+}
+
+/* Links */
+.markdown-preview a {
+  color: var(--mp-brand-default);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.markdown-preview a:hover {
+  color: var(--mp-brand-600);
+}
+
+/* Inline code */
+.markdown-preview code:not(pre code) {
+  background: var(--mp-bg-surface-300);
+  color: var(--mp-brand-600);
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--mp-radius-sm);
+  font-family: var(--mp-font-mono);
+  font-size: 0.8125rem;
+}
+
+/* ==========================================================================
+   Code Blocks — traffic lights, line numbers, syntax highlighting
+   ========================================================================== */
+
+.code-block-wrapper {
+  position: relative;
+  margin: 0.75rem 0;
+  border: 1px solid var(--mp-border-default);
+  border-radius: var(--mp-radius-lg);
+  overflow: hidden;
+  background: var(--mp-bg-code);
+}
+
+.code-block-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  background: var(--mp-bg-code-header);
+  border-bottom: 1px solid var(--mp-border-default);
+  min-height: 28px;
+}
+
+/* Traffic lights */
+.code-block-traffic-lights {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.code-block-traffic-lights span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.code-block-traffic-lights .dot-red { background: #ff5f57; }
+.code-block-traffic-lights .dot-yellow { background: #febc2e; }
+.code-block-traffic-lights .dot-green { background: #28c840; }
+
+.code-block-lang {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: lowercase;
+  color: var(--mp-fg-lighter);
+  font-family: var(--mp-font-mono);
+}
+
+.code-block-copy-btn {
+  margin-left: auto;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--mp-radius-sm);
+  background: var(--mp-bg-surface-300);
+  color: var(--mp-fg-lighter);
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.code-block-copy-btn:hover {
+  background: var(--mp-bg-button);
+  color: var(--mp-fg-default);
+}
+
+.code-block-body {
+  display: flex;
+  overflow-x: auto;
+  padding: 0.75rem 0;
+}
+
+.code-block-line-numbers {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 0 0.75rem;
+  min-width: 2.5rem;
+  user-select: none;
+  font-family: var(--mp-font-mono);
+  font-size: 0.75rem;
+  line-height: 1.625;
+  color: var(--mp-fg-muted);
+  border-right: 1px solid var(--mp-border-default);
+  flex-shrink: 0;
+}
+
+.code-block-body > code,
+.code-block-body > pre {
+  flex: 1;
+  padding: 0 1rem;
+  font-family: var(--mp-font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.625;
+  white-space: pre;
+  color: var(--mp-fg-light);
+  margin: 0;
+  background: transparent;
+}
+
+/* Plain pre/code fallback (when JS doesn't enhance) */
+.markdown-preview pre {
+  background: var(--mp-bg-code);
+  border: 1px solid var(--mp-border-default);
+  border-radius: var(--mp-radius-lg);
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+  margin: 0.75rem 0;
+  font-family: var(--mp-font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.625;
+  color: var(--mp-fg-lighter);
+}
+
+.markdown-preview pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+}
+
+/* ==========================================================================
+   DataTable — styled markdown tables
+   ========================================================================== */
+
+.data-table-wrapper {
+  margin: 0.75rem 0;
+  border: 1px solid var(--mp-border-default);
+  border-radius: var(--mp-radius-lg);
+  overflow: hidden;
+  background: var(--mp-bg-surface-75);
+}
+
+.data-table-header-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  background: var(--mp-bg-code-header);
+  border-bottom: 1px solid var(--mp-border-default);
+  min-height: 28px;
+}
+
+.data-table-icon {
+  display: flex;
+  align-items: center;
+  color: var(--mp-fg-muted);
+}
+
+.data-table-title {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--mp-fg-lighter);
+  letter-spacing: 0.01em;
+}
+
+.data-table-scroll {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.data-table th {
+  background: var(--mp-bg-surface-100);
+  color: var(--mp-fg-lighter);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.6875rem;
+  letter-spacing: 0.05em;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--mp-border-default);
+  border-right: 1px solid var(--mp-border-muted);
+  white-space: nowrap;
+  text-align: left;
+}
+.data-table th:last-child {
+  border-right: none;
+}
+
+.data-table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--mp-border-muted);
+  border-right: 1px solid var(--mp-border-muted);
+  color: var(--mp-fg-light);
+}
+.data-table td:last-child {
+  border-right: none;
+}
+
+.data-table tbody tr:hover {
+  background: var(--mp-bg-surface-100);
+}
+
+.data-table tbody tr:nth-child(even) {
+  background: hsl(0 0% 8.5%);
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ==========================================================================
+   Blockquotes
+   ========================================================================== */
+
+.markdown-preview blockquote {
+  border-left: 3px solid var(--mp-brand-default);
+  padding: 0.5rem 0.75rem;
+  margin: 0.75rem 0;
+  color: var(--mp-fg-lighter);
+  background: var(--mp-bg-surface-100);
+  border-radius: 0 var(--mp-radius-sm) var(--mp-radius-sm) 0;
+}
+
+/* ==========================================================================
+   Lists
+   ========================================================================== */
+
+.markdown-preview ul {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+  list-style-type: disc;
+}
+.markdown-preview ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+  list-style-type: decimal;
+}
+.markdown-preview li {
+  margin: 0.125rem 0;
+}
+
+/* Task lists */
+.markdown-preview ul li input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  vertical-align: middle;
+  accent-color: hsl(277 100% 50%);
+  cursor: default;
+  margin-right: 6px;
+}
+.markdown-preview ul li:has(> input[type="checkbox"]) {
+  list-style: none;
+  margin-left: -1.25rem;
+}
+
+/* ==========================================================================
+   Horizontal rule
+   ========================================================================== */
+
+.markdown-preview hr {
+  border: none;
+  border-top: 1px solid var(--mp-border-default);
+  margin: 1rem 0;
+}
+
+/* ==========================================================================
+   Images
+   ========================================================================== */
+
+.markdown-preview img {
+  max-width: 100%;
+  margin: 0.75rem 0;
+  border-radius: var(--mp-radius-lg);
+  border: 1px solid var(--mp-border-default);
+}
+
+/* ==========================================================================
+   Strikethrough
+   ========================================================================== */
+
+.markdown-preview del {
+  text-decoration: line-through;
+  color: var(--mp-fg-muted);
+}
+
+/* ==========================================================================
+   Mermaid diagrams
+   ========================================================================== */
+
+.mermaid-block-wrapper {
+  margin: 1rem 0;
+  border-radius: 8px;
+  border: 1px solid var(--mp-border-default);
+  overflow: hidden;
+  background: var(--mp-bg-surface-100);
+}
+
+.mermaid-block-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--mp-bg-surface-200);
+  border-bottom: 1px solid var(--mp-border-default);
+}
+
+.mermaid-block-lang {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--mp-brand-default);
+}
+
+.mermaid-block-body {
+  padding: 1.5rem;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mermaid-block-body svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ==========================================================================
+   highlight.js dark theme (GitHub Dark Dimmed-inspired)
+   ========================================================================== */
+
+.hljs { background: transparent; color: var(--mp-fg-light); }
+.hljs-keyword, .hljs-selector-tag, .hljs-built_in, .hljs-type { color: #ff7b72; }
+.hljs-string, .hljs-attr { color: #a5d6ff; }
+.hljs-number, .hljs-literal { color: #79c0ff; }
+.hljs-comment, .hljs-quote, .hljs-meta { color: #8b949e; font-style: italic; }
+.hljs-function, .hljs-title { color: #d2a8ff; }
+.hljs-params { color: #ffa657; }
+.hljs-variable, .hljs-template-variable { color: #ffa657; }
+.hljs-regexp { color: #7ee787; }
+.hljs-deletion { color: #ffa198; background: rgba(248, 81, 73, 0.1); }
+.hljs-addition { color: #aff5b4; background: rgba(63, 185, 80, 0.1); }
+.hljs-selector-class, .hljs-selector-id { color: #7ee787; }
+.hljs-attribute { color: #79c0ff; }
+.hljs-tag, .hljs-name { color: #7ee787; }
+.hljs-symbol, .hljs-bullet { color: #ffa657; }
+.hljs-section { color: #d2a8ff; font-weight: bold; }
+.hljs-emphasis { font-style: italic; }
+.hljs-strong { font-weight: bold; }

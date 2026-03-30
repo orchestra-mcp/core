@@ -1,10 +1,4 @@
 import { PermissionAction } from '@supabase/shared-types/out/constants'
-import { partition } from 'lodash'
-import { Table2 } from 'lucide-react'
-import Link from 'next/link'
-import { useRouter } from 'next/router'
-import { toast } from 'sonner'
-
 import { useParams } from 'common'
 import { SQL_TEMPLATES } from 'components/interfaces/SQLEditor/SQLEditor.queries'
 import { createSqlSnippetSkeletonV2 } from 'components/interfaces/SQLEditor/SQLEditor.utils'
@@ -15,18 +9,24 @@ import { useSelectedOrganizationQuery } from 'hooks/misc/useSelectedOrganization
 import { useSelectedProjectQuery } from 'hooks/misc/useSelectedProject'
 import { useIsProtectedSchema } from 'hooks/useProtectedSchemas'
 import { useProfile } from 'lib/profile'
+import { partition } from 'lodash'
+import { Table2 } from 'lucide-react'
+import Link from 'next/link'
+import { useRouter } from 'next/router'
+import { toast } from 'sonner'
 import { useSqlEditorV2StateSnapshot } from 'state/sql-editor-v2'
 import { useTableEditorStateSnapshot } from 'state/table-editor'
 import { createTabId, useTabsStateSnapshot } from 'state/tabs'
 import {
   Button,
+  cn,
   SQL_ICON,
+  Tabs_Shadcn_,
   TabsContent_Shadcn_,
   TabsList_Shadcn_,
   TabsTrigger_Shadcn_,
-  Tabs_Shadcn_,
-  cn,
 } from 'ui'
+
 import { useEditorType } from '../editors/EditorsLayout.hooks'
 import { ActionCard } from './ActionCard'
 import { RecentItems } from './RecentItems'

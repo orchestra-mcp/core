@@ -1,8 +1,8 @@
 // @ts-check
 
-import chokidar from 'chokidar'
 import { closeSync, openSync, readFileSync, writeSync } from 'node:fs'
 import { basename, join } from 'node:path'
+import chokidar from 'chokidar'
 
 const TROUBLESHOOTING_DIRECTORY = join(import.meta.dirname, '../../content/troubleshooting')
 

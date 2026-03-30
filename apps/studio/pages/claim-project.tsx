@@ -1,6 +1,3 @@
-import Head from 'next/head'
-import { PropsWithChildren, useMemo, useState } from 'react'
-
 import { useParams } from 'common'
 import { ProjectClaimBenefits } from 'components/interfaces/Organization/ProjectClaim/benefits'
 import { ProjectClaimChooseOrg } from 'components/interfaces/Organization/ProjectClaim/choose-org'
@@ -11,6 +8,8 @@ import { useOrganizationProjectClaimQuery } from 'data/organizations/organizatio
 import { useOrganizationsQuery } from 'data/organizations/organizations-query'
 import { useCustomContent } from 'hooks/custom-content/useCustomContent'
 import { withAuth } from 'hooks/misc/withAuth'
+import Head from 'next/head'
+import { PropsWithChildren, useMemo, useState } from 'react'
 import type { NextPageWithLayout } from 'types'
 import { Admonition } from 'ui-patterns/admonition'
 import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'

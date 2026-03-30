@@ -52,6 +52,15 @@ CMD ["pnpm", "dev:studio"]
 # Compile Next.js
 FROM dev AS builder
 
+# Next.js inlines NEXT_PUBLIC_* at build time, so these must be ARGs
+ARG NEXT_PUBLIC_ORCH_AUTH_ENABLED=false
+ARG NEXT_PUBLIC_SUPABASE_URL=
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY=
+
+ENV NEXT_PUBLIC_ORCH_AUTH_ENABLED=$NEXT_PUBLIC_ORCH_AUTH_ENABLED
+ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
+
 RUN pnpm --filter studio exec next build
 
 # Copy only compiled code and dependencies

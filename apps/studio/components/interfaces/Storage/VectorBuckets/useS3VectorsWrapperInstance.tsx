@@ -1,5 +1,3 @@
-import { useMemo } from 'react'
-
 import {
   WRAPPER_HANDLERS,
   WRAPPERS,
@@ -7,6 +5,8 @@ import {
 import { wrapperMetaComparator } from 'components/interfaces/Integrations/Wrappers/Wrappers.utils'
 import { useFDWsQuery } from 'data/fdw/fdws-query'
 import { useSelectedProjectQuery } from 'hooks/misc/useSelectedProject'
+import { useMemo } from 'react'
+
 import { getVectorBucketFDWName } from './VectorBuckets.utils'
 
 export const useS3VectorsWrapperInstance = ({ bucketId }: { bucketId?: string }) => {

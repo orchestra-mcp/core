@@ -1,13 +1,13 @@
 'use client'
 
+import { ChevronRight, Lock } from 'lucide-react'
 import Link, { LinkProps } from 'next/link'
 import { usePathname } from 'next/navigation'
-import React, { useState, useEffect } from 'react'
-import { ChevronRight, Lock } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
+import { Badge, cn } from 'ui'
 
 import { useMobileMenu } from '@/hooks/use-mobile-menu'
 import { SidebarNavItem } from '@/types/nav'
-import { Badge, cn } from 'ui'
 
 // We extend:
 // 1. LinkProps - for Next.js Link component props (prefetch, etc)

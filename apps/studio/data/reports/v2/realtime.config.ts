@@ -4,6 +4,7 @@ import {
   getInfraMonitoringAttributes,
   InfraMonitoringAttribute,
 } from 'data/analytics/infra-monitoring-query'
+
 import { ReportConfig } from './reports.types'
 
 async function runInfraMonitoringQuery(

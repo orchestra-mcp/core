@@ -1,8 +1,7 @@
+import type { ReplicationPublication } from 'data/replication/publications-query'
 import { Check, ChevronsUpDown, Loader2, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { ControllerRenderProps } from 'react-hook-form'
-
-import type { ReplicationPublication } from 'data/replication/publications-query'
 import {
   Badge,
   Button,

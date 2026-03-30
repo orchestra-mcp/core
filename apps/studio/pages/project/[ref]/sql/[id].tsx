@@ -1,10 +1,7 @@
 import { usePrevious } from '@uidotdev/usehooks'
-import Link from 'next/link'
-import { useRouter } from 'next/router'
-import { useEffect } from 'react'
-
 import { useParams } from 'common/hooks/useParams'
 import { SQLEditor } from 'components/interfaces/SQLEditor/SQLEditor'
+import { generateSnippetTitle } from 'components/interfaces/SQLEditor/SQLEditor.constants'
 import DefaultLayout from 'components/layouts/DefaultLayout'
 import { EditorBaseLayout } from 'components/layouts/editors/EditorBaseLayout'
 import { useEditorType } from 'components/layouts/editors/EditorsLayout.hooks'
@@ -14,12 +11,14 @@ import { useContentIdQuery } from 'data/content/content-id-query'
 import { useDashboardHistory } from 'hooks/misc/useDashboardHistory'
 import { useSelectedProjectQuery } from 'hooks/misc/useSelectedProject'
 import { IS_PLATFORM } from 'lib/constants'
+import Link from 'next/link'
+import { useRouter } from 'next/router'
+import { useEffect } from 'react'
 import { SnippetWithContent, useSnippets, useSqlEditorV2StateSnapshot } from 'state/sql-editor-v2'
 import { createTabId, useTabsStateSnapshot } from 'state/tabs'
 import type { NextPageWithLayout } from 'types'
 import { Button } from 'ui'
 import { Admonition } from 'ui-patterns'
-import { generateSnippetTitle } from 'components/interfaces/SQLEditor/SQLEditor.constants'
 
 const SqlEditor: NextPageWithLayout = () => {
   const router = useRouter()

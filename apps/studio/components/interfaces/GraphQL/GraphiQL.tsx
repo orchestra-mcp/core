@@ -19,7 +19,6 @@ import {
   ToolbarButton,
   Tooltip,
   UnStyledButton,
-  VariableEditor,
   useCopyQuery,
   useDragResize,
   useEditorContext,
@@ -29,16 +28,17 @@ import {
   usePrettifyEditors,
   useSchemaContext,
   useTheme,
+  VariableEditor,
 } from '@graphiql/react'
 import { Fetcher } from '@graphiql/toolkit'
 import { PermissionAction } from '@supabase/shared-types/out/constants'
-import { AlertTriangle, XIcon } from 'lucide-react'
-import { MouseEventHandler, useCallback, useEffect, useState } from 'react'
-
 import { LOCAL_STORAGE_KEYS } from 'common'
 import { useAsyncCheckPermissions } from 'hooks/misc/useCheckPermissions'
 import { useLocalStorage } from 'hooks/misc/useLocalStorage'
-import { AlertDescription_Shadcn_, AlertTitle_Shadcn_, Alert_Shadcn_, Button, cn } from 'ui'
+import { AlertTriangle, XIcon } from 'lucide-react'
+import { MouseEventHandler, useCallback, useEffect, useState } from 'react'
+import { Alert_Shadcn_, AlertDescription_Shadcn_, AlertTitle_Shadcn_, Button, cn } from 'ui'
+
 import { RoleImpersonationSelector } from '../RoleImpersonationSelector'
 import styles from './graphiql.module.css'
 

@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker'
+import { chromium, Page } from '@playwright/test'
 import * as OTPAuth from 'otpauth'
 
-import { chromium, Page } from '@playwright/test'
 import { STORAGE_STATE_PATH } from '../../env.config.js'
 
 export interface GitHubAuthentication {

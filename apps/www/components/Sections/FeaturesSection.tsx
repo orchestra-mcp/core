@@ -1,11 +1,11 @@
-import { LazyMotion, domAnimation, m, useInView } from 'framer-motion'
+import SectionContainer from '~/components/Layouts/SectionContainer'
+import { getAnimation, INITIAL_BOTTOM } from '~/lib/animations'
+import { domAnimation, LazyMotion, m, useInView } from 'framer-motion'
 import { ArrowUpRight } from 'lucide-react'
 import Link from 'next/link'
 import { ReactNode, useRef } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { Button, cn } from 'ui'
-import SectionContainer from '~/components/Layouts/SectionContainer'
-import { INITIAL_BOTTOM, getAnimation } from '~/lib/animations'
 
 interface Feature {
   icon: string

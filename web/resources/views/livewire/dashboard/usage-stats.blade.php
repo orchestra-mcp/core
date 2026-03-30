@@ -1,18 +1,18 @@
 <div>
     {{-- Page heading --}}
-    <div class="mb-8">
-        <h1 class="text-2xl font-semibold text-[#ededed]">Usage</h1>
+    <div class="mb-6 sm:mb-8">
+        <h1 class="text-xl sm:text-2xl font-semibold text-[#ededed]">Usage</h1>
         <p class="mt-1 text-sm text-[#999999]">Monitor your plan limits and current usage.</p>
     </div>
 
     {{-- Plan card --}}
-    <div class="bg-[#252525] rounded-lg border border-[#333333] overflow-hidden mb-8">
-        <div class="p-6 flex items-center justify-between">
+    <div class="bg-[#252525] rounded-lg border border-[#333333] overflow-hidden mb-6 sm:mb-8">
+        <div class="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
                 <p class="text-[13px] text-[#999999] mb-1">Current Plan</p>
                 <h2 class="text-xl font-semibold gradient-text">{{ $planName }}</h2>
             </div>
-            <a href="{{ route('dashboard.billing') }}" class="inline-flex items-center px-4 py-2 gradient-bg text-white text-sm font-medium rounded-md hover:opacity-90 transition-opacity">
+            <a href="{{ route('dashboard.billing') }}" wire:navigate class="inline-flex items-center justify-center px-4 py-2 gradient-bg text-white text-sm font-medium rounded-md hover:opacity-90 transition-opacity w-full sm:w-auto">
                 Upgrade Plan
             </a>
         </div>

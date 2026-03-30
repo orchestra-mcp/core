@@ -7,22 +7,17 @@
  * When NEXT_PUBLIC_ORCH_AUTH_ENABLED=true for self-hosted instances.
  */
 
+import { getOrchSupabaseClient, ORCH_AUTH_ENABLED, useOrchAuth } from 'lib/orch-auth'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
-
-import { useOrchAuth, getOrchSupabaseClient, ORCH_AUTH_ENABLED } from 'lib/orch-auth'
 import type { NextPageWithLayout } from 'types'
 
 // ─── Orchestra Logo (inline SVG from arts/logo.svg) ─────────────────────────
 
 const OrchestraLogo = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 725.06 724.82"
-    xmlns="http://www.w3.org/2000/svg"
-    className={className}
-  >
+  <svg viewBox="0 0 725.06 724.82" xmlns="http://www.w3.org/2000/svg" className={className}>
     <defs>
       <linearGradient
         id="orch-grad"
@@ -84,14 +79,7 @@ const Spinner = () => (
     fill="none"
     viewBox="0 0 24 24"
   >
-    <circle
-      className="opacity-25"
-      cx="12"
-      cy="12"
-      r="10"
-      stroke="currentColor"
-      strokeWidth="4"
-    />
+    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
     <path
       className="opacity-75"
       fill="currentColor"
@@ -225,11 +213,7 @@ const OrchSignInPage: NextPageWithLayout = () => {
           {/* Email/Password Form */}
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <label
-                htmlFor="orch-email"
-                className="text-sm font-medium"
-                style={{ color: '#ccc' }}
-              >
+              <label htmlFor="orch-email" className="text-sm font-medium" style={{ color: '#ccc' }}>
                 Email
               </label>
               <input
@@ -306,8 +290,7 @@ const OrchSignInPage: NextPageWithLayout = () => {
               className="w-full py-2.5 rounded-lg text-sm font-medium text-white transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: '#a900ff' }}
               onMouseEnter={(e) => {
-                if (!e.currentTarget.disabled)
-                  e.currentTarget.style.backgroundColor = '#9500e0'
+                if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = '#9500e0'
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = '#a900ff'
@@ -364,7 +347,11 @@ const OrchSignInPage: NextPageWithLayout = () => {
         <p className="text-center text-sm mt-6" style={{ color: '#888' }}>
           Don't have an account?{' '}
           <a
-            href={process.env.NEXT_PUBLIC_LARAVEL_URL ? `${process.env.NEXT_PUBLIC_LARAVEL_URL}/register` : '/register'}
+            href={
+              process.env.NEXT_PUBLIC_LARAVEL_URL
+                ? `${process.env.NEXT_PUBLIC_LARAVEL_URL}/register`
+                : '/register'
+            }
             className="transition-colors duration-200"
             style={{ color: '#a900ff' }}
             onMouseEnter={(e) => (e.currentTarget.style.color = '#c44dff')}

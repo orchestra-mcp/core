@@ -1,5 +1,5 @@
 ---
-description: "Testing: Playwright E2E best practices for Studio tests (avoid flake + race conditions)"
+description: 'Testing: Playwright E2E best practices for Studio tests (avoid flake + race conditions)'
 globs:
   - e2e/studio/**/*.ts
   - e2e/studio/**/*.spec.ts
@@ -282,7 +282,7 @@ await page.waitForTimeout(500)
 // ✅ Good - this utility function uses Playwright auto-retries mechanisms
 await expectClipboardValue({
   page,
-  value: 'expectedValue'
+  value: 'expectedValue',
 })
 ```
 

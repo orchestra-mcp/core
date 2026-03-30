@@ -1,6 +1,8 @@
-import React, { FC, useEffect, useRef, useState } from 'react'
+import SectionContainer from '~/components/Layouts/SectionContainer'
+import { isBrowser } from 'common'
+import { ArrowUpRight, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
-import { WeekDayProps, mainDays } from './data'
+import React, { FC, useEffect, useRef, useState } from 'react'
 import {
   Button,
   cn,
@@ -9,10 +11,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from 'ui'
-import { isBrowser } from 'common'
 
-import SectionContainer from '~/components/Layouts/SectionContainer'
-import { ArrowUpRight, ChevronDown } from 'lucide-react'
+import { mainDays, WeekDayProps } from './data'
 
 const LWXStickyNav: FC = () => {
   const days = mainDays()

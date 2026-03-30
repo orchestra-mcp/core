@@ -2,6 +2,7 @@
 
 import { Check } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+
 import { useLocalStorage } from './use-local-storage'
 
 interface ChapterCompletionProps {

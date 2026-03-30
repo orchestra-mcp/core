@@ -14,8 +14,7 @@ export const orchestraKeys = {
     service: string,
     level: string | undefined,
     hours: number
-  ) =>
-    ['projects', projectRef, 'orchestra', 'service-logs', service, level, hours] as const,
+  ) => ['projects', projectRef, 'orchestra', 'service-logs', service, level, hours] as const,
   agentDetail: (projectRef: string | undefined, agentId: string | undefined) =>
     ['projects', projectRef, 'orchestra', 'agent-detail', agentId] as const,
   agentActivity: (projectRef: string | undefined, agentId: string | undefined) =>
@@ -26,4 +25,10 @@ export const orchestraKeys = {
     ['projects', projectRef, 'orchestra', 'agent-skills', agentId] as const,
   agentSessions: (projectRef: string | undefined, agentId: string | undefined) =>
     ['projects', projectRef, 'orchestra', 'agent-sessions', agentId] as const,
+  taskDistribution: (projectRef: string | undefined) =>
+    ['projects', projectRef, 'orchestra', 'task-distribution'] as const,
+  agentLeaderboard: (projectRef: string | undefined) =>
+    ['projects', projectRef, 'orchestra', 'agent-leaderboard'] as const,
+  projectProgress: (projectRef: string | undefined) =>
+    ['projects', projectRef, 'orchestra', 'project-progress'] as const,
 }

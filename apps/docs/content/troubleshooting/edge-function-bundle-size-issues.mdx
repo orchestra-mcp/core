@@ -34,10 +34,10 @@ Instead of importing entire packages, import only the specific modules you need:
 
 ```tsx
 // Good: Import specific submodules
-import { specific } from 'npm:package/specific'
 
 // Avoid: Import entire package
 import * as everything from 'npm:package'
+import { specific } from 'npm:package/specific'
 ```
 
 ### Split large functions

@@ -1,16 +1,19 @@
 import { CubeIcon } from '@heroicons/react/outline'
-import { Check, Sparkles, Timer } from 'lucide-react'
-import dynamic from 'next/dynamic'
-import Link from 'next/link'
-import { Button, cn, IconDiscord, Image } from 'ui'
-
+import type { TwoColumnsSectionProps } from '~/components/Solutions/TwoColumnsSection'
+import { useBreakpoint } from 'common'
 import { frameworks } from 'components/Hero/HeroFrameworks'
-import MainProducts from '../MainProducts'
-
 import type { MPCSectionProps } from 'components/Solutions/MPCSection'
 import type { PlatformSectionProps } from 'components/Solutions/PlatformSection'
 import type { TwitterSocialSectionProps } from 'components/TwitterSocialSection'
-import type { TwoColumnsSectionProps } from '~/components/Solutions/TwoColumnsSection'
+import { useSendTelemetryEvent } from 'lib/telemetry'
+import { Check, Sparkles, Timer } from 'lucide-react'
+import dynamic from 'next/dynamic'
+import Link from 'next/link'
+import { topTweets } from 'shared-data'
+import { PRODUCT_SHORTNAMES } from 'shared-data/products'
+import { Button, cn, IconDiscord, Image } from 'ui'
+
+import MainProducts from '../MainProducts'
 import {
   FrameworkLink,
   getEditors,
@@ -18,11 +21,6 @@ import {
   type HeroSection,
   type Metadata,
 } from './solutions.utils'
-
-import { useBreakpoint } from 'common'
-import { useSendTelemetryEvent } from 'lib/telemetry'
-import { topTweets } from 'shared-data'
-import { PRODUCT_SHORTNAMES } from 'shared-data/products'
 
 const AuthVisual = dynamic(() => import('components/Products/AuthVisual'))
 const ComputePricingCalculator = dynamic(

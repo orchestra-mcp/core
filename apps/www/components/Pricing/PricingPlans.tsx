@@ -1,12 +1,12 @@
 'use client'
 
-import Link from 'next/link'
-
-import { Check } from 'lucide-react'
-import { plans } from 'shared-data/plans'
-import { Button, cn } from 'ui'
 import { Organization } from '~/data/organizations'
 import { useSendTelemetryEvent } from '~/lib/telemetry'
+import { Check } from 'lucide-react'
+import Link from 'next/link'
+import { plans } from 'shared-data/plans'
+import { Button, cn } from 'ui'
+
 import UpgradePlan from './UpgradePlan'
 
 interface PricingPlansProps {

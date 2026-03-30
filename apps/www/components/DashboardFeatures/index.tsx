@@ -1,7 +1,7 @@
-import React from 'react'
 import SectionContainer from '~/components/Layouts/SectionContainer'
 import TabsWithHighlights from '~/components/TabsWithHighlights'
 import type { Tab } from '~/components/TabsWithHighlights'
+import React from 'react'
 
 interface Props {
   title: string | React.ReactNode

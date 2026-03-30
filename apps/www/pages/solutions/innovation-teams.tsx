@@ -1,14 +1,13 @@
-import { NextPage } from 'next'
-import dynamic from 'next/dynamic'
-import { NextSeo } from 'next-seo'
-import Link from 'next/link'
-import { Check } from 'lucide-react'
-
 import Layout from 'components/Layouts/Default'
-import SolutionsStickyNav from 'components/SolutionsStickyNav'
 import SectionContainer from 'components/Layouts/SectionContainer'
-import content from 'data/solutions/innovation-teams'
+import SolutionsStickyNav from 'components/SolutionsStickyNav'
 import { Solutions } from 'data/Solutions'
+import content from 'data/solutions/innovation-teams'
+import { Check } from 'lucide-react'
+import { NextPage } from 'next'
+import { NextSeo } from 'next-seo'
+import dynamic from 'next/dynamic'
+import Link from 'next/link'
 import { Button, cn } from 'ui'
 
 const ProductHeader = dynamic(() => import('components/Sections/ProductHeader2'))

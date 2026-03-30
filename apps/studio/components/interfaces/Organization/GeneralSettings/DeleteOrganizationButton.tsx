@@ -1,15 +1,14 @@
 import { PermissionAction } from '@supabase/shared-types/out/constants'
-import { useRouter } from 'next/router'
-import { useState } from 'react'
-import { toast } from 'sonner'
-
 import { LOCAL_STORAGE_KEYS } from 'common'
 import { ButtonTooltip } from 'components/ui/ButtonTooltip'
+import { TextConfirmModal } from 'components/ui/TextConfirmModalWrapper'
 import { useOrganizationDeleteMutation } from 'data/organizations/organization-delete-mutation'
 import { useAsyncCheckPermissions } from 'hooks/misc/useCheckPermissions'
 import { useLocalStorageQuery } from 'hooks/misc/useLocalStorage'
 import { useSelectedOrganizationQuery } from 'hooks/misc/useSelectedOrganization'
-import { TextConfirmModal } from 'components/ui/TextConfirmModalWrapper'
+import { useRouter } from 'next/router'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 export const DeleteOrganizationButton = () => {
   const router = useRouter()

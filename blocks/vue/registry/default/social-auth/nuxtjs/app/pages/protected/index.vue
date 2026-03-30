@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue"
-import { useRouter } from "vue-router"
-import { createClient } from "@/lib/supabase/client"
-import LogoutButton from "@/components/logout-button.vue"
+import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+import LogoutButton from '@/components/logout-button.vue'
+import { createClient } from '@/lib/supabase/client'
 
 const router = useRouter()
 const supabase = createClient()
@@ -13,7 +14,7 @@ onMounted(async () => {
   const { data, error } = await supabase.auth.getUser()
 
   if (error || !data?.user) {
-    router.replace("/auth/login")
+    router.replace('/auth/login')
     return
   }
 

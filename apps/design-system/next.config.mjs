@@ -26,13 +26,13 @@ const nextConfig = {
     return [
       ...(BASE_PATH.length
         ? [
-          {
-            source: '/',
-            destination: BASE_PATH,
-            basePath: false,
-            permanent: false,
-          },
-        ]
+            {
+              source: '/',
+              destination: BASE_PATH,
+              basePath: false,
+              permanent: false,
+            },
+          ]
         : []),
     ]
   },

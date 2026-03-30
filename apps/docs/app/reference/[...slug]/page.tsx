@@ -1,5 +1,3 @@
-import { notFound } from 'next/navigation'
-
 import { REFERENCES } from '~/content/navigation.references'
 import { ApiReferencePage } from '~/features/docs/Reference.apiPage'
 import { CliReferencePage } from '~/features/docs/Reference.cliPage'
@@ -11,6 +9,7 @@ import {
   parseReferencePath,
   redirectNonexistentReferenceSection,
 } from '~/features/docs/Reference.utils'
+import { notFound } from 'next/navigation'
 
 export const dynamicParams = false
 

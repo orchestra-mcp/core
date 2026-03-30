@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { Alert, StyleSheet, View, Text, TextInput, TouchableOpacity } from 'react-native'
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+
 import { supabase } from '../lib/supabase'
 
 export default function Auth() {

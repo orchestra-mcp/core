@@ -1,11 +1,10 @@
-import { ExternalLink } from 'lucide-react'
-import Link from 'next/link'
-
 import { useParams } from 'common'
 import AlertError from 'components/ui/AlertError'
 import { ResourceList } from 'components/ui/Resource/ResourceList'
 import { HorizontalShimmerWithIcon } from 'components/ui/Shimmers'
 import { useAuthConfigQuery } from 'data/auth/auth-config-query'
+import { ExternalLink } from 'lucide-react'
+import Link from 'next/link'
 import {
   Alert_Shadcn_,
   AlertDescription_Shadcn_,
@@ -21,6 +20,7 @@ import {
   PageSectionSummary,
   PageSectionTitle,
 } from 'ui-patterns/PageSection'
+
 import { getPhoneProviderValidationSchema, PROVIDERS_SCHEMAS } from '../AuthProvidersFormValidation'
 import type { Provider } from './AuthProvidersForm.types'
 import { ProviderForm } from './ProviderForm'

@@ -123,3 +123,16 @@ func (c *Client) GetSingle(ctx context.Context, table string, query string) (jso
 		"Accept": "application/vnd.pgrst.object+json",
 	})
 }
+
+// Upsert inserts or updates rows using PostgREST's conflict resolution.
+// onConflict is a comma-separated list of column names forming the unique constraint
+// (e.g. "user_id,organization_id,key").
+func (c *Client) Upsert(ctx context.Context, table string, body interface{}, onConflict string) (json.RawMessage, error) {
+	path := table
+	if onConflict != "" {
+		path += "?on_conflict=" + onConflict
+	}
+	return c.do(ctx, http.MethodPost, path, body, map[string]string{
+		"Prefer": "return=representation,resolution=merge-duplicates",
+	})
+}

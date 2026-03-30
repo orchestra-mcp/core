@@ -1,8 +1,4 @@
 import type { OAuthScope } from '@supabase/shared-types/out/constants'
-import { Edit, Upload } from 'lucide-react'
-import { ChangeEvent, useEffect, useRef, useState } from 'react'
-import { toast } from 'sonner'
-
 import { useParams } from 'common'
 import { DocsButton } from 'components/ui/DocsButton'
 import {
@@ -14,9 +10,13 @@ import type { OAuthApp } from 'data/oauth/oauth-apps-query'
 import { DOCS_URL } from 'lib/constants'
 import { isValidHttpUrl, uuidv4 } from 'lib/helpers'
 import { uploadAttachment } from 'lib/upload'
+import { Edit, Upload } from 'lucide-react'
+import { ChangeEvent, useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 import {
   Badge,
   Button,
+  cn,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -25,8 +25,8 @@ import {
   Input,
   Modal,
   SidePanel,
-  cn,
 } from 'ui'
+
 import { AuthorizeRequesterDetails } from '../AuthorizeRequesterDetails'
 import { OAuthSecrets } from '../OAuthSecrets/OAuthSecrets'
 import { ScopesPanel } from './Scopes'

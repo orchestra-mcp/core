@@ -1,11 +1,10 @@
 'use client'
 
-import { createContext, useContext, type ReactNode } from 'react'
-import { cn } from 'ui'
-
 import GuidesTableOfContents from '~/components/GuidesSidebar'
 import { TocAnchorsProvider } from '~/features/docs/GuidesMdx.client'
 import { type GuideFrontmatter } from '~/lib/docs'
+import { createContext, useContext, type ReactNode } from 'react'
+import { cn } from 'ui'
 
 interface GuideContextValue {
   meta?: GuideFrontmatter

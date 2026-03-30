@@ -1,16 +1,18 @@
-import { Redirect, Route } from 'react-router-dom'
 import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react'
 import { IonReactRouter } from '@ionic/react-router'
+import { Redirect, Route } from 'react-router-dom'
+
 import { supabase } from './supabaseClient'
 
 import '@ionic/react/css/ionic.bundle.css'
-
 /* Theme variables */
 import './theme/variables.css'
-import { LoginPage } from './pages/Login'
-import { AccountPage } from './pages/Account'
+
 import { useEffect, useState } from 'react'
 import type { FC } from 'react'
+
+import { AccountPage } from './pages/Account'
+import { LoginPage } from './pages/Login'
 
 setupIonicReact()
 

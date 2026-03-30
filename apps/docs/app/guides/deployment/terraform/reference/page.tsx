@@ -1,20 +1,19 @@
+import { GuideTemplate, newEditLink } from '~/features/docs/GuidesMdx.template'
+import { genGuideMeta } from '~/features/docs/GuidesMdx.utils'
+import { TabPanel, Tabs } from '~/features/ui/Tabs'
+import { getGitHubFileContents } from '~/lib/octokit'
 import { codeBlock } from 'common-tags'
 import { Check, PlusCircle } from 'lucide-react'
 import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
-
 import {
   CodeBlock,
   Heading,
+  Popover_Shadcn_,
   PopoverContent_Shadcn_,
   PopoverTrigger_Shadcn_,
-  Popover_Shadcn_,
 } from 'ui'
 
-import { genGuideMeta } from '~/features/docs/GuidesMdx.utils'
-import { GuideTemplate, newEditLink } from '~/features/docs/GuidesMdx.template'
-import { getGitHubFileContents } from '~/lib/octokit'
-import { TabPanel, Tabs } from '~/features/ui/Tabs'
 import {
   terraformDocsBranch,
   terraformDocsDocsDir,

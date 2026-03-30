@@ -1,7 +1,7 @@
-import { useContext } from 'react'
-import UserContext from '~/lib/UserContext'
-import { deleteMessage } from '~/lib/Store'
 import TrashIcon from '~/components/TrashIcon'
+import { deleteMessage } from '~/lib/Store'
+import UserContext from '~/lib/UserContext'
+import { useContext } from 'react'
 
 const Message = ({ message }) => {
   const { user } = useContext(UserContext)

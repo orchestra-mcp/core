@@ -1,6 +1,6 @@
 ---
-description: "Plans must contain multiple features tracked via TODO list."
-globs: "*"
+description: 'Plans must contain multiple features tracked via TODO list.'
+globs: '*'
 alwaysApply: true
 ---
 

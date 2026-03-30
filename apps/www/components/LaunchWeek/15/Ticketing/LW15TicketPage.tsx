@@ -1,16 +1,16 @@
-import { useState } from 'react'
-import dayjs from 'dayjs'
-import { Button, cn } from 'ui'
-import SectionContainer from 'components/Layouts/SectionContainer'
 import useLw15ConfData, { UserTicketData } from 'components/LaunchWeek/15/hooks/use-conf-data'
-import { useRegistration } from '../hooks/use-registration'
-import { LWSVG, FifteenSVG, LW15ThemeSwitcher } from '../lw15.components'
+import SectionContainer from 'components/Layouts/SectionContainer'
+import dayjs from 'dayjs'
+import Link from 'next/link'
+import { useState } from 'react'
+import { Button, cn } from 'ui'
+
+import { updateTicketColors, useRegistration } from '../hooks/use-registration'
+import { FifteenSVG, LW15ThemeSwitcher, LWSVG } from '../lw15.components'
+import { BG_COLORS, TYPO_COLORS } from './colors'
 import LW15Ticket from './LW15Ticket'
 import LW15TicketShare from './LW15TicketShare'
 import TicketURLCopy from './TicketURLCopy'
-import { TYPO_COLORS, BG_COLORS } from './colors'
-import { updateTicketColors } from '../hooks/use-registration'
-import Link from 'next/link'
 
 const LW15TicketPage = ({
   user: userFromProps,

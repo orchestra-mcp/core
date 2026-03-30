@@ -1,4 +1,5 @@
 import Link from 'next/link'
+
 import supabase from '../../utils/supabase'
 
 // cache this page for 1 minute

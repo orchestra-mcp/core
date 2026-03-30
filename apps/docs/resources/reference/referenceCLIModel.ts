@@ -1,5 +1,6 @@
-import { Json } from 'common'
 import { isPlainObject } from '~/features/helpers.misc'
+import { Json } from 'common'
+
 import { type SearchResultInterface } from '../globalSearch/globalSearchInterface'
 
 export const DB_METADATA_TAG_PLATFORM_CLI = 'cli'

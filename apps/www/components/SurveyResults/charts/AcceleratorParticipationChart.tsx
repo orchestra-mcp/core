@@ -1,4 +1,4 @@
-import { SurveyChart, buildWhereClause } from '../SurveyChart'
+import { buildWhereClause, SurveyChart } from '../SurveyChart'
 
 function generateAcceleratorParticipationSQL(activeFilters: Record<string, string>) {
   const whereClause = buildWhereClause(activeFilters, ['accelerator_participation IS NOT NULL'])

@@ -636,9 +636,7 @@ test.describe('Queue Table Operations', () => {
 
     await using _ = await withSetupCleanup(
       async () => {
-        await createTable(tableName, columnName, [
-          { name: 'existing row' },
-        ])
+        await createTable(tableName, columnName, [{ name: 'existing row' }])
       },
       async () => {
         await dropTable(tableName)
@@ -846,10 +844,10 @@ test.describe('Queue Table Operations', () => {
             last_name text
           )`
         )
-        await query(
-          `INSERT INTO ${tableName} (first_name, last_name) VALUES ($1, $2)`,
-          ['Alice', 'Smith']
-        )
+        await query(`INSERT INTO ${tableName} (first_name, last_name) VALUES ($1, $2)`, [
+          'Alice',
+          'Smith',
+        ])
       },
       async () => {
         await dropTable(tableName)

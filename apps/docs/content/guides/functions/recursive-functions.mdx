@@ -240,7 +240,7 @@ export async function save(data: any) {
 
 ```typescript
 // supabase/functions/process-data/index.ts
-import { validate, transform, save } from '../_shared/transform.ts'
+import { save, transform, validate } from '../_shared/transform.ts'
 
 Deno.serve(async (req) => {
   const data = await req.json()

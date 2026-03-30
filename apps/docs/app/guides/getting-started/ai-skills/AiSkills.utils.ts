@@ -1,7 +1,6 @@
+import { getGitHubFileContents, octokit, OCTOKIT_RETRY_OPTIONS } from '~/lib/octokit'
 import matter from 'gray-matter'
 import { cache } from 'react'
-
-import { OCTOKIT_RETRY_OPTIONS, getGitHubFileContents, octokit } from '~/lib/octokit'
 
 const SKILLS_REPO = {
   org: 'supabase',

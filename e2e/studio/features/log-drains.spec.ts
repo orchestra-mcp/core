@@ -1,7 +1,8 @@
 import { expect } from '@playwright/test'
+
+import { env } from '../env.config.js'
 import { test } from '../utils/test.js'
 import { toUrl } from '../utils/to-url.js'
-import { env } from '../env.config.js'
 
 const LOG_DRAIN_OPTIONS = [
   {

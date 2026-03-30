@@ -1,5 +1,5 @@
 ---
-description: "Studio: side panels (Sheet) for context-preserving workflows"
+description: 'Studio: side panels (Sheet) for context-preserving workflows'
 globs:
   - apps/studio/**/*.{ts,tsx}
 alwaysApply: false

@@ -1,0 +1,77 @@
+/* ==========================================================================
+   Orchestra MCP Dashboard — React/Inertia Dark Theme
+   Inherits tokens from brand.css (loaded via app.css)
+   ========================================================================== */
+
+/* Dashboard-specific transition utilities */
+.sidebar-link {
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-link:hover {
+    background: var(--color-bg-surface-200);
+}
+
+.sidebar-link.active {
+    background: var(--color-bg-surface-300);
+    color: var(--color-text-primary);
+}
+
+/* Slide panel animation */
+.slide-panel-enter {
+    transform: translateX(100%);
+}
+
+.slide-panel-enter-active {
+    transform: translateX(0);
+    transition: transform 0.2s ease-out;
+}
+
+.slide-panel-exit {
+    transform: translateX(0);
+}
+
+.slide-panel-exit-active {
+    transform: translateX(100%);
+    transition: transform 0.15s ease-in;
+}
+
+/* Command palette backdrop */
+.cmdk-backdrop {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+}
+
+/* Data table row hover */
+.data-table-row {
+    transition: background-color 0.1s ease;
+}
+
+.data-table-row:hover {
+    background: var(--color-bg-surface);
+}
+
+/* Notification badge pulse */
+@keyframes badge-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.notification-badge {
+    animation: badge-pulse 2s ease-in-out infinite;
+}
+
+/* Modal overlay */
+.modal-overlay {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+}
+
+/* Stat card glow effect */
+.stat-card-glow-cyan {
+    box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.08);
+}
+
+.stat-card-glow-purple {
+    box-shadow: 0 0 0 1px rgba(169, 0, 255, 0.08);
+}

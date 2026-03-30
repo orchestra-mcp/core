@@ -1,6 +1,5 @@
 import { type Column } from '@tanstack/react-table'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-
 import { Button, cn, type ButtonProps } from 'ui'
 
 interface DataTableColumnHeaderProps<TData, TValue> extends ButtonProps {

@@ -1,3 +1,11 @@
+import EventCallout from '~/components/EventCallout'
+import DefaultLayout from '~/components/Layouts/Default'
+import SectionContainer from '~/components/Layouts/SectionContainer'
+import ProductsNav from '~/components/Products/ProductsNav'
+import ProductHeader from '~/components/Sections/ProductHeader'
+import AuthProviders from '~/data/auth.json'
+import MainProducts from '~/data/MainProducts'
+import { useBreakpoint } from 'common'
 import ApiExamples from 'data/products/auth/auth-api-examples'
 import AuthSqlRulesExamples from 'data/products/auth/auth-sql-rules-examples'
 import { ArrowUpRight, Briefcase, Eye, Link as IconLink, Shield } from 'lucide-react'
@@ -6,18 +14,8 @@ import dynamic from 'next/dynamic'
 import NextImage from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { Button, Image } from 'ui'
-import { useBreakpoint } from 'common'
-
-import DefaultLayout from '~/components/Layouts/Default'
-import SectionContainer from '~/components/Layouts/SectionContainer'
-import ProductsNav from '~/components/Products/ProductsNav'
-import ProductHeader from '~/components/Sections/ProductHeader'
-import EventCallout from '~/components/EventCallout'
-
-import MainProducts from '~/data/MainProducts'
 import { PRODUCT_NAMES } from 'shared-data/products'
-import AuthProviders from '~/data/auth.json'
+import { Button, Image } from 'ui'
 
 const SplitCodeBlockCarousel = dynamic(
   () => import('~/components/Carousels/SplitCodeBlockCarousel')

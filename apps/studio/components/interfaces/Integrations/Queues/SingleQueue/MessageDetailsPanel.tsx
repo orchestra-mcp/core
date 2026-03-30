@@ -1,8 +1,4 @@
 import { useEscapeKeydown } from '@radix-ui/react-use-escape-keydown'
-import { isNil, noop } from 'lodash'
-import { Archive, Clock12, Trash2, X } from 'lucide-react'
-import { useState } from 'react'
-
 import { useParams } from 'common'
 import { MonacoEditor } from 'components/grid/components/common/MonacoEditor'
 import { RowAction, RowData } from 'components/interfaces/Auth/Users/UserOverview'
@@ -13,6 +9,9 @@ import { useDatabaseQueueMessageReadMutation } from 'data/database-queues/databa
 import dayjs from 'dayjs'
 import { useSelectedProjectQuery } from 'hooks/misc/useSelectedProject'
 import { prettifyJSON } from 'lib/helpers'
+import { isNil, noop } from 'lodash'
+import { Archive, Clock12, Trash2, X } from 'lucide-react'
+import { useState } from 'react'
 import {
   Button,
   ResizablePanel,

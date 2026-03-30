@@ -39,14 +39,14 @@ Launch as many parallel agents as there are independent features. Only serialize
 
 ### 3. Main Agent = Conductor, Sub-Agents = Workers
 
-| Main Agent (You) | Sub-Agents (via Task tool) |
-|-------------------|------------|
-| Talk to the user | Write source code |
-| Manage MCP lifecycle (features, gates, reviews) | Write tests |
-| Launch and coordinate sub-agents | Read and explore files |
-| Track progress (TodoWrite) | Research codebase |
-| Advance features through gates | Build and compile |
-| Present results for review | Run commands |
+| Main Agent (You)                                | Sub-Agents (via Task tool) |
+| ----------------------------------------------- | -------------------------- |
+| Talk to the user                                | Write source code          |
+| Manage MCP lifecycle (features, gates, reviews) | Write tests                |
+| Launch and coordinate sub-agents                | Read and explore files     |
+| Track progress (TodoWrite)                      | Research codebase          |
+| Advance features through gates                  | Build and compile          |
+| Present results for review                      | Run commands               |
 
 **Everything on the right column goes to sub-agents.** You should ALWAYS be free to talk to the user. If you're busy reading files, researching, or writing code — you're doing it wrong.
 
@@ -77,6 +77,30 @@ User: "Build feature X"
    └─→ You: Present for review
 ```
 
+## Rate Limit Protection
+
+API rate limits are **per account**, not per session. All sub-agents share the same token/request pool. To avoid rate limit hits:
+
+### Batch Size Rules
+- **Max 2 implementation agents at a time** — never fire more than 2 code-writing agents simultaneously
+- **Research/Explore agents don't count** — they use fewer tokens, can run alongside implementation agents
+- **Use `model: "sonnet"` for implementation** — reserve Opus for planning/architecture, use Sonnet for code writing (faster, cheaper, less rate limit pressure)
+
+### Stagger Pattern
+```
+Batch 1: Agent A + Agent B (fire together)
+   ↓ wait for at least 1 to complete
+Batch 2: Agent C + Agent D (fire together)
+   ↓ wait for at least 1 to complete
+Batch 3: Agent E (fire alone if it's the last one)
+```
+
+### If Rate Limited
+- Do NOT immediately retry — wait 60 seconds
+- Check what the agent managed to write before dying
+- Re-fire only the incomplete work, not the whole spec
+- Reduce batch size to 1 agent at a time if rate limit persists
+
 ## Anti-Patterns (NEVER DO)
 
 - **Calling Read, Grep, Glob, or Bash directly** — always delegate to sub-agents
@@ -86,3 +110,4 @@ User: "Build feature X"
 - Asking "should I use a sub-agent?" — just use one
 - Running features one-by-one when they could run in parallel
 - Going silent for long periods while working — always keep the user in the loop
+- **Firing 4+ implementation agents simultaneously** — causes rate limit, wastes tokens on retries

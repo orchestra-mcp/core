@@ -1,8 +1,8 @@
 import assert from 'node:assert'
 import { Eval } from 'braintrust'
+import { generateAssistantResponse } from 'lib/ai/generate-assistant-response'
 import { getModel } from 'lib/ai/model'
 import { DEFAULT_ASSISTANT_BASE_MODEL_ID, getAssistantModelEntry } from 'lib/ai/model.utils'
-import { generateAssistantResponse } from 'lib/ai/generate-assistant-response'
 import { getMockTools } from 'lib/ai/tools/mock-tools'
 
 import { dataset } from './dataset'

@@ -1,8 +1,7 @@
-import { components } from 'api-types'
-import { useEffect, useState } from 'react'
-
 import { API_URL } from '~/lib/constants'
 import { get } from '~/lib/fetchWrapper'
+import { components } from 'api-types'
+import { useEffect, useState } from 'react'
 
 export type Organization = components['schemas']['OrganizationResponse']
 

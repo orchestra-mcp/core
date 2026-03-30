@@ -1,5 +1,5 @@
-import type { CustomContentTypes } from './CustomContent.types'
 import customContentRaw from './custom-content.json'
+import type { CustomContentTypes } from './CustomContent.types'
 
 const customContentStaticObj = customContentRaw as Omit<typeof customContentRaw, '$schema'>
 export type CustomContent = keyof typeof customContentStaticObj

@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
-
 import { executeSql } from 'data/sql/execute-sql-query'
 import { useSelectedProjectQuery } from 'hooks/misc/useSelectedProject'
 import { PROJECT_STATUS } from 'lib/constants'
 import type { ResponseError, UseCustomQueryOptions } from 'types'
+
 import { databaseKeys } from './keys'
 
 export type SupamonitorEnabledVariables = {

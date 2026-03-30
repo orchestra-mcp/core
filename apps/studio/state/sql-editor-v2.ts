@@ -1,6 +1,6 @@
 import type { QueryPlanRow } from 'components/interfaces/ExplainVisualizer/ExplainVisualizer.types'
 import { DiffType } from 'components/interfaces/SQLEditor/SQLEditor.types'
-import { UpsertContentPayload, upsertContent } from 'data/content/content-upsert-mutation'
+import { upsertContent, UpsertContentPayload } from 'data/content/content-upsert-mutation'
 import { contentKeys } from 'data/content/keys'
 import { createSQLSnippetFolder } from 'data/content/sql-folder-create-mutation'
 import { updateSQLSnippetFolder } from 'data/content/sql-folder-update-mutation'

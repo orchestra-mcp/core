@@ -5,14 +5,13 @@ import routerProvider, {
   DocumentTitleHandler,
   UnsavedChangesNotifier,
 } from '@refinedev/react-router'
+import { dataProvider, liveProvider } from '@refinedev/supabase'
 import { BrowserRouter, Outlet, Route, Routes } from 'react-router'
 
-import { dataProvider, liveProvider } from '@refinedev/supabase'
 import authProvider from './authProvider'
-import { supabaseClient } from './utility'
-
 import Account from './components/account'
 import Auth from './components/auth'
+import { supabaseClient } from './utility'
 
 import './App.css'
 

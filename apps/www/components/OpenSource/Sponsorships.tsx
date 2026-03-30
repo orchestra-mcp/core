@@ -1,8 +1,7 @@
+import Panel from '~/components/Panel'
 import { ArrowUpRight } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from 'ui'
-
-import Panel from '~/components/Panel'
 
 const Sponsorships = ({ sponsorships }: { sponsorships: any[] }) => {
   return (

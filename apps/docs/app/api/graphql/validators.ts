@@ -1,6 +1,6 @@
 import {
-  type FragmentDefinitionNode,
   GraphQLError,
+  type FragmentDefinitionNode,
   type SelectionNode,
   type ValidationContext,
   type ValidationRule,

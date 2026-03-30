@@ -1,7 +1,7 @@
-import Link from 'next/link'
-import { Button, cn, IconDiscord, IconGitHubSolid, IconTwitterX, IconYoutubeSolid } from 'ui'
 import { primaryLinks, secondaryLinks } from '~/data/footer'
 import { LayoutMainContent } from '~/layouts/DefaultLayout'
+import Link from 'next/link'
+import { Button, cn, IconDiscord, IconGitHubSolid, IconTwitterX, IconYoutubeSolid } from 'ui'
 
 const Footer = ({ className }: { className?: string }) => (
   <LayoutMainContent className={cn('pt-0', className)}>

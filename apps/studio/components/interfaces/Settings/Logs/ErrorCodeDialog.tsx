@@ -1,5 +1,5 @@
 import { useErrorCodesQuery } from 'data/content-api/docs-error-codes-query'
-import { type ErrorCodeQueryQuery, Service } from 'data/graphql/graphql'
+import { Service, type ErrorCodeQueryQuery } from 'data/graphql/graphql'
 import { AlertTriangle } from 'lucide-react'
 import {
   Alert_Shadcn_,

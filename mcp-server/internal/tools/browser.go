@@ -4,766 +4,295 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log/slog"
-	"net"
-	"net/http"
-	"net/url"
-	"os"
 	"os/exec"
-	"path/filepath"
-	"runtime"
-	"strings"
-	"time"
 
-	"github.com/chromedp/cdproto/page"
-	"github.com/chromedp/cdproto/target"
-	"github.com/chromedp/chromedp"
-
-	"github.com/orchestra-mcp/server/internal/auth"
 	"github.com/orchestra-mcp/server/internal/mcp"
+	"github.com/orchestra-mcp/server/internal/twin"
 )
-
-// ---------------------------------------------------------------------------
-// BrowserClient — shared CDP connection to an existing Chrome instance
-// ---------------------------------------------------------------------------
-
-// BrowserClient holds the remote allocator context for connecting to a
-// Chrome instance via Chrome DevTools Protocol (CDP). If no existing Chrome
-// is running, it auto-launches one with CDP enabled.
-type BrowserClient struct {
-	allocCtx context.Context
-	cancel   context.CancelFunc
-	cdpURL   string
-	managed  bool      // true if we launched Chrome ourselves
-	cmd      *exec.Cmd // process handle for managed Chrome
-}
-
-// newCDPContext creates a fresh chromedp context from the allocator for a single operation.
-func (bc *BrowserClient) newCDPContext(timeout time.Duration) (context.Context, context.CancelFunc) {
-	ctx, cancel1 := chromedp.NewContext(bc.allocCtx)
-	ctx2, cancel2 := context.WithTimeout(ctx, timeout)
-	return ctx2, func() { cancel2(); cancel1() }
-}
-
-// NewBrowserClient connects to a running Chrome instance at the given CDP URL.
-// If no Chrome is available, it auto-launches one with the appropriate flags.
-// The URL should be an HTTP endpoint like "http://localhost:9222".
-func NewBrowserClient(cdpURL string) (*BrowserClient, error) {
-	// Normalize: if given an HTTP URL, resolve the WebSocket URL from /json/version
-	httpURL := cdpURL
-	wsURL := cdpURL
-	if strings.HasPrefix(cdpURL, "http") {
-		httpURL = cdpURL
-		// Resolve WebSocket URL from Chrome's version endpoint
-		resp, err := http.Get(strings.TrimRight(httpURL, "/") + "/json/version")
-		if err == nil {
-			defer resp.Body.Close()
-			var info struct {
-				WebSocketDebuggerURL string `json:"webSocketDebuggerUrl"`
-			}
-			if json.NewDecoder(resp.Body).Decode(&info) == nil && info.WebSocketDebuggerURL != "" {
-				wsURL = info.WebSocketDebuggerURL
-			}
-		}
-	} else if strings.HasPrefix(cdpURL, "ws") {
-		// Given a WS URL, derive the HTTP URL for health checks
-		httpURL = strings.Replace(cdpURL, "ws://", "http://", 1)
-		httpURL = strings.Replace(httpURL, "wss://", "https://", 1)
-		if idx := strings.Index(httpURL, "/devtools"); idx > 0 {
-			httpURL = httpURL[:idx]
-		}
-	}
-
-	// Step 1: Try to connect to an existing Chrome instance.
-	if isChromeCDPAvailable(httpURL) {
-		slog.Info("connecting to existing Chrome CDP", "http", httpURL, "ws", wsURL)
-		allocCtx, allocCancel := chromedp.NewRemoteAllocator(context.Background(), wsURL)
-
-		// Create a chromedp context from the allocator to verify the connection.
-		testCtx, testCancel := chromedp.NewContext(allocCtx)
-		timeoutCtx, timeoutCancel := context.WithTimeout(testCtx, 5*time.Second)
-		defer timeoutCancel()
-		defer testCancel()
-
-		if _, err := chromedp.Targets(timeoutCtx); err != nil {
-			allocCancel()
-			return nil, fmt.Errorf("Chrome CDP target listing failed at %s: %w", wsURL, err)
-		}
-
-		cancel := allocCancel
-
-		return &BrowserClient{
-			allocCtx: allocCtx,
-			cancel:   cancel,
-			cdpURL:   cdpURL,
-			managed:  false,
-		}, nil
-	}
-
-	// Step 2: Chrome not available with CDP — try to relaunch user's Chrome with CDP flag.
-	// On macOS we can quit Chrome and reopen it with --remote-debugging-port.
-	// This preserves the user's profile, cookies, tabs — just adds the debug port.
-	if runtime.GOOS == "darwin" {
-		slog.Info("Chrome CDP not available — attempting to relaunch with CDP", "url", cdpURL)
-
-		port := "9222"
-		if p, err := extractPort(cdpURL); err == nil {
-			port = p
-		}
-
-		// Quit existing Chrome gracefully via AppleScript
-		quitCmd := exec.Command("osascript", "-e", `tell application "Google Chrome" to quit`)
-		quitCmd.Run() // ignore error — Chrome might not be running
-
-		// Wait for Chrome to fully quit
-		for i := 0; i < 10; i++ {
-			time.Sleep(500 * time.Millisecond)
-			checkCmd := exec.Command("pgrep", "-x", "Google Chrome")
-			if checkCmd.Run() != nil {
-				break // Chrome is gone
-			}
-		}
-
-		// Relaunch Chrome with the user's existing profile + CDP port
-		launchCmd := exec.Command("open", "-a", "Google Chrome", "--args",
-			"--remote-debugging-port="+port,
-		)
-		if err := launchCmd.Run(); err != nil {
-			slog.Warn("failed to relaunch Chrome", "error", err)
-			return nil, fmt.Errorf("could not relaunch Chrome with CDP: %w", err)
-		}
-
-		slog.Info("Chrome relaunched with CDP — waiting for it to be ready")
-
-		// Wait for CDP to be ready
-		if err := waitForCDP(cdpURL, 15*time.Second); err != nil {
-			return nil, fmt.Errorf("Chrome relaunched but CDP not responding: %w", err)
-		}
-
-		// Connect to the relaunched Chrome
-		allocCtx, cancel := chromedp.NewRemoteAllocator(context.Background(), cdpURL)
-
-		testCtx, testCancel := context.WithTimeout(allocCtx, 5*time.Second)
-		defer testCancel()
-
-		if _, err := chromedp.Targets(testCtx); err != nil {
-			cancel()
-			return nil, fmt.Errorf("Chrome relaunched but target listing failed: %w", err)
-		}
-
-		slog.Info("connected to user's Chrome with CDP", "url", cdpURL)
-		return &BrowserClient{
-			allocCtx: allocCtx,
-			cancel:   cancel,
-			cdpURL:   cdpURL,
-			managed:  false, // we don't own this Chrome — it's the user's browser
-		}, nil
-	}
-
-	// Non-macOS: return instructions for manual setup
-	slog.Warn("Chrome CDP not available — browser tools will not be registered", "url", cdpURL)
-	return nil, fmt.Errorf(
-		"Chrome is not running with CDP enabled at %s. "+
-			"Quit Chrome and relaunch with: google-chrome --remote-debugging-port=9222 "+
-			"— this preserves all your tabs, cookies, and sessions",
-		cdpURL)
-}
-
-// Close releases the allocator resources and kills a managed Chrome process.
-func (bc *BrowserClient) Close() {
-	if bc.cancel != nil {
-		bc.cancel()
-	}
-	if bc.managed && bc.cmd != nil && bc.cmd.Process != nil {
-		slog.Info("shutting down managed Chrome", "pid", bc.cmd.Process.Pid)
-		bc.cmd.Process.Kill()
-		bc.cmd.Wait()
-	}
-}
-
-// ---------------------------------------------------------------------------
-// Chrome auto-launch helpers
-// ---------------------------------------------------------------------------
-
-// isChromeCDPAvailable checks whether a Chrome CDP endpoint is reachable by
-// making an HTTP GET to /json/version.
-func isChromeCDPAvailable(cdpURL string) bool {
-	client := &http.Client{Timeout: 2 * time.Second}
-	resp, err := client.Get(cdpURL + "/json/version")
-	if err != nil {
-		return false
-	}
-	resp.Body.Close()
-	return resp.StatusCode == http.StatusOK
-}
-
-// findChromeBinary locates the Chrome executable on the current platform.
-func findChromeBinary() (string, error) {
-	switch runtime.GOOS {
-	case "darwin":
-		// macOS: check standard application paths.
-		candidates := []string{
-			"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-			"/Applications/Chromium.app/Contents/MacOS/Chromium",
-		}
-		for _, p := range candidates {
-			if _, err := os.Stat(p); err == nil {
-				return p, nil
-			}
-		}
-		// Also check PATH.
-		if p, err := exec.LookPath("google-chrome"); err == nil {
-			return p, nil
-		}
-		return "", fmt.Errorf("Chrome not found — install Google Chrome or set CHROME_CDP_URL to a running instance")
-
-	case "linux":
-		candidates := []string{
-			"google-chrome",
-			"google-chrome-stable",
-			"chromium-browser",
-			"chromium",
-		}
-		for _, name := range candidates {
-			if p, err := exec.LookPath(name); err == nil {
-				return p, nil
-			}
-		}
-		return "", fmt.Errorf("Chrome/Chromium not found on PATH — install google-chrome or chromium-browser")
-
-	default:
-		return "", fmt.Errorf("auto-launch not supported on %s — start Chrome manually with --remote-debugging-port", runtime.GOOS)
-	}
-}
-
-// launchChrome starts a Chrome process with CDP enabled on the port extracted
-// from cdpURL. It respects the CHROME_HEADLESS env var (default "false" — visible browser).
-func launchChrome(cdpURL string) (*exec.Cmd, error) {
-	binary, err := findChromeBinary()
-	if err != nil {
-		return nil, err
-	}
-
-	// Extract port from the CDP URL.
-	port, err := extractPort(cdpURL)
-	if err != nil {
-		return nil, fmt.Errorf("invalid CDP URL %q: %w", cdpURL, err)
-	}
-
-	// Determine headless mode from env var. Default is VISIBLE (not headless).
-	headless := false
-	if v := os.Getenv("CHROME_HEADLESS"); v == "true" || v == "1" {
-		headless = true
-	}
-
-	args := []string{
-		"--remote-debugging-port=" + port,
-		"--no-first-run",
-		"--no-default-browser-check",
-		"--disable-gpu",
-		"--no-sandbox",
-		"--disable-dev-shm-usage",
-		"--disable-background-timer-throttling",
-		"--user-data-dir=/tmp/orchestra-chrome-profile",
-	}
-
-	if headless {
-		args = append(args, "--headless=new")
-	}
-
-	slog.Info("launching Chrome", "binary", binary, "port", port, "headless", headless)
-
-	cmd := exec.Command(binary, args...)
-	cmd.Stdout = nil // discard Chrome stdout
-	cmd.Stderr = nil // discard Chrome stderr
-
-	if err := cmd.Start(); err != nil {
-		return nil, fmt.Errorf("failed to start Chrome at %s: %w", binary, err)
-	}
-
-	return cmd, nil
-}
-
-// waitForCDP polls the CDP /json/version endpoint until it responds with 200
-// or the timeout expires.
-func waitForCDP(cdpURL string, timeout time.Duration) error {
-	deadline := time.Now().Add(timeout)
-	client := &http.Client{Timeout: 1 * time.Second}
-	versionURL := cdpURL + "/json/version"
-
-	for time.Now().Before(deadline) {
-		resp, err := client.Get(versionURL)
-		if err == nil {
-			resp.Body.Close()
-			if resp.StatusCode == http.StatusOK {
-				return nil
-			}
-		}
-		time.Sleep(250 * time.Millisecond)
-	}
-	return fmt.Errorf("CDP endpoint %s did not respond within %s", cdpURL, timeout)
-}
-
-// extractPort parses the port from a CDP URL like "http://localhost:9222".
-func extractPort(cdpURL string) (string, error) {
-	u, err := url.Parse(cdpURL)
-	if err != nil {
-		return "", err
-	}
-	_, port, err := net.SplitHostPort(u.Host)
-	if err != nil {
-		// If no port in the URL, default to 9222.
-		return "9222", nil
-	}
-	if port == "" {
-		return "9222", nil
-	}
-	return port, nil
-}
 
 // ---------------------------------------------------------------------------
 // JSON Schemas
 // ---------------------------------------------------------------------------
 
-var browserTabsSchema = json.RawMessage(`{
-	"type": "object",
-	"properties": {},
-	"required": []
-}`)
-
-var browserNavigateSchema = json.RawMessage(`{
+var browserSearchSchema = json.RawMessage(`{
 	"type": "object",
 	"properties": {
-		"url":    {"type": "string", "description": "URL to navigate to"},
-		"tab_id": {"type": "string", "description": "Target ID of the tab (uses first tab if omitted)"}
+		"query": {
+			"type": "string",
+			"description": "Search query to submit to Google"
+		}
+	},
+	"required": ["query"]
+}`)
+
+var browserOpenSchema = json.RawMessage(`{
+	"type": "object",
+	"properties": {
+		"url": {
+			"type": "string",
+			"description": "URL to open in a new background tab"
+		}
 	},
 	"required": ["url"]
 }`)
 
-var browserScreenshotSchema = json.RawMessage(`{
+var browserReadSchema = json.RawMessage(`{
 	"type": "object",
 	"properties": {
-		"tab_id":    {"type": "string", "description": "Target ID of the tab (uses first tab if omitted)"},
-		"selector":  {"type": "string", "description": "CSS selector to screenshot a specific element"},
-		"full_page": {"type": "boolean", "description": "Capture the full scrollable page (default: false)"}
+		"account": {
+			"type": "string",
+			"description": "Registered account name to read (see browser_accounts)"
+		}
 	},
-	"required": []
-}`)
-
-var browserEvalSchema = json.RawMessage(`{
-	"type": "object",
-	"properties": {
-		"expression": {"type": "string", "description": "JavaScript expression to evaluate in the page"},
-		"tab_id":     {"type": "string", "description": "Target ID of the tab (uses first tab if omitted)"}
-	},
-	"required": ["expression"]
-}`)
-
-var browserDOMSchema = json.RawMessage(`{
-	"type": "object",
-	"properties": {
-		"selector":     {"type": "string", "description": "CSS selector to query"},
-		"tab_id":       {"type": "string", "description": "Target ID of the tab (uses first tab if omitted)"},
-		"max_elements": {"type": "integer", "description": "Maximum number of elements to return (default: 10)"}
-	},
-	"required": ["selector"]
+	"required": ["account"]
 }`)
 
 var browserClickSchema = json.RawMessage(`{
 	"type": "object",
 	"properties": {
-		"selector": {"type": "string", "description": "CSS selector of the element to click"},
-		"tab_id":   {"type": "string", "description": "Target ID of the tab (uses first tab if omitted)"}
+		"tab_id": {
+			"type": "integer",
+			"description": "Chrome tab ID containing the element to click"
+		},
+		"selector": {
+			"type": "string",
+			"description": "CSS selector of the element to click"
+		}
 	},
-	"required": ["selector"]
+	"required": ["tab_id", "selector"]
+}`)
+
+var browserFillSchema = json.RawMessage(`{
+	"type": "object",
+	"properties": {
+		"tab_id": {
+			"type": "integer",
+			"description": "Chrome tab ID containing the input field"
+		},
+		"selector": {
+			"type": "string",
+			"description": "CSS selector of the input field to fill"
+		},
+		"value": {
+			"type": "string",
+			"description": "Value to enter into the input field"
+		}
+	},
+	"required": ["tab_id", "selector", "value"]
+}`)
+
+var browserScreenshotSchema = json.RawMessage(`{
+	"type": "object",
+	"properties": {
+		"tab_id": {
+			"type": "integer",
+			"description": "Chrome tab ID to capture"
+		}
+	},
+	"required": ["tab_id"]
+}`)
+
+var browserTabsSchema = json.RawMessage(`{
+	"type": "object",
+	"properties": {}
+}`)
+
+var browserCloseSchema = json.RawMessage(`{
+	"type": "object",
+	"properties": {
+		"tab_id": {
+			"type": "integer",
+			"description": "Chrome tab ID to close"
+		}
+	},
+	"required": ["tab_id"]
+}`)
+
+var browserAccountsSchema = json.RawMessage(`{
+	"type": "object",
+	"properties": {}
+}`)
+
+var browserRegisterSchema = json.RawMessage(`{
+	"type": "object",
+	"properties": {
+		"name": {
+			"type": "string",
+			"description": "Unique account name (e.g. 'work-gmail')"
+		},
+		"platform": {
+			"type": "string",
+			"description": "Platform type: gmail, github, slack, linear, jira, whatsapp, twitter",
+			"enum": ["gmail", "github", "slack", "linear", "jira", "whatsapp", "twitter"]
+		},
+		"url": {
+			"type": "string",
+			"description": "URL to open when reading this account"
+		}
+	},
+	"required": ["name", "platform", "url"]
 }`)
 
 // ---------------------------------------------------------------------------
 // Registration
 // ---------------------------------------------------------------------------
 
-// RegisterBrowserTools registers all browser CDP MCP tools.
-func RegisterBrowserTools(registry *mcp.ToolRegistry, bc *BrowserClient) {
-	registry.Register("browser_tabs", "List all open browser tabs with their IDs, titles, and URLs", browserTabsSchema, makeBrowserTabs(bc))
-	registry.Register("browser_navigate", "Navigate a browser tab to a URL", browserNavigateSchema, makeBrowserNavigate(bc))
-	registry.Register("browser_screenshot", "Capture a screenshot of the current page or a specific element", browserScreenshotSchema, makeBrowserScreenshot(bc))
-	registry.Register("browser_eval", "Execute JavaScript in the browser page and return the result", browserEvalSchema, makeBrowserEval(bc))
-	registry.Register("browser_dom", "Get DOM elements matching a CSS selector with their attributes", browserDOMSchema, makeBrowserDOM(bc))
-	registry.Register("browser_click", "Click an element matching a CSS selector in the browser", browserClickSchema, makeBrowserClick(bc))
+// RegisterBrowserTools registers all 10 browser_* MCP tools backed by the
+// Twin Bridge bidirectional command system.
+func RegisterBrowserTools(registry *mcp.ToolRegistry) {
+	registry.Register(
+		"browser_search",
+		"Search Google from the user's browser and return the top 10 results (title, url, snippet). "+
+			"Requires Chrome extension to be connected.",
+		browserSearchSchema,
+		makeBrowserHandler("browser_search", false),
+	)
+
+	registry.Register(
+		"browser_open",
+		"Open a URL in a background browser tab. Returns tab_id, page title, first 5KB of text content, "+
+			"and up to 20 links. Tab stays open for follow-up actions.",
+		browserOpenSchema,
+		makeBrowserHandler("browser_open", false),
+	)
+
+	registry.Register(
+		"browser_read",
+		"Read structured data from a registered account (gmail, github, slack, linear, jira, whatsapp, twitter). "+
+			"Opens the account URL, runs a platform-specific extractor, then closes the tab.",
+		browserReadSchema,
+		makeBrowserHandler("browser_read", false),
+	)
+
+	registry.Register(
+		"browser_click",
+		"Click an element in an open browser tab using a CSS selector. "+
+			"Blocked on password, payment, and destructive UI elements. "+
+			"Requires user confirmation via macOS dialog.",
+		browserClickSchema,
+		makeBrowserHandler("browser_click", true),
+	)
+
+	registry.Register(
+		"browser_fill",
+		"Fill an input field in an open browser tab. Password fields are always blocked. "+
+			"Requires user confirmation via macOS dialog.",
+		browserFillSchema,
+		makeBrowserHandler("browser_fill", true),
+	)
+
+	registry.Register(
+		"browser_screenshot",
+		"Capture a screenshot of a browser tab and return it as a base64 PNG data URL.",
+		browserScreenshotSchema,
+		makeBrowserHandler("browser_screenshot", false),
+	)
+
+	registry.Register(
+		"browser_tabs",
+		"List all open browser tabs with their id, url, title, and active state.",
+		browserTabsSchema,
+		makeBrowserHandler("browser_tabs", false),
+	)
+
+	registry.Register(
+		"browser_close",
+		"Close a browser tab by its tab_id. Requires user confirmation via macOS dialog.",
+		browserCloseSchema,
+		makeBrowserHandler("browser_close", true),
+	)
+
+	registry.Register(
+		"browser_accounts",
+		"List all registered browser accounts (name, platform, url).",
+		browserAccountsSchema,
+		makeBrowserHandler("browser_accounts", false),
+	)
+
+	registry.Register(
+		"browser_register",
+		"Register a new browser account so it can be read with browser_read. "+
+			"Platforms: gmail, github, slack, linear, jira, whatsapp, twitter.",
+		browserRegisterSchema,
+		makeBrowserHandler("browser_register", false),
+	)
 }
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Handler factory
 // ---------------------------------------------------------------------------
 
-const browserNotConnected = "Browser not connected. Chrome auto-launch may have failed — check logs or set CHROME_CDP_URL"
-const defaultBrowserTimeout = 5 * time.Second
-
-// findPageTarget returns the target ID for a specific tab, or the first page
-// target if tabID is empty.
-func findPageTarget(ctx context.Context, bc *BrowserClient, tabID string) (*target.Info, error) {
-	targets, err := chromedp.Targets(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to list targets: %w", err)
-	}
-
-	for _, t := range targets {
-		if t.Type == "page" {
-			if tabID == "" || string(t.TargetID) == tabID {
-				return t, nil
+// makeBrowserHandler returns an MCP ToolHandler that sends the command to the
+// Chrome extension via ExecuteCommand and returns the JSON result.
+//
+// requiresConfirmation: when true, a macOS dialog is shown before executing.
+func makeBrowserHandler(action string, requiresConfirmation bool) mcp.ToolHandler {
+	return func(_ context.Context, params json.RawMessage) (*mcp.ToolResult, error) {
+		// Parse params into a plain map for forwarding.
+		var paramMap map[string]any
+		if len(params) > 0 && string(params) != "null" {
+			if err := json.Unmarshal(params, &paramMap); err != nil {
+				return mcp.ErrorResult("invalid params: " + err.Error()), nil
 			}
 		}
-	}
-
-	if tabID != "" {
-		return nil, fmt.Errorf("tab %q not found", tabID)
-	}
-	return nil, fmt.Errorf("no open page tabs found")
-}
-
-// newTabContext creates a new chromedp context attached to a specific tab target.
-func newTabContext(bc *BrowserClient, targetID target.ID, timeout time.Duration) (context.Context, context.CancelFunc) {
-	ctx, cancel := chromedp.NewContext(bc.allocCtx, chromedp.WithTargetID(targetID))
-	tCtx, tCancel := context.WithTimeout(ctx, timeout)
-	return tCtx, func() {
-		tCancel()
-		cancel()
-	}
-}
-
-// ensureScreenshotDir creates the screenshot directory for the given org and
-// returns the path: /tmp/orchestra-exports/{orgID}/screenshots/
-func ensureScreenshotDir(orgID string) (string, error) {
-	dir := filepath.Join("/tmp", "orchestra-exports", orgID, "screenshots")
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return "", fmt.Errorf("create screenshot dir: %w", err)
-	}
-	return dir, nil
-}
-
-// ---------------------------------------------------------------------------
-// Handlers
-// ---------------------------------------------------------------------------
-
-func makeBrowserTabs(bc *BrowserClient) mcp.ToolHandler {
-	return func(ctx context.Context, params json.RawMessage) (*mcp.ToolResult, error) {
-		if bc == nil {
-			return mcp.ErrorResult(browserNotConnected), nil
+		if paramMap == nil {
+			paramMap = map[string]any{}
 		}
 
-		listCtx, cancel := bc.newCDPContext(defaultBrowserTimeout)
-		defer cancel()
-
-		targets, err := chromedp.Targets(listCtx)
-		if err != nil {
-			return mcp.ErrorResult("failed to list browser tabs: " + err.Error()), nil
-		}
-
-		type tabInfo struct {
-			ID    string `json:"id"`
-			Title string `json:"title"`
-			URL   string `json:"url"`
-		}
-
-		var tabs []tabInfo
-		for _, t := range targets {
-			if t.Type == "page" {
-				tabs = append(tabs, tabInfo{
-					ID:    string(t.TargetID),
-					Title: t.Title,
-					URL:   t.URL,
+		// Show macOS confirmation dialog for write/destructive actions.
+		if requiresConfirmation {
+			target := describeTarget(action, paramMap)
+			if !confirmAction(action, target) {
+				data, _ := json.Marshal(map[string]any{
+					"ok":     false,
+					"action": action,
+					"reason": "user denied permission",
 				})
+				return mcp.TextResult(string(data)), nil
 			}
 		}
 
-		result := map[string]interface{}{
-			"tabs":  tabs,
-			"count": len(tabs),
+		// Execute the command via the Twin Bridge.
+		result, err := twin.ExecuteCommand(action, paramMap)
+		if err != nil {
+			return mcp.ErrorResult(fmt.Sprintf("browser command failed: %v", err)), nil
 		}
-		return jsonResult(result)
+
+		return mcp.TextResult(string(result)), nil
 	}
 }
 
-func makeBrowserNavigate(bc *BrowserClient) mcp.ToolHandler {
-	return func(ctx context.Context, params json.RawMessage) (*mcp.ToolResult, error) {
-		if bc == nil {
-			return mcp.ErrorResult(browserNotConnected), nil
-		}
+// ---------------------------------------------------------------------------
+// macOS confirmation dialog
+// ---------------------------------------------------------------------------
 
-		var input struct {
-			URL   string `json:"url"`
-			TabID string `json:"tab_id"`
-		}
-		if err := json.Unmarshal(params, &input); err != nil {
-			return mcp.ErrorResult("invalid params: " + err.Error()), nil
-		}
-		if input.URL == "" {
-			return mcp.ErrorResult("url is required"), nil
-		}
-
-		findCtx, findCancel := bc.newCDPContext(defaultBrowserTimeout)
-		defer findCancel()
-
-		tgt, err := findPageTarget(findCtx, bc, input.TabID)
-		if err != nil {
-			return mcp.ErrorResult(err.Error()), nil
-		}
-
-		tabCtx, tabCancel := newTabContext(bc, tgt.TargetID, 15*time.Second)
-		defer tabCancel()
-
-		var title string
-		if err := chromedp.Run(tabCtx,
-			chromedp.Navigate(input.URL),
-			chromedp.Title(&title),
-		); err != nil {
-			return mcp.ErrorResult("navigation failed: " + err.Error()), nil
-		}
-
-		result := map[string]interface{}{
-			"url":   input.URL,
-			"title": title,
-		}
-		return jsonResult(result)
-	}
+// confirmAction shows a macOS dialog asking the user to approve an action.
+// Returns true when the user clicks "Allow", false on "Deny" or if osascript
+// is unavailable.
+func confirmAction(action, target string) bool {
+	script := fmt.Sprintf(
+		`button returned of (display dialog "Orchestra wants to %s on:\n\n%s\n\nAllow?" `+
+			`buttons {"Deny", "Allow"} default button "Allow" with title "Orchestra Browser Control")`,
+		action, target,
+	)
+	cmd := exec.Command("osascript", "-e", script)
+	err := cmd.Run()
+	return err == nil
 }
 
-func makeBrowserScreenshot(bc *BrowserClient) mcp.ToolHandler {
-	return func(ctx context.Context, params json.RawMessage) (*mcp.ToolResult, error) {
-		if bc == nil {
-			return mcp.ErrorResult(browserNotConnected), nil
+// describeTarget builds a human-readable target string for the confirmation dialog.
+func describeTarget(action string, params map[string]any) string {
+	switch action {
+	case "browser_click", "browser_fill":
+		selector, _ := params["selector"].(string)
+		tabID := params["tab_id"]
+		if selector != "" {
+			return fmt.Sprintf("tab %v — selector: %s", tabID, selector)
 		}
-
-		var input struct {
-			TabID    string `json:"tab_id"`
-			Selector string `json:"selector"`
-			FullPage bool   `json:"full_page"`
-		}
-		if err := json.Unmarshal(params, &input); err != nil {
-			return mcp.ErrorResult("invalid params: " + err.Error()), nil
-		}
-
-		userCtx := auth.UserContextFromContext(ctx)
-		orgID := "default"
-		if userCtx != nil {
-			orgID = userCtx.OrgID
-		}
-
-		findCtx, findCancel := bc.newCDPContext(defaultBrowserTimeout)
-		defer findCancel()
-
-		tgt, err := findPageTarget(findCtx, bc, input.TabID)
-		if err != nil {
-			return mcp.ErrorResult(err.Error()), nil
-		}
-
-		tabCtx, tabCancel := newTabContext(bc, tgt.TargetID, 15*time.Second)
-		defer tabCancel()
-
-		var buf []byte
-
-		switch {
-		case input.Selector != "":
-			// Screenshot a specific element.
-			if err := chromedp.Run(tabCtx,
-				chromedp.Screenshot(input.Selector, &buf, chromedp.NodeVisible),
-			); err != nil {
-				return mcp.ErrorResult("element screenshot failed: " + err.Error()), nil
-			}
-
-		case input.FullPage:
-			// Full-page screenshot.
-			if err := chromedp.Run(tabCtx,
-				chromedp.FullScreenshot(&buf, 90),
-			); err != nil {
-				return mcp.ErrorResult("full-page screenshot failed: " + err.Error()), nil
-			}
-
-		default:
-			// Viewport screenshot.
-			if err := chromedp.Run(tabCtx,
-				chromedp.ActionFunc(func(ctx context.Context) error {
-					var err error
-					buf, err = page.CaptureScreenshot().
-						WithFormat(page.CaptureScreenshotFormatPng).
-						Do(ctx)
-					return err
-				}),
-			); err != nil {
-				return mcp.ErrorResult("screenshot failed: " + err.Error()), nil
-			}
-		}
-
-		// Save the screenshot to disk.
-		dir, err := ensureScreenshotDir(orgID)
-		if err != nil {
-			return mcp.ErrorResult("failed to create screenshot directory: " + err.Error()), nil
-		}
-
-		timestamp := time.Now().UTC().Format("20060102-150405")
-		fileName := fmt.Sprintf("screenshot-%s.png", timestamp)
-		filePath := filepath.Join(dir, fileName)
-
-		if err := os.WriteFile(filePath, buf, 0644); err != nil {
-			return mcp.ErrorResult("failed to write screenshot: " + err.Error()), nil
-		}
-
-		result := map[string]interface{}{
-			"file_path":  filePath,
-			"size_bytes": len(buf),
-		}
-		return jsonResult(result)
-	}
-}
-
-func makeBrowserEval(bc *BrowserClient) mcp.ToolHandler {
-	return func(ctx context.Context, params json.RawMessage) (*mcp.ToolResult, error) {
-		if bc == nil {
-			return mcp.ErrorResult(browserNotConnected), nil
-		}
-
-		var input struct {
-			Expression string `json:"expression"`
-			TabID      string `json:"tab_id"`
-		}
-		if err := json.Unmarshal(params, &input); err != nil {
-			return mcp.ErrorResult("invalid params: " + err.Error()), nil
-		}
-		if input.Expression == "" {
-			return mcp.ErrorResult("expression is required"), nil
-		}
-
-		findCtx, findCancel := bc.newCDPContext(defaultBrowserTimeout)
-		defer findCancel()
-
-		tgt, err := findPageTarget(findCtx, bc, input.TabID)
-		if err != nil {
-			return mcp.ErrorResult(err.Error()), nil
-		}
-
-		tabCtx, tabCancel := newTabContext(bc, tgt.TargetID, defaultBrowserTimeout)
-		defer tabCancel()
-
-		var res interface{}
-		if err := chromedp.Run(tabCtx,
-			chromedp.Evaluate(input.Expression, &res),
-		); err != nil {
-			return mcp.ErrorResult("eval failed: " + err.Error()), nil
-		}
-
-		result := map[string]interface{}{
-			"result": res,
-		}
-		return jsonResult(result)
-	}
-}
-
-func makeBrowserDOM(bc *BrowserClient) mcp.ToolHandler {
-	return func(ctx context.Context, params json.RawMessage) (*mcp.ToolResult, error) {
-		if bc == nil {
-			return mcp.ErrorResult(browserNotConnected), nil
-		}
-
-		var input struct {
-			Selector    string `json:"selector"`
-			TabID       string `json:"tab_id"`
-			MaxElements int    `json:"max_elements"`
-		}
-		if err := json.Unmarshal(params, &input); err != nil {
-			return mcp.ErrorResult("invalid params: " + err.Error()), nil
-		}
-		if input.Selector == "" {
-			return mcp.ErrorResult("selector is required"), nil
-		}
-		if input.MaxElements <= 0 {
-			input.MaxElements = 10
-		}
-
-		findCtx, findCancel := bc.newCDPContext(defaultBrowserTimeout)
-		defer findCancel()
-
-		tgt, err := findPageTarget(findCtx, bc, input.TabID)
-		if err != nil {
-			return mcp.ErrorResult(err.Error()), nil
-		}
-
-		tabCtx, tabCancel := newTabContext(bc, tgt.TargetID, defaultBrowserTimeout)
-		defer tabCancel()
-
-		// Use JavaScript to extract element info — this gives us richer data
-		// than chromedp.Nodes and avoids serialization issues with DOM node types.
-		jsExpr := fmt.Sprintf(`
-			(function() {
-				const els = document.querySelectorAll(%q);
-				const max = %d;
-				const result = [];
-				for (let i = 0; i < Math.min(els.length, max); i++) {
-					const el = els[i];
-					const attrs = {};
-					for (const attr of el.attributes) {
-						attrs[attr.name] = attr.value;
-					}
-					result.push({
-						tag:        el.tagName.toLowerCase(),
-						id:         el.id || "",
-						class:      el.className || "",
-						text:       (el.textContent || "").trim().substring(0, 200),
-						attributes: attrs
-					});
-				}
-				return { elements: result, count: els.length };
-			})()
-		`, input.Selector, input.MaxElements)
-
-		var res interface{}
-		if err := chromedp.Run(tabCtx,
-			chromedp.Evaluate(jsExpr, &res),
-		); err != nil {
-			return mcp.ErrorResult("DOM query failed: " + err.Error()), nil
-		}
-
-		return jsonResult(res)
-	}
-}
-
-func makeBrowserClick(bc *BrowserClient) mcp.ToolHandler {
-	return func(ctx context.Context, params json.RawMessage) (*mcp.ToolResult, error) {
-		if bc == nil {
-			return mcp.ErrorResult(browserNotConnected), nil
-		}
-
-		var input struct {
-			Selector string `json:"selector"`
-			TabID    string `json:"tab_id"`
-		}
-		if err := json.Unmarshal(params, &input); err != nil {
-			return mcp.ErrorResult("invalid params: " + err.Error()), nil
-		}
-		if input.Selector == "" {
-			return mcp.ErrorResult("selector is required"), nil
-		}
-
-		findCtx, findCancel := bc.newCDPContext(defaultBrowserTimeout)
-		defer findCancel()
-
-		tgt, err := findPageTarget(findCtx, bc, input.TabID)
-		if err != nil {
-			return mcp.ErrorResult(err.Error()), nil
-		}
-
-		tabCtx, tabCancel := newTabContext(bc, tgt.TargetID, defaultBrowserTimeout)
-		defer tabCancel()
-
-		if err := chromedp.Run(tabCtx,
-			chromedp.Click(input.Selector, chromedp.NodeVisible),
-		); err != nil {
-			return mcp.ErrorResult("click failed: " + err.Error()), nil
-		}
-
-		result := map[string]interface{}{
-			"clicked":  true,
-			"selector": input.Selector,
-		}
-		return jsonResult(result)
+		return fmt.Sprintf("tab %v", tabID)
+	case "browser_close":
+		return fmt.Sprintf("tab %v", params["tab_id"])
+	default:
+		return action
 	}
 }

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Background: Orchestra purple -->
+  <rect width="128" height="128" rx="24" fill="#7C3AED"/>
+  <!-- Bridge / twin connection symbol -->
+  <circle cx="64" cy="64" r="30" fill="none" stroke="white" stroke-width="9"/>
+  <!-- Horizontal bridge line -->
+  <line x1="20" y1="64" x2="108" y2="64" stroke="white" stroke-width="7" stroke-linecap="round"/>
+  <!-- Bridge nodes -->
+  <circle cx="20"  cy="64" r="8" fill="white"/>
+  <circle cx="108" cy="64" r="8" fill="white"/>
+  <!-- Vertical accent: active pulse -->
+  <line x1="64" y1="34" x2="64" y2="94" stroke="rgba(255,255,255,0.35)" stroke-width="4" stroke-linecap="round"/>
+</svg>

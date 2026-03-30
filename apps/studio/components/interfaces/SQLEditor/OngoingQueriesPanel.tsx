@@ -1,21 +1,21 @@
-import dayjs from 'dayjs'
-import { RefreshCw, StopCircle } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { toast } from 'sonner'
-
 import { useParams } from 'common'
 import AlertError from 'components/ui/AlertError'
 import { useReadReplicasQuery } from 'data/read-replicas/replicas-query'
 import { useQueryAbortMutation } from 'data/sql/abort-query-mutation'
 import { useOngoingQueriesQuery } from 'data/sql/ongoing-queries-query'
+import dayjs from 'dayjs'
 import { useSelectedProjectQuery } from 'hooks/misc/useSelectedProject'
 import { useUrlState } from 'hooks/ui/useUrlState'
 import { IS_PLATFORM } from 'lib/constants'
+import { RefreshCw, StopCircle } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { useAppStateSnapshot } from 'state/app-state'
 import { useDatabaseSelectorStateSnapshot } from 'state/database-selector'
 import type { ResponseError } from 'types'
 import {
   Button,
+  cn,
   CodeBlock,
   Sheet,
   SheetContent,
@@ -26,7 +26,6 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-  cn,
 } from 'ui'
 import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 

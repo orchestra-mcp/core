@@ -4,7 +4,7 @@ import {
   resolveStoredTaxId,
   sanitizeTaxIdValue,
 } from 'components/interfaces/Organization/BillingSettings/BillingCustomerData/TaxID.utils'
-import { describe, test, expect } from 'vitest'
+import { describe, expect, test } from 'vitest'
 
 /**
  * We're sanitizing EU tax ids. Stripe expects a prefixed tax id (ATU12345678),

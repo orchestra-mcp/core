@@ -1,18 +1,13 @@
 <script setup lang="ts">
-import { ref } from "vue"
-import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { ref } from 'vue'
 
-const password = ref("")
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { createClient } from '@/lib/supabase/client'
+
+const password = ref('')
 const error = ref<string | null>(null)
 const isLoading = ref(false)
 
@@ -27,9 +22,9 @@ const handleUpdatePassword = async () => {
     })
     if (supabaseError) throw supabaseError
     // Redirect user after successful password update
-    location.href = "/protected"
+    location.href = '/protected'
   } catch (err: unknown) {
-    error.value = err instanceof Error ? err.message : "An error occurred"
+    error.value = err instanceof Error ? err.message : 'An error occurred'
   } finally {
     isLoading.value = false
   }
@@ -58,7 +53,7 @@ const handleUpdatePassword = async () => {
             </div>
             <p v-if="error" class="text-sm text-red-500">{{ error }}</p>
             <Button type="submit" class="w-full" :disabled="isLoading">
-              {{ isLoading ? "Saving..." : "Save new password" }}
+              {{ isLoading ? 'Saving...' : 'Save new password' }}
             </Button>
           </div>
         </form>

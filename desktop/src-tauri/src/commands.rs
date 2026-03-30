@@ -45,6 +45,43 @@ pub async fn get_screen_size() -> Result<crate::vision::window::ScreenSize, Stri
     Ok(crate::vision::window::get_screen_size())
 }
 
+// ─── OCR Commands ─────────────────────────────────────────────────
+
+/// Run OCR on a screen region — captures the region and extracts text
+#[tauri::command]
+pub async fn screen_ocr(
+    x: f64,
+    y: f64,
+    width: f64,
+    height: f64,
+) -> Result<crate::vision::ocr::OcrResult, String> {
+    crate::vision::ocr::screen_ocr(x, y, width, height)
+}
+
+/// Run OCR on the full screen — captures everything and extracts text
+#[tauri::command]
+pub async fn screen_ocr_full() -> Result<crate::vision::ocr::OcrResult, String> {
+    crate::vision::ocr::screen_ocr_full()
+}
+
+/// Find text on screen — returns bounding boxes in pixel coordinates
+/// for all observations containing the needle (case-insensitive)
+#[tauri::command]
+pub async fn screen_find_text(
+    needle: String,
+) -> Result<Vec<crate::vision::ocr::TextMatch>, String> {
+    crate::vision::ocr::screen_find_text(&needle)
+}
+
+/// Run OCR on raw PNG image bytes (base64-encoded input)
+#[tauri::command]
+pub async fn ocr_extract(image_base64: String) -> Result<crate::vision::ocr::OcrResult, String> {
+    let image_data = base64::engine::general_purpose::STANDARD
+        .decode(&image_base64)
+        .map_err(|e| format!("Invalid base64 image data: {}", e))?;
+    crate::vision::ocr::ocr_extract(&image_data)
+}
+
 // ─── MCP Bridge Commands ──────────────────────────────────────────
 
 /// Test connection to the MCP server (initialize + tools/list)
@@ -186,4 +223,125 @@ pub async fn create_entity(entity_type: String, title: String, content: String) 
     log::info!("Creating entity: type={}, title={}, content_len={}", entity_type, title, content.len());
     // TODO: Wire to real MCP backend (note_create, agent_create, skill_create, etc.)
     Ok(format!("Created {} '{}' successfully", entity_type, title))
+}
+
+// ─── Local MCP Server Commands ───────────────────────────────────
+
+/// Generate .mcp.json config for the local desktop MCP server
+/// and write it to the workspace directory.
+/// Returns the path to the written config file.
+#[tauri::command]
+pub async fn generate_mcp_config(workspace_path: String) -> Result<String, String> {
+    if workspace_path.is_empty() {
+        return Err("Workspace path is required".to_string());
+    }
+    let root = std::path::PathBuf::from(&workspace_path);
+    if !root.is_dir() {
+        return Err(format!("Not a directory: {}", workspace_path));
+    }
+    crate::mcp_server::server::write_mcp_config(&workspace_path)
+}
+
+/// Get the MCP server config content as JSON string (preview, does not write).
+#[tauri::command]
+pub async fn preview_mcp_config(workspace_path: String) -> Result<String, String> {
+    if workspace_path.is_empty() {
+        return Err("Workspace path is required".to_string());
+    }
+    crate::mcp_server::server::generate_mcp_config(&workspace_path)
+}
+
+// ─── Shell Commands ──────────────────────────────────────────────
+
+/// Execute a shell command in a given directory, returning combined stdout/stderr
+#[tauri::command]
+pub async fn run_shell_command(command: String, cwd: Option<String>) -> Result<serde_json::Value, String> {
+    use std::process::Command;
+
+    log::info!("Running shell command: {} (cwd: {:?})", command, cwd);
+
+    let shell = if cfg!(target_os = "windows") { "cmd" } else { "sh" };
+    let flag = if cfg!(target_os = "windows") { "/C" } else { "-c" };
+
+    let mut cmd = Command::new(shell);
+    cmd.arg(flag).arg(&command);
+
+    if let Some(ref dir) = cwd {
+        let path = std::path::PathBuf::from(dir);
+        if path.is_dir() {
+            cmd.current_dir(&path);
+        } else {
+            return Err(format!("Directory not found: {}", dir));
+        }
+    }
+
+    // Inherit PATH from environment
+    if let Ok(path) = std::env::var("PATH") {
+        cmd.env("PATH", path);
+    }
+
+    match cmd.output() {
+        Ok(output) => {
+            let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+            let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+            let exit_code = output.status.code().unwrap_or(-1);
+
+            Ok(serde_json::json!({
+                "stdout": stdout,
+                "stderr": stderr,
+                "exit_code": exit_code,
+                "success": output.status.success(),
+            }))
+        }
+        Err(e) => Err(format!("Failed to execute command: {}", e)),
+    }
+}
+
+/// Write content to a file at the given path, creating parent directories as needed
+#[tauri::command]
+pub async fn write_file(path: String, content: String) -> Result<(), String> {
+    let file_path = std::path::PathBuf::from(&path);
+
+    // Create parent directories if needed
+    if let Some(parent) = file_path.parent() {
+        std::fs::create_dir_all(parent)
+            .map_err(|e| format!("Failed to create directories: {}", e))?;
+    }
+
+    std::fs::write(&file_path, &content)
+        .map_err(|e| format!("Failed to write file: {}", e))
+}
+
+// ─── Tunnel Commands ────────────────────────────────────────────
+
+/// Connect the cloud-desktop reverse WebSocket tunnel.
+///
+/// Establishes a persistent connection to the gateway. If auto_reconnect is true
+/// (default), the tunnel will automatically reconnect with exponential backoff.
+#[tauri::command]
+pub async fn tunnel_connect(
+    gateway_url: String,
+    tunnel_id: String,
+    connection_token: String,
+    auto_reconnect: Option<bool>,
+) -> Result<crate::tunnel::types::ConnectionStats, String> {
+    let config = crate::tunnel::types::TunnelConfig {
+        gateway_url,
+        tunnel_id,
+        connection_token,
+        auto_reconnect: auto_reconnect.unwrap_or(true),
+    };
+    crate::tunnel::cmd_connect(config).await
+}
+
+/// Disconnect the cloud-desktop reverse WebSocket tunnel.
+#[tauri::command]
+pub async fn tunnel_disconnect() -> Result<(), String> {
+    crate::tunnel::cmd_disconnect().await
+}
+
+/// Get the current tunnel connection status and statistics.
+#[tauri::command]
+pub async fn tunnel_status() -> Result<crate::tunnel::types::ConnectionStats, String> {
+    crate::tunnel::cmd_status().await
 }

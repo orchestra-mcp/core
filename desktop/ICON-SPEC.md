@@ -8,16 +8,16 @@ Orchestra Desktop uses a multi-ring "O with diagonal slash" logo mark (similar t
 
 All source assets live in `/arts/`:
 
-| File | Size | Description |
-|------|------|-------------|
-| `appicon.png` | 1024x1024 | Gradient logo, **transparent background** (primary source) |
-| `logo.svg` | 725x725 | Full gradient SVG (Illustrator source) |
-| `black.svg` | 725x725 | Monochrome black SVG |
-| `blue.svg` | 725x725 | Monochrome cyan (#00E5FF) SVG |
-| `purpul.svg` | 725x725 | Monochrome purple (#A900FF) SVG |
-| `tray.svg` | 164x164 | Compact monochrome SVG (for menu bar) |
-| `AppIcon.iconset/` | various | macOS iconset folder |
-| `AppIcon.icns` | all sizes | macOS .icns bundle |
+| File               | Size      | Description                                                |
+| ------------------ | --------- | ---------------------------------------------------------- |
+| `appicon.png`      | 1024x1024 | Gradient logo, **transparent background** (primary source) |
+| `logo.svg`         | 725x725   | Full gradient SVG (Illustrator source)                     |
+| `black.svg`        | 725x725   | Monochrome black SVG                                       |
+| `blue.svg`         | 725x725   | Monochrome cyan (#00E5FF) SVG                              |
+| `purpul.svg`       | 725x725   | Monochrome purple (#A900FF) SVG                            |
+| `tray.svg`         | 164x164   | Compact monochrome SVG (for menu bar)                      |
+| `AppIcon.iconset/` | various   | macOS iconset folder                                       |
+| `AppIcon.icns`     | all sizes | macOS .icns bundle                                         |
 
 ## Generated Icon Files
 
@@ -25,22 +25,22 @@ All generated icons live in `/desktop/src-tauri/icons/`:
 
 ### App Icon (Liquid Glass / macOS Tahoe Ready)
 
-| File | Size (px) | Format | Purpose |
-|------|-----------|--------|---------|
-| `icon.png` | 1024x1024 | PNG, RGBA | Main app icon (transparent bg) |
-| `icon.icns` | 16-1024 | ICNS | macOS app bundle icon |
-| `icon.ico` | 16-256 | ICO | Windows app icon |
-| `icon-dark.png` | 1024x1024 | PNG, RGBA | Dark mode variant |
-| `32x32.png` | 32x32 | PNG, RGBA | Tauri required size |
-| `128x128.png` | 128x128 | PNG, RGBA | Tauri required size |
-| `128x128@2x.png` | 256x256 | PNG, RGBA | Retina @2x of 128 |
+| File             | Size (px) | Format    | Purpose                        |
+| ---------------- | --------- | --------- | ------------------------------ |
+| `icon.png`       | 1024x1024 | PNG, RGBA | Main app icon (transparent bg) |
+| `icon.icns`      | 16-1024   | ICNS      | macOS app bundle icon          |
+| `icon.ico`       | 16-256    | ICO       | Windows app icon               |
+| `icon-dark.png`  | 1024x1024 | PNG, RGBA | Dark mode variant              |
+| `32x32.png`      | 32x32     | PNG, RGBA | Tauri required size            |
+| `128x128.png`    | 128x128   | PNG, RGBA | Tauri required size            |
+| `128x128@2x.png` | 256x256   | PNG, RGBA | Retina @2x of 128              |
 
 ### Tray Icon (macOS Template Image)
 
-| File | Size (px) | Format | Purpose |
-|------|-----------|--------|---------|
-| `trayTemplate.png` | 22x22 | PNG, black+alpha | Menu bar @1x |
-| `trayTemplate@2x.png` | 44x44 | PNG, black+alpha | Menu bar @2x (Retina) |
+| File                  | Size (px) | Format           | Purpose               |
+| --------------------- | --------- | ---------------- | --------------------- |
+| `trayTemplate.png`    | 22x22     | PNG, black+alpha | Menu bar @1x          |
+| `trayTemplate@2x.png` | 44x44     | PNG, black+alpha | Menu bar @2x (Retina) |
 
 ## Apple Icon Requirements
 
@@ -80,18 +80,18 @@ Assets.xcassets/
 
 The `icon.icns` file must contain these sizes:
 
-| Name | Pixel Size | Point Size |
-|------|-----------|------------|
-| `icon_16x16.png` | 16x16 | 16pt @1x |
-| `icon_16x16@2x.png` | 32x32 | 16pt @2x |
-| `icon_32x32.png` | 32x32 | 32pt @1x |
-| `icon_32x32@2x.png` | 64x64 | 32pt @2x |
-| `icon_128x128.png` | 128x128 | 128pt @1x |
-| `icon_128x128@2x.png` | 256x256 | 128pt @2x |
-| `icon_256x256.png` | 256x256 | 256pt @1x |
-| `icon_256x256@2x.png` | 512x512 | 256pt @2x |
-| `icon_512x512.png` | 512x512 | 512pt @1x |
-| `icon_512x512@2x.png` | 1024x1024 | 512pt @2x |
+| Name                  | Pixel Size | Point Size |
+| --------------------- | ---------- | ---------- |
+| `icon_16x16.png`      | 16x16      | 16pt @1x   |
+| `icon_16x16@2x.png`   | 32x32      | 16pt @2x   |
+| `icon_32x32.png`      | 32x32      | 32pt @1x   |
+| `icon_32x32@2x.png`   | 64x64      | 32pt @2x   |
+| `icon_128x128.png`    | 128x128    | 128pt @1x  |
+| `icon_128x128@2x.png` | 256x256    | 128pt @2x  |
+| `icon_256x256.png`    | 256x256    | 256pt @1x  |
+| `icon_256x256@2x.png` | 512x512    | 256pt @2x  |
+| `icon_512x512.png`    | 512x512    | 512pt @1x  |
+| `icon_512x512@2x.png` | 1024x1024  | 512pt @2x  |
 
 ### Tray / Menu Bar Icon (Template Image)
 
@@ -103,6 +103,7 @@ macOS menu bar icons MUST be **template images**:
 - **Naming**: Must contain "Template" in filename (e.g., `trayTemplate.png`)
 
 macOS automatically adapts template images:
+
 - **Light menu bar**: Icon appears dark
 - **Dark menu bar**: Icon appears white (automatically inverted)
 - **Vibrancy**: System blends icon with background
@@ -176,15 +177,16 @@ In `tauri.conf.json`:
 ```
 
 Key settings:
+
 - `iconAsTemplate: true` tells Tauri to treat the tray icon as a macOS template image
 - The `bundle.icon` array lists all icons Tauri uses when creating app bundles
 - Tauri's bundler selects the appropriate icon per platform (`.icns` for macOS, `.ico` for Windows)
 
 ## Brand Colors
 
-| Color | Hex | Usage |
-|-------|-----|-------|
-| Cyan | `#00E5FF` | Gradient end, accent |
-| Purple | `#A900FF` | Gradient start, accent |
-| Gradient | `#A900FF` to `#00E5FF` | Primary logo gradient |
-| Black | `#000000` | Monochrome / template |
+| Color    | Hex                    | Usage                  |
+| -------- | ---------------------- | ---------------------- |
+| Cyan     | `#00E5FF`              | Gradient end, accent   |
+| Purple   | `#A900FF`              | Gradient start, accent |
+| Gradient | `#A900FF` to `#00E5FF` | Primary logo gradient  |
+| Black    | `#000000`              | Monochrome / template  |

@@ -1,6 +1,3 @@
-import { useRouter } from 'next/router'
-import { useEffect } from 'react'
-
 import { useParams } from 'common'
 import { buildTableEditorUrl } from 'components/grid/SupabaseGrid.utils'
 import { SidePanelEditor } from 'components/interfaces/TableGridEditor/SidePanelEditor/SidePanelEditor'
@@ -11,6 +8,8 @@ import { TableEditorMenu } from 'components/layouts/TableEditorLayout/TableEdito
 import { NewTab } from 'components/layouts/Tabs/NewTab'
 import { useDashboardHistory } from 'hooks/misc/useDashboardHistory'
 import { useQuerySchemaState } from 'hooks/misc/useSchemaQueryState'
+import { useRouter } from 'next/router'
+import { useEffect } from 'react'
 import { editorEntityTypes, useTabsStateSnapshot } from 'state/tabs'
 import type { NextPageWithLayout } from 'types'
 

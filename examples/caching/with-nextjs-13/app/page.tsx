@@ -1,6 +1,7 @@
 // Caching data with Next.js 13 and Supabase
 // See the docs: https://beta.nextjs.org/docs/data-fetching/caching
 import 'server-only'
+
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(

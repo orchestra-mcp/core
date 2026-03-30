@@ -1,5 +1,5 @@
+import { BookA, BookOpen, Code, ExternalLink, Users } from 'lucide-react'
 import Link from 'next/link'
-import { BookOpen, Code, Users, ExternalLink, BookA } from 'lucide-react'
 import { IconYoutubeSolid } from 'ui'
 
 interface ExploreItem {

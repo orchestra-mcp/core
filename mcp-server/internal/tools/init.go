@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"os"
+	"runtime"
 	"strings"
 
 	"github.com/orchestra-mcp/server/internal/auth"
@@ -21,7 +23,9 @@ var initSchema = json.RawMessage(`{
 	"properties": {
 		"project_name": {"type": "string", "description": "Name of the project being initialized (optional)"},
 		"force":        {"type": "boolean", "default": false, "description": "Overwrite existing files (default false)"},
-		"component":    {"type": "string", "enum": ["all", "rules", "agents", "skills", "hooks", "browser"], "default": "all", "description": "Which component to generate (default all)"}
+		"component":    {"type": "string", "enum": ["all", "rules", "agents", "skills", "hooks"], "default": "all", "description": "Which component to generate (default all)"},
+		"server_url":   {"type": "string", "description": "Orchestra MCP server URL (default: ORCHESTRA_BASE_URL env or http://localhost:9999)"},
+		"token":        {"type": "string", "description": "MCP authentication token to embed in .mcp.json (default: placeholder)"}
 	}
 }`)
 
@@ -45,14 +49,16 @@ func RegisterInitTools(registry *mcp.ToolRegistry, dbClient *db.Client) {
 // ---------------------------------------------------------------------------
 
 type dbAgent struct {
-	ID           string `json:"id"`
-	Name         string `json:"name"`
-	Slug         string `json:"slug"`
-	Role         string `json:"role"`
-	Persona      string `json:"persona"`
-	SystemPrompt string `json:"system_prompt"`
-	Type         string `json:"type"`
-	Status       string `json:"status"`
+	ID             string `json:"id"`
+	Name           string `json:"name"`
+	Slug           string `json:"slug"`
+	Role           string `json:"role"`
+	Persona        string `json:"persona"`
+	SystemPrompt   string `json:"system_prompt"`
+	Type           string `json:"type"`
+	Model          string `json:"model"`
+	Provider       string `json:"provider"`
+	Status         string `json:"status"`
 }
 
 type dbSkill struct {
@@ -93,6 +99,8 @@ func makeInit(dbClient *db.Client) mcp.ToolHandler {
 			ProjectName string `json:"project_name"`
 			Force       bool   `json:"force"`
 			Component   string `json:"component"`
+			ServerURL   string `json:"server_url"`
+			Token       string `json:"token"`
 		}
 		if err := json.Unmarshal(params, &input); err != nil {
 			return mcp.ErrorResult("invalid params: " + err.Error()), nil
@@ -103,13 +111,24 @@ func makeInit(dbClient *db.Client) mcp.ToolHandler {
 			component = "all"
 		}
 
+		// Resolve server URL: param > env > default.
+		serverURL := input.ServerURL
+		if serverURL == "" {
+			serverURL = os.Getenv("ORCHESTRA_BASE_URL")
+		}
+		if serverURL == "" {
+			serverURL = "http://localhost:9999"
+		}
+		// Strip trailing slash for consistent URL construction.
+		serverURL = strings.TrimRight(serverURL, "/")
+
 		// Validate component enum.
 		validComponents := map[string]bool{
 			"all": true, "rules": true, "agents": true,
-			"skills": true, "hooks": true, "browser": true,
+			"skills": true, "hooks": true,
 		}
 		if !validComponents[component] {
-			return mcp.ErrorResult("component must be one of: all, rules, agents, skills, hooks, browser"), nil
+			return mcp.ErrorResult("component must be one of: all, rules, agents, skills, hooks"), nil
 		}
 
 		userCtx := auth.UserContextFromContext(ctx)
@@ -146,6 +165,7 @@ func makeInit(dbClient *db.Client) mcp.ToolHandler {
 
 		if component == "all" || component == "skills" {
 			files = append(files, generateSkillFiles(input.Force)...)
+			files = append(files, generateDBSkillFiles(skills, input.Force)...)
 		}
 
 		if component == "all" || component == "hooks" {
@@ -167,6 +187,14 @@ func makeInit(dbClient *db.Client) mcp.ToolHandler {
 			files = append(files, initFile{
 				Path:      "AGENTS.md",
 				Content:   agentsMD,
+				Overwrite: input.Force,
+			})
+
+			// Generate .mcp.json for IDE integration.
+			mcpJSON := generateMCPJSON(serverURL, input.Token)
+			files = append(files, initFile{
+				Path:      ".mcp.json",
+				Content:   mcpJSON,
 				Overwrite: input.Force,
 			})
 		}
@@ -192,12 +220,30 @@ func makeInit(dbClient *db.Client) mcp.ToolHandler {
 		summary := fmt.Sprintf("Init bundle generated: %d rules, %d agents, %d skills, %d hooks",
 			ruleCount, agentCount, skillCount, hookCount)
 
+		// Build desktop installation info.
+		baseURL := os.Getenv("ORCHESTRA_BASE_URL")
+		if baseURL == "" {
+			baseURL = "https://orchestra-mcp.com"
+		}
+
+		platform := runtime.GOOS + "-" + runtime.GOARCH
+		desktopInfo := map[string]interface{}{
+			"available":    true,
+			"download_url": fmt.Sprintf("%s/api/bin/orchestra-desktop", baseURL),
+			"platforms":    []string{"darwin-arm64", "darwin-amd64", "linux-amd64"},
+			"install_path": "~/.orchestra/bin/orchestra-desktop",
+			"version":      "0.2.0",
+			"current_platform": platform,
+			"instructions": "Download the desktop app for enhanced features: vision control, markdown editor, smart actions, and system tray integration.",
+		}
+
 		result := map[string]interface{}{
-			"status":    "success",
-			"files":     files,
-			"claude_md": claudeMD,
-			"agents_md": agentsMD,
-			"summary":   summary,
+			"status":          "success",
+			"files":           files,
+			"claude_md":       claudeMD,
+			"agents_md":       agentsMD,
+			"summary":         summary,
+			"desktop_install": desktopInfo,
 		}
 
 		return jsonResult(result)
@@ -432,28 +478,17 @@ alwaysApply: true
 
 If the user asks about something unrelated while you are working on a plan or task:
 
-1. **Save the request** to ` + "`" + `.requests/` + "`" + ` as a markdown file.
-2. Filename format: ` + "`" + `YYYY-MM-DD-{kebab-case-summary}.md` + "`" + `
-3. Include the user's exact request and any context.
-4. Acknowledge the request: "I've saved this to ` + "`" + `.requests/` + "`" + ` and will review it after the current task."
-5. **Continue the current flow** without stopping.
-6. After completing the current task, review ` + "`" + `.requests/` + "`" + ` and address pending items.
+1. **Save the request via MCP** using request_create(title, description, context, priority) — stored on cloud server.
+2. If MCP unavailable, fallback to .requests/ markdown file.
+3. Acknowledge: "I've saved this request and will review it after the current task."
+4. **Continue the current flow** without stopping.
+5. After completing, review pending requests via request_list(status: "pending").
 
-## Request Template
-
-` + "```" + `markdown
-# Request: {Summary}
-
-**Date**: {YYYY-MM-DD HH:MM}
-**Status**: Pending | Reviewed | Done
-**Context**: {What were we doing when this came in?}
-
-## User Request
-{Exact user request}
-
-## Notes
-{Any relevant context or initial thoughts}
-` + "```",
+## Tracking
+- **List pending:** request_list(status: "pending")
+- **Review:** request_update(id: "xxx", status: "reviewed")
+- **Link to task:** request_update(id: "xxx", linked_task_id: "task-uuid")
+- **Mark done:** request_update(id: "xxx", status: "done")`,
 	},
 	{
 		Filename: "06-definition-of-done.md",
@@ -578,7 +613,7 @@ When the user asks for something, **immediately** launch sub-agents to start the
 
 ### 2. Parallel Multi-Agent Execution
 
-After breaking a plan into features, **always run multiple sub-agents in parallel** for implementation.
+After breaking a plan into features, run sub-agents in parallel for implementation. Match each feature to the right agent.
 
 ### 3. Main Agent = Conductor, Sub-Agents = Workers
 
@@ -588,7 +623,21 @@ After breaking a plan into features, **always run multiple sub-agents in paralle
 | Manage MCP lifecycle | Write tests |
 | Launch and coordinate sub-agents | Read and explore files |
 | Track progress | Research codebase |
-| Present results for review | Run commands |`,
+| Present results for review | Run commands |
+
+## Rate Limit Protection
+
+API rate limits are **per account**, not per session. All sub-agents share the same token pool.
+
+### Batch Size Rules
+- **Max 2 implementation agents at a time** — never fire more than 2 code-writing agents simultaneously
+- **Use sonnet model for implementation** — reserve Opus for planning/architecture
+- **Research/Explore agents don't count** — they use fewer tokens, can run alongside
+
+### Stagger Pattern
+- Fire Batch 1 (2 agents) → wait for at least 1 to complete → Fire Batch 2 → repeat
+- If rate limited: wait 60s, check what was written, re-fire only incomplete work
+- **Never fire 4+ implementation agents at once**`,
 	},
 	{
 		Filename: "11-client-first.md",
@@ -605,6 +654,180 @@ The user is **the client** — the person who pays for the entire team's work. E
 5. **Proactive reporting** — Report blockers, risks, and real progress without being asked.
 6. **Never blame the client** — If the client gives wrong information, verify and correct politely.
 7. **Speak as service providers** — Use language like "We'll handle this", "Our team will deliver", "Here's what we found".`,
+	},
+	{
+		Filename: "12-markdown-first-responses.md",
+		Content: `# Rule 12: Markdown-First MCP Responses
+
+ALL MCP tool responses use YAML frontmatter + Markdown body + Next Steps.
+
+## Response Format
+
+` + "```" + `
+---
+id: {uuid}
+type: {entity_type}
+status: {value}
+export: {suggested/filepath.md}
+related_rules: [R01, R06]
+---
+
+# {Title}
+
+{Markdown body}
+
+---
+
+## Next Steps
+- **{action}:** tool_name(param: "value")
+` + "```" + `
+
+## Rules
+
+1. **YAML frontmatter** — IDs, type, status, export path, related rules. Structured data for tools.
+2. **Markdown body** — Human-readable. Tables for lists, headings for sections, code blocks for examples.
+3. **Next Steps** — Every response with follow-up actions MUST include exact tool calls the AI should use next.
+4. **Related Rules** — When a response relates to project rules (planning, DOD, testing), include rule numbers in frontmatter.
+5. **Export path** — Every response suggests where to save as markdown file.
+6. **JSON only when required** — Raw JSON only when consumer needs structured data. Default is always markdown.`,
+	},
+	{
+		Filename: "13-model-selection.md",
+		Content: `---
+description: 'Use the correct AI model per agent role to save tokens and avoid rate limits. Opus for planning, Sonnet for code, Haiku for lookups.'
+globs: '*'
+alwaysApply: true
+---
+
+# Rule 13: Model Selection — Right Model for Right Job
+
+## Model Assignments
+
+| Model | Cost | Use For | Agent Roles |
+|-------|------|---------|-------------|
+| **Opus** | $$$ | Planning, architecture, meetings, complex decisions, code review | CTO, CEO, COO, CAO, Tech Leader, Product Owner, Software Architect |
+| **Sonnet** | $$ | Code writing, refactoring, tests, implementation, design specs | All developers, QA, Security, AI, AgentOps, Design, Project Manager |
+| **Haiku** | $ | Status checks, lookups, formatting, documentation, simple queries | Technical Writer, Brand, Marketing, Sales, Community, status tools |
+
+## Rules
+
+1. **Never use Opus for implementation** — code writing, file modifications, test writing all use Sonnet
+2. **Never use Opus for data retrieval** — status checks, list queries, context loading use Haiku
+3. **Opus is reserved for** — architecture decisions, plan review, meeting facilitation, complex reasoning
+4. **Agent model is stored in DB** — each agent has a ` + "`model`" + ` field (opus/sonnet/haiku)
+5. **Orchestrator respects model** — when spawning an agent, use the model from their DB record
+6. **Max 2 Sonnet agents simultaneously** — prevents rate limit (see Rule 10)
+7. **Haiku agents don't count toward limit** — they're lightweight, run freely`,
+	},
+	{
+		Filename: "14-a2ui-visualization.md",
+		Content: `---
+description: 'Agents can attach A2UI visualization components to responses for rendering in Claude Desktop artifact panel.'
+globs: '*'
+alwaysApply: true
+---
+
+# Rule 14: A2UI Visualization Suggestions
+
+When an agent response would benefit from visual presentation, attach an A2UI component suggestion.
+
+## When to Attach
+
+- **Status reports** → Dashboard with stat cards and charts
+- **Task lists** → Kanban board or sortable table
+- **Agent roster** → Card grid with avatars and roles
+- **Meeting transcript** → Chat-style conversation view
+- **Code changes** → Diff viewer with syntax highlighting
+- **Architecture** → Mermaid diagram rendered as SVG
+- **Data** → Charts (bar, pie, line) for metrics
+
+## Format
+
+Add a ` + "`visualization`" + ` field to the YAML frontmatter:
+` + "```" + `yaml
+---
+id: xxx
+type: task_list
+visualization:
+  component: TaskBoard
+  props:
+    columns: [todo, in_progress, done]
+    data: tasks
+---
+` + "```" + `
+
+## Rules
+
+1. **Visualization is optional** — only attach when it adds value
+2. **Always include markdown fallback** — the markdown body IS the content, visualization is enhancement
+3. **Keep props minimal** — reference data from the markdown body, don't duplicate
+4. **Standard components** — use the component library (StatusDashboard, TaskBoard, AgentRoster, MeetingTranscript, CodeDiff, DiagramView)`,
+	},
+	{
+		Filename: "15-multi-provider-agents.md",
+		Content: `---
+description: 'Agents can run on any supported AI provider. Provider is stored in DB and respected at spawn time.'
+globs: '*'
+alwaysApply: true
+---
+
+# Rule 15: Multi-Provider Agents
+
+Agents can run on any supported AI provider. The provider is stored in the agent's DB record and respected at spawn time.
+
+## Supported Providers
+
+| Provider | Models | Notes |
+|----------|--------|-------|
+| ` + "`claude`" + ` | opus, sonnet, haiku | Default — Claude Code Bridge |
+| ` + "`gemini`" + ` | gemini-2.0-flash, gemini-2.5-pro | Google Gemini via API |
+| ` + "`openai`" + ` | gpt-4o, gpt-4.1, o3 | OpenAI via API |
+| ` + "`deepseek`" + ` | deepseek-r2, deepseek-v3 | DeepSeek via API |
+| ` + "`qwen`" + ` | qwen3-235b, qwen3-72b | Alibaba Qwen via API |
+| ` + "`ollama`" + ` | llama3.3, mistral, etc. | Self-hosted via Ollama |
+
+## Rules
+
+1. **Default is Claude Code Bridge** — all agents default to ` + "`provider: \"claude\"`" + ` unless overridden
+2. **MCP tools are universal interface** — every provider updates status via MCP tools regardless of which AI is running
+3. **Provider stored in DB** — ` + "`agents.provider`" + ` and ` + "`agents.provider_config`" + ` hold provider and provider-specific config
+4. **Model tier maps per provider** — ` + "`opus`" + ` → high-capability, ` + "`sonnet`" + ` → standard, ` + "`haiku`" + ` → fast/cheap
+5. **Account pool auto-rotates on rate limit** — pulls next account from ` + "`user_configs.account_pool`" + ` and retries
+6. **Never hard-code provider in tasks** — use agent slug; orchestrator resolves provider from DB record
+7. **Ollama requires ` + "`base_url`" + `** — set ` + "`provider_config: {\"base_url\": \"http://localhost:11434\"}`" + ` for Ollama`,
+	},
+	{
+		Filename: "16-config-persistence.md",
+		Content: `---
+description: 'User config is saved on the cloud MCP server and auto-loaded at session start for persistent preferences.'
+globs: '*'
+alwaysApply: true
+---
+
+# Rule 16: Config Persistence
+
+User configuration is saved on the cloud MCP server and auto-loaded at session start. AI agents know user preferences without repeating setup every session.
+
+## Config Keys
+
+| Key | Type | Description |
+|-----|------|-------------|
+| ` + "`preferences`" + ` | object | Theme, language, notification settings |
+| ` + "`active_project`" + ` | string | Current project ID |
+| ` + "`work_patterns`" + ` | object | How user prefers to work (plan-first, async, etc.) |
+| ` + "`account_pool`" + ` | array | API accounts with labels and tiers for provider rotation |
+| ` + "`default_provider`" + ` | string | Preferred AI provider (claude, gemini, openai, deepseek, qwen, ollama) |
+| ` + "`default_model`" + ` | string | Preferred model tier (opus, sonnet, haiku) |
+
+## Rules
+
+1. **Save preferences immediately** — when user states a preference, call ` + "`config_save`" + ` right away
+2. **Load at session start** — always call ` + "`config_get()`" + ` at the beginning of a session
+3. **Config is per-user per-org** — scoped to ` + "`(user_id, organization_id)`" + `, isolated per org
+4. **Never ask twice** — if a preference is already saved, never ask about it again
+5. **Work patterns guide delegation** — ` + "`work_patterns.style`" + ` influences how agents plan and delegate
+6. **Account pool rotation** — rotate when rate-limited (see Rule 15)
+7. **Default provider for new agents** — when ` + "`default_provider`" + ` is set, use it for new agents`,
 	},
 }
 
@@ -632,24 +855,62 @@ func generateAgentFiles(agents []dbAgent, force bool) []initFile {
 			slug = strings.ReplaceAll(strings.ToLower(a.Name), " ", "-")
 		}
 
-		var sb strings.Builder
-		sb.WriteString(fmt.Sprintf("# Agent: %s\n\n", a.Name))
+		model := a.Model
+		if model == "" {
+			model = "sonnet"
+		}
+		agentType := a.Type
+		if agentType == "" {
+			agentType = "ai"
+		}
+		provider := a.Provider
+		if provider == "" {
+			provider = "claude"
+		}
 
+		var sb strings.Builder
+
+		// YAML frontmatter
+		sb.WriteString("---\n")
+		sb.WriteString(fmt.Sprintf("name: %s\n", a.Name))
+		sb.WriteString(fmt.Sprintf("slug: %s\n", slug))
+		sb.WriteString(fmt.Sprintf("model: %s\n", model))
+		sb.WriteString(fmt.Sprintf("provider: %s\n", provider))
+		if a.Role != "" {
+			sb.WriteString(fmt.Sprintf("role: %s\n", a.Role))
+		}
+		sb.WriteString(fmt.Sprintf("type: %s\n", agentType))
+		sb.WriteString("---\n\n")
+
+		// Heading
+		sb.WriteString(fmt.Sprintf("# %s\n\n", a.Name))
+
+		// Key fields
 		if a.Role != "" {
 			sb.WriteString(fmt.Sprintf("**Role:** %s\n", a.Role))
 		}
-		if a.Type != "" {
-			sb.WriteString(fmt.Sprintf("**Type:** %s\n", a.Type))
-		}
+		sb.WriteString(fmt.Sprintf("**Model:** %s\n", model))
+		sb.WriteString(fmt.Sprintf("**Provider:** %s\n", provider))
+
+		// Persona section
 		if a.Persona != "" {
-			sb.WriteString(fmt.Sprintf("**Persona:** %s\n", a.Persona))
+			sb.WriteString("\n## Persona\n")
+			sb.WriteString(a.Persona)
+			sb.WriteString("\n")
 		}
 
+		// System Prompt section
 		if a.SystemPrompt != "" {
-			sb.WriteString("\n## System Prompt\n\n")
+			sb.WriteString("\n## System Prompt\n")
 			sb.WriteString(a.SystemPrompt)
 			sb.WriteString("\n")
 		}
+
+		// Delegation section
+		sb.WriteString("\n## Delegation\n")
+		sb.WriteString("To assign work to this agent:\n")
+		sb.WriteString(fmt.Sprintf("- `task_create(title: \"...\", assigned_agent_id: \"%s\")`\n", a.ID))
+		sb.WriteString(fmt.Sprintf("- Or via orchestrator: `/orch agent %s \"do X\"`\n", slug))
 
 		files = append(files, initFile{
 			Path:      ".claude/agents/" + slug + ".md",
@@ -667,6 +928,70 @@ func generateAgentFiles(agents []dbAgent, force bool) []initFile {
 func generateSkillFiles(force bool) []initFile {
 	return []initFile{
 		{
+			Path: ".claude/skills/orch/SKILL.md",
+			Content: `---
+name: Orchestra Orchestrator
+description: Master orchestrator for Orchestra MCP. Identifies user, loads project context, drives the full team of agents and tools.
+user_invocable: true
+---
+
+# /orch — Orchestra Orchestrator
+
+You are the Orchestra Orchestrator — the master conductor of an AI company. When invoked, follow this flow exactly:
+
+## Step 1: Identify User
+
+Call ` + "`" + `context_get` + "`" + ` to load the full project context (user identity, agent roster, active tasks, pending requests).
+
+Present a personalized welcome:
+` + "```" + `
+Welcome back, {user}! Organization: {org}
+Team: {agent_count} agents | Tools: 93+ | Projects: {count}
+` + "```" + `
+
+## Step 2: Project Selection
+
+List the user's projects. Ask them to select one, multiple (comma-separated), or "new" to create one. Auto-select if only one project exists.
+
+## Step 3: Present Options
+
+- **Think** — Brainstorm. Human talks, AI listens and asks clarifying questions.
+- **Plan** — Create specs, break into features, save to .plans/. Follow R01 (Plan-First) and R02 (Multi-Feature).
+- **Meet** — ` + "`" + `meeting_create` + "`" + ` with full agent team. Use correct model per agent (R13).
+- **Status** — ` + "`" + `context_get` + "`" + ` with A2UI StatusDashboard (R14).
+- **Task** — ` + "`" + `task_create` + "`" + ` → ` + "`" + `task_assign` + "`" + ` to the right agent.
+- **Request** — ` + "`" + `request_create` + "`" + ` for later review.
+- **Agent** — Direct a specific agent: ` + "`" + `/orch agent {slug} "instruction"` + "`" + `.
+
+## Step 4: Human-in-the-Loop
+
+The human decides WHAT to build; agents decide HOW. Never start coding without a plan (R01). Never skip plan review (R03).
+
+| Human | Agents |
+|-------|--------|
+| Vision, requirements, priorities | Code (Sonnet) |
+| Approve/reject plans | Tests (Sonnet) |
+| Decisions during meetings | Architecture review (Opus) |
+| Clarify unknowns | Documentation (Haiku) |
+
+## Step 5: Delegation
+
+| Action | Tool | Model |
+|--------|------|-------|
+| Think | Conversation | Opus |
+| Plan | ` + "`" + `spec_create` + "`" + ` + save to .plans/ | Opus |
+| Meet | ` + "`" + `meeting_create` + "`" + ` → ` + "`" + `meeting_message` + "`" + ` → ` + "`" + `meeting_end` + "`" + ` | Opus |
+| Status | ` + "`" + `context_get` + "`" + ` | Haiku |
+| Task | ` + "`" + `task_create` + "`" + ` → ` + "`" + `task_assign` + "`" + ` | Sonnet |
+| Request | ` + "`" + `request_create` + "`" + ` | Haiku |
+| Agent | ` + "`" + `Agent(model: "{from_db}", prompt: "...")` + "`" + ` | From DB |
+
+## Rules Applied
+R01 Plan-First · R03 Plan Review · R04 Clarify Unknowns · R10 Parallel Execution · R11 Client-First · R12 Markdown-First · R13 Model Selection · R14 A2UI
+`,
+			Overwrite: force,
+		},
+		{
 			Path: ".claude/skills/orch:init/SKILL.md",
 			Content: `# Skill: orch:init
 
@@ -683,7 +1008,7 @@ Run ` + "`" + `/orch:init` + "`" + ` to generate:
 - AGENTS.md — Full agent roster
 
 ## Options
-- ` + "`" + `component` + "`" + `: Generate only a specific component (rules, agents, skills, hooks, browser)
+- ` + "`" + `component` + "`" + `: Generate only a specific component (rules, agents, skills, hooks)
 - ` + "`" + `force` + "`" + `: Overwrite existing files
 - ` + "`" + `project_name` + "`" + `: Set the project name in generated files`,
 			Overwrite: force,
@@ -717,7 +1042,163 @@ Run ` + "`" + `/orch:pm` + "`" + ` to:
 - Create architecture decision records (ADRs)`,
 			Overwrite: force,
 		},
+		{
+			Path: ".claude/skills/orch-meeting/SKILL.md",
+			Content: `---
+name: Orchestra Meeting
+description: Start a team meeting with all agents. Shortcut for meeting_create.
+user_invocable: true
+---
+
+# /orch-meeting — Start Team Meeting
+
+When invoked, immediately:
+1. Call ` + "`" + `meeting_create(title: "{user's topic or 'Team Meeting'}")` + "`" + ` — this auto-loads all 38 agents
+2. Present the participant roster
+3. Enter meeting mode — agents respond in character
+4. Store every message via ` + "`" + `meeting_message` + "`" + `
+5. Log decisions via ` + "`" + `decision_log(meeting_id: "...")` + "`" + `
+6. When user says "end meeting" or "close" → call ` + "`" + `meeting_end` + "`" + ` with auto-summary
+
+## A2UI Visualization
+Suggest MeetingTranscript component for Claude Desktop:
+` + "```" + `yaml
+visualization:
+  component: MeetingTranscript
+  props:
+    meeting_id: "{id}"
+    live: true
+` + "```",
+			Overwrite: force,
+		},
+		{
+			Path: ".claude/skills/orch-status/SKILL.md",
+			Content: `---
+name: Orchestra Status
+description: Full project status dashboard. Shortcut for context_get.
+user_invocable: true
+---
+
+# /orch-status — Project Status
+
+When invoked:
+1. Call ` + "`" + `context_get(project_id: "{current project or ask}")` + "`" + `
+2. Present the full context as markdown
+3. Highlight: blocked tasks, pending requests, recent decisions
+
+## A2UI Visualization
+Suggest StatusDashboard component:
+` + "```" + `yaml
+visualization:
+  component: StatusDashboard
+  props:
+    agents: {count}
+    tasks: {active_count}
+    decisions: {recent_count}
+` + "```",
+			Overwrite: force,
+		},
+		{
+			Path: ".claude/skills/orch-task/SKILL.md",
+			Content: `---
+name: Orchestra Task
+description: Create and assign tasks. Shortcut for task_create.
+user_invocable: true
+---
+
+# /orch-task — Create Task
+
+When invoked with a description:
+1. Parse the task description from the user's input
+2. Determine the right agent based on the task type (Go work → go-developer, Frontend → frontend-developer, etc.)
+3. Call ` + "`" + `task_create(title: "...", description: "...", assigned_agent_id: "{best agent}", priority: "...")` + "`" + `
+4. Call ` + "`" + `task_comment_add(task_id: "...", message: "Initial requirements: ...")` + "`" + ` to add context
+5. Present the created task with next steps
+
+## A2UI Visualization
+Suggest TaskBoard:
+` + "```" + `yaml
+visualization:
+  component: TaskBoard
+  props:
+    project_id: "{id}"
+` + "```",
+			Overwrite: force,
+		},
+		{
+			Path: ".claude/skills/orch-request/SKILL.md",
+			Content: `---
+name: Orchestra Request
+description: Log a request for later review. Shortcut for request_create.
+user_invocable: true
+---
+
+# /orch-request — Log Request
+
+When invoked:
+1. Parse the request from the user's input
+2. Determine priority (critical/high/medium/low) from context
+3. Call ` + "`" + `request_create(title: "...", description: "...", priority: "...", context: "{what we were doing}")` + "`" + `
+4. Present the saved request with tracking next steps`,
+			Overwrite: force,
+		},
+		{
+			Path: ".claude/skills/orch-agent/SKILL.md",
+			Content: `---
+name: Orchestra Agent
+description: Direct a specific agent to do work. Usage: /orch-agent {slug} {instruction}
+user_invocable: true
+---
+
+# /orch-agent — Direct an Agent
+
+When invoked with an agent slug and instruction:
+1. Look up the agent from the MCP board via ` + "`" + `agent_get(slug: "{slug}")` + "`" + `
+2. Get their model assignment (opus/sonnet/haiku)
+3. Spawn a sub-agent using ` + "`" + `Agent(model: "{agent.model}", prompt: "{agent.system_prompt}\n\nTask: {instruction}")` + "`" + `
+4. The spawned agent works on the task and reports back
+5. If the task requires code, create a task via ` + "`" + `task_create` + "`" + ` and assign it
+
+## Available Agents
+Call ` + "`" + `agent_list` + "`" + ` to see all 38 agents with their roles and models.`,
+			Overwrite: force,
+		},
 	}
+}
+
+// generateDBSkillFiles generates .claude/skills/{slug}/SKILL.md for each skill
+// fetched from the database.
+func generateDBSkillFiles(skills []dbSkill, force bool) []initFile {
+	files := make([]initFile, 0, len(skills))
+	for _, s := range skills {
+		slug := s.Slug
+		if slug == "" {
+			slug = strings.ReplaceAll(strings.ToLower(s.Name), " ", "-")
+		}
+
+		var sb strings.Builder
+		sb.WriteString(fmt.Sprintf("# Skill: %s\n\n", s.Name))
+
+		if s.Description != "" {
+			sb.WriteString(s.Description)
+			sb.WriteString("\n\n")
+		}
+		if s.Category != "" {
+			sb.WriteString(fmt.Sprintf("**Category:** %s\n\n", s.Category))
+		}
+		if s.Content != "" {
+			sb.WriteString("## Content\n\n")
+			sb.WriteString(s.Content)
+			sb.WriteString("\n")
+		}
+
+		files = append(files, initFile{
+			Path:      ".claude/skills/" + slug + "/SKILL.md",
+			Content:   sb.String(),
+			Overwrite: force,
+		})
+	}
+	return files
 }
 
 // ---------------------------------------------------------------------------
@@ -801,8 +1282,8 @@ func generateClaudeMD(projectName string, agents []dbAgent, skills []dbSkill, pr
 	// Agents section.
 	if len(agents) > 0 {
 		sb.WriteString("## Agents\n\n")
-		sb.WriteString("| Agent | Role | Type |\n")
-		sb.WriteString("|-------|------|------|\n")
+		sb.WriteString("| Agent | Role | Type | Provider | Model |\n")
+		sb.WriteString("|-------|------|------|----------|-------|\n")
 		for _, a := range agents {
 			slug := a.Slug
 			if slug == "" {
@@ -816,7 +1297,15 @@ func generateClaudeMD(projectName string, agents []dbAgent, skills []dbSkill, pr
 			if agentType == "" {
 				agentType = "ai"
 			}
-			sb.WriteString(fmt.Sprintf("| `%s` | %s | %s |\n", slug, role, agentType))
+			provider := a.Provider
+			if provider == "" {
+				provider = "claude"
+			}
+			model := a.Model
+			if model == "" {
+				model = "sonnet"
+			}
+			sb.WriteString(fmt.Sprintf("| `%s` | %s | %s | %s | %s |\n", slug, role, agentType, provider, model))
 		}
 		sb.WriteString("\n")
 	}
@@ -879,8 +1368,8 @@ func generateAgentsMD(agents []dbAgent) string {
 		return sb.String()
 	}
 
-	sb.WriteString("| # | Name | Slug | Role | Type |\n")
-	sb.WriteString("|---|------|------|------|------|\n")
+	sb.WriteString("| # | Name | Slug | Role | Type | Provider | Model |\n")
+	sb.WriteString("|---|------|------|------|------|----------|-------|\n")
 
 	for i, a := range agents {
 		slug := a.Slug
@@ -895,10 +1384,48 @@ func generateAgentsMD(agents []dbAgent) string {
 		if agentType == "" {
 			agentType = "ai"
 		}
-		sb.WriteString(fmt.Sprintf("| %d | %s | `%s` | %s | %s |\n", i+1, a.Name, slug, role, agentType))
+		provider := a.Provider
+		if provider == "" {
+			provider = "claude"
+		}
+		model := a.Model
+		if model == "" {
+			model = "sonnet"
+		}
+		sb.WriteString(fmt.Sprintf("| %d | %s | `%s` | %s | %s | %s | %s |\n", i+1, a.Name, slug, role, agentType, provider, model))
 	}
 
 	sb.WriteString(fmt.Sprintf("\n**Total:** %d agents\n", len(agents)))
 
 	return sb.String()
+}
+
+// ---------------------------------------------------------------------------
+// .mcp.json generation
+// ---------------------------------------------------------------------------
+
+// generateMCPJSON builds the .mcp.json configuration file that connects
+// Claude Code, Claude Desktop, and Claude.ai to the Orchestra MCP server.
+func generateMCPJSON(serverURL, token string) string {
+	tok := token
+	if tok == "" {
+		tok = "YOUR_MCP_TOKEN"
+	}
+	mcpURL := fmt.Sprintf("%s/mcp?token=%s", serverURL, tok)
+
+	cfg := map[string]interface{}{
+		"mcpServers": map[string]interface{}{
+			"orchestra-mcp": map[string]interface{}{
+				"type": "http",
+				"url":  mcpURL,
+			},
+		},
+	}
+
+	data, err := json.MarshalIndent(cfg, "", "  ")
+	if err != nil {
+		// Should never happen with static structure.
+		return `{"mcpServers":{"orchestra-mcp":{"type":"http","url":"` + mcpURL + `"}}}`
+	}
+	return string(data) + "\n"
 }

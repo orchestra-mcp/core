@@ -1,5 +1,5 @@
 ---
-description: "Docs: GraphQL architecture for apps/docs/resources"
+description: 'Docs: GraphQL architecture for apps/docs/resources'
 globs:
   - apps/docs/resources/**/*.ts
 alwaysApply: false
@@ -119,9 +119,7 @@ export class NewQueryModel {
   ): Promise<Result<NewQueryModel[], ApiErrorGeneric>> {
     // Implement data fetching logic
     const result = new Result(
-      await supabase()
-        .from('your_table')
-        .select('*')
+      await supabase().from('your_table').select('*')
       // Add filters based on args
     )
       .map((data) => data.map((item) => new NewQueryModel(item)))

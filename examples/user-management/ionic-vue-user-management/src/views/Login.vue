@@ -34,41 +34,42 @@
 </template>
 
 <script setup lang="ts">
-import { supabase } from '../supabase';
 import {
+  IonButton,
   IonContent,
   IonHeader,
+  IonInput,
+  IonItem,
+  IonList,
   IonPage,
   IonTitle,
   IonToolbar,
-  IonList,
-  IonItem,
-  IonInput,
-  IonButton,
-  toastController,
   loadingController,
-} from '@ionic/vue';
-import { ref } from 'vue';
+  toastController,
+} from '@ionic/vue'
+import { ref } from 'vue'
 
-const email = ref('');
+import { supabase } from '../supabase'
+
+const email = ref('')
 
 const handleLogin = async () => {
-  const loader = await loadingController.create({});
-  const toast = await toastController.create({ duration: 5000 });
+  const loader = await loadingController.create({})
+  const toast = await toastController.create({ duration: 5000 })
 
   try {
-    await loader.present();
-    const { error } = await supabase.auth.signInWithOtp({ email: email.value });
+    await loader.present()
+    const { error } = await supabase.auth.signInWithOtp({ email: email.value })
 
-    if (error) throw error;
+    if (error) throw error
 
-    toast.message = 'Check your email for the login link!';
-    await toast.present();
+    toast.message = 'Check your email for the login link!'
+    await toast.present()
   } catch (error: any) {
-    toast.message = error.error_description || error.message;
-    await toast.present();
+    toast.message = error.error_description || error.message
+    await toast.present()
   } finally {
-    await loader.dismiss();
+    await loader.dismiss()
   }
-};
+}
 </script>

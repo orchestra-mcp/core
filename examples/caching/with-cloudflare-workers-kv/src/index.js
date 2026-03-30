@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { Router } from 'itty-router'
 import { json, status, withContent } from 'itty-router-extras'
+
 import { readFrom, writeTo } from './utils/cache'
 
 const router = new Router()

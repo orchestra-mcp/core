@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react'
-import { IconDocumentation, IconMicSolid, IconProductHunt, IconYoutubeSolid, cn } from 'ui'
 import { Music } from 'lucide-react'
-
 import Link from 'next/link'
-import { StepLink } from '../data/lw11_data'
+import { useEffect, useState } from 'react'
+import { cn, IconDocumentation, IconMicSolid, IconProductHunt, IconYoutubeSolid } from 'ui'
 import { ExpandableVideo } from 'ui-patterns/ExpandableVideo'
+
+import { StepLink } from '../data/lw11_data'
 
 interface DayLink extends StepLink {
   className?: string

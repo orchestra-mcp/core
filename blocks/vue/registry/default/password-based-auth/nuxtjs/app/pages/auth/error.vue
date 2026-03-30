@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { useRoute } from "vue-router"
-import { computed } from "vue"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 const route = useRoute()
-const errorMessage = computed(() => route.query.error as string || null)
+const errorMessage = computed(() => (route.query.error as string) || null)
 </script>
 
 <template>
@@ -19,9 +20,7 @@ const errorMessage = computed(() => route.query.error as string || null)
             <p v-if="errorMessage" class="text-sm text-muted-foreground">
               Code error: {{ errorMessage }}
             </p>
-            <p v-else class="text-sm text-muted-foreground">
-              An unspecified error occurred.
-            </p>
+            <p v-else class="text-sm text-muted-foreground">An unspecified error occurred.</p>
           </CardContent>
         </Card>
       </div>

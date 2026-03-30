@@ -1,0 +1,5 @@
+export { default as WorkspaceManager } from './WorkspaceManager'
+export { ShareDialog } from './ShareDialog'
+export type { ShareDialogProps } from './ShareDialog'
+export type { RecentWorkspace } from './workspace-store'
+export { addRecentWorkspace, getRecentWorkspaces } from './workspace-store'

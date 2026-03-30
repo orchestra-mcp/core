@@ -173,7 +173,40 @@ func makeProjectList(dbClient *db.Client) mcp.ToolHandler {
 		if err != nil {
 			return mcp.ErrorResult("failed to list projects: " + err.Error()), nil
 		}
-		return mcp.TextResult(string(result)), nil
+
+		items, parseErr := parseJSONArray(result)
+		if parseErr != nil {
+			return mcp.TextResult(string(result)), nil
+		}
+
+		rows := make([][]string, 0, len(items))
+		for _, p := range items {
+			rows = append(rows, []string{
+				jsonStr(p, "name"),
+				jsonStrOr(p, "slug", "-"),
+				truncate(jsonStrOr(p, "description", "-"), 40),
+				jsonStrOr(p, "status", "-"),
+				jsonStrOr(p, "id", "-"),
+			})
+		}
+
+		table := mdTable(
+			[]string{"Name", "Slug", "Description", "Status", "ID"},
+			rows,
+		)
+
+		return mdResult(MarkdownResponse{
+			Frontmatter: map[string]interface{}{
+				"type":  "project_list",
+				"count": len(items),
+			},
+			Body: fmt.Sprintf("# Projects (%d)\n\n%s", len(items), table),
+			NextSteps: []NextStep{
+				{Label: "Create a project", Command: `project_create(name: "...")`},
+				{Label: "View project details", Command: `project_get(id: "PROJECT_UUID")`},
+				{Label: "Check progress", Command: `project_progress(id: "PROJECT_UUID")`},
+			},
+		}), nil
 	}
 }
 

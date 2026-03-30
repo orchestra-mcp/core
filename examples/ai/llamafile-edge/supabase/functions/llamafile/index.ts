@@ -1,5 +1,6 @@
 // https://github.com/Mozilla-Ocho/llamafile?tab=readme-ov-file#quickstart
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
+
 const session = new Supabase.ai.Session('LLaMA_CPP')
 
 Deno.serve(async (req: Request) => {

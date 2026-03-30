@@ -1,5 +1,6 @@
-import supabase from '../../../utils/supabase'
 import { notFound } from 'next/navigation'
+
+import supabase from '../../../utils/supabase'
 
 // cache this page for 1 minute
 export const revalidate = 60

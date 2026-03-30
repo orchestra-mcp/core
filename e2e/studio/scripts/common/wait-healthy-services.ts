@@ -1,7 +1,7 @@
 import assert from 'assert'
 
-import { PlatformClient } from './platform.js'
 import { sleep } from './helpers.js'
+import { PlatformClient } from './platform.js'
 
 const checkHealth = async (platformClient: PlatformClient, ref: string) => {
   // get health of services

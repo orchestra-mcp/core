@@ -1,9 +1,8 @@
-import Link from 'next/link'
-
-import { REFERENCES, clientSdkIds } from '~/content/navigation.references'
+import { clientSdkIds, REFERENCES } from '~/content/navigation.references'
 import { IconPanelWithIconPicker } from '~/features/ui/IconPanelWithIconPicker'
 import { LayoutMainContent } from '~/layouts/DefaultLayout'
 import { SidebarSkeleton } from '~/layouts/MainSkeleton'
+import Link from 'next/link'
 
 export default function ReferenceIndexPage() {
   return (

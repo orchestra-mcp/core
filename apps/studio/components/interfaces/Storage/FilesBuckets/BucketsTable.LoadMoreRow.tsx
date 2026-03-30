@@ -3,6 +3,7 @@ import { VirtualizedTableCell, VirtualizedTableRow } from 'components/ui/Virtual
 import { useEffect, type ReactNode } from 'react'
 import { TableCell, TableRow } from 'ui'
 import { ShimmeringLoader } from 'ui-patterns'
+
 import type { BucketsTablePaginationProps } from './BucketsTable.types'
 
 type LoadMoreRowProps = {

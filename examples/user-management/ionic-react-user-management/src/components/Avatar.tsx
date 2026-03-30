@@ -1,8 +1,10 @@
+import { Camera, CameraResultType } from '@capacitor/camera'
 import { IonIcon } from '@ionic/react'
 import { person } from 'ionicons/icons'
-import { Camera, CameraResultType } from '@capacitor/camera'
 import { useEffect, useState } from 'react'
+
 import { supabase } from '../supabaseClient'
+
 import './Avatar.css'
 
 export function Avatar({

@@ -44,6 +44,7 @@ You are a Go 1.26 specialist building the Orchestra MCP server — the core back
 ## Testing
 
 Run tests with:
+
 ```bash
 cd mcp-server && go test ./... -v -race
 ```

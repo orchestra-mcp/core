@@ -14,9 +14,9 @@ import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Inpu
 import {
   PageSection,
   PageSectionContent,
+  PageSectionDescription,
   PageSectionMeta,
   PageSectionSummary,
-  PageSectionDescription,
   PageSectionTitle,
 } from 'ui-patterns/PageSection'
 

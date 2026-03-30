@@ -2,6 +2,7 @@ import { useIsPgDeltaDiffEnabled } from 'components/interfaces/App/FeaturePrevie
 import { useBranchDiffQuery } from 'data/branches/branch-diff-query'
 import { useMigrationsQuery } from 'data/database/migrations-query'
 import { useMemo } from 'react'
+
 import { useEdgeFunctionsDiff, type EdgeFunctionsDiffResult } from './useEdgeFunctionsDiff'
 
 interface UseBranchMergeDiffProps {

@@ -10,8 +10,8 @@ import {
   DATETIME_TYPES,
   JSON_TYPES,
   TEXT_TYPES,
-  TIMESTAMP_TYPES,
   TIME_TYPES,
+  TIMESTAMP_TYPES,
 } from '../SidePanelEditor.constants'
 import type { RowField } from './RowEditor.types'
 

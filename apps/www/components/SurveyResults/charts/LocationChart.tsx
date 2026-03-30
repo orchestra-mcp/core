@@ -1,4 +1,4 @@
-import { SurveyChart, buildWhereClause } from '../SurveyChart'
+import { buildWhereClause, SurveyChart } from '../SurveyChart'
 
 function generateLocationSQL(activeFilters: Record<string, string>) {
   const whereClause = buildWhereClause(activeFilters)

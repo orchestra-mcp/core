@@ -1,5 +1,5 @@
-import React from 'react'
 import CodeWindow from '~/components/CodeWindow'
+import React from 'react'
 
 const code = `create trigger "my_webhook" after insert
 on "public"."my_table" for each row

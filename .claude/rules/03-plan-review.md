@@ -1,6 +1,6 @@
 ---
-description: "Always ask the user to review the plan before starting implementation using AskUserQuestion."
-globs: "*"
+description: 'Always ask the user to review the plan before starting implementation using AskUserQuestion.'
+globs: '*'
 alwaysApply: true
 ---
 

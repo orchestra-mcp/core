@@ -1,9 +1,10 @@
 'use client'
+
+import { RealtimeChannel, User } from '@supabase/supabase-js'
+import { use, useEffect, useState } from 'react'
+
 import CreateRoomModal from '@/components/create-room-modal'
 import { createClient } from '@/utils/supabase/client'
-import { User } from '@supabase/supabase-js'
-import { RealtimeChannel } from '@supabase/supabase-js'
-import { useState, useEffect, use } from 'react'
 
 export default function Chat() {
   const [user, setUser] = useState<User | null>(null)

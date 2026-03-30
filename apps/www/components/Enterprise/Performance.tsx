@@ -1,7 +1,6 @@
-import React, { FC } from 'react'
-
 import SectionContainer from '~/components/Layouts/SectionContainer'
 import UsersGrowthChart from '~/components/UsersGrowthChart'
+import React, { FC } from 'react'
 
 interface Props {
   id: string

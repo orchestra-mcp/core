@@ -1,5 +1,6 @@
 import { Loader2 } from 'lucide-react'
 import { ReactNode } from 'react'
+import { FieldValues, Path, UseFormReturn } from 'react-hook-form'
 import {
   Badge,
   Button,
@@ -14,7 +15,6 @@ import {
   Textarea,
 } from 'ui'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
-import { UseFormReturn, FieldValues, Path } from 'react-hook-form'
 
 interface FieldConfig<T extends FieldValues> {
   name: Path<T>
@@ -69,9 +69,7 @@ export function IntegrationSection<T extends FieldValues>({
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                {isLoading && (
-                  <Loader2 className="animate-spin text-foreground-light" size={16} />
-                )}
+                {isLoading && <Loader2 className="animate-spin text-foreground-light" size={16} />}
                 <Badge variant={isEnabled ? 'success' : 'default'}>
                   {isEnabled ? 'Connected' : 'Not configured'}
                 </Badge>

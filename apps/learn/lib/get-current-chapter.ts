@@ -1,4 +1,5 @@
 import { allDocs } from 'contentlayer/generated'
+
 import { normalizeSlug } from './get-next-page'
 
 /**

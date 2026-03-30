@@ -1,14 +1,13 @@
-import { LazyMotion, domAnimation, m, useInView } from 'framer-motion'
+import SectionContainer from '~/components/Layouts/SectionContainer'
+import CustomersVisual from '~/components/Products/VectorAI/CustomersVisual'
+import { getAnimation, INITIAL_BOTTOM } from '~/lib/animations'
+import { domAnimation, LazyMotion, m, useInView } from 'framer-motion'
 import { ArrowUpRight } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useRef } from 'react'
-
-import SectionContainer from '~/components/Layouts/SectionContainer'
-import CustomersVisual from '~/components/Products/VectorAI/CustomersVisual'
-import { INITIAL_BOTTOM, getAnimation } from '~/lib/animations'
 
 interface Customer {
   type?: string

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue"
-import { useRouter } from "vue-router"
-import { createClient } from "@/lib/supabase/client"
+import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+import { createClient } from '@/lib/supabase/client'
 
 const router = useRouter()
 const supabase = createClient()
@@ -12,7 +13,7 @@ onMounted(async () => {
   const { data, error } = await supabase.auth.getUser()
 
   if (error || !data?.user) {
-    router.replace("/auth/login")
+    router.replace('/auth/login')
     return
   }
 
@@ -22,7 +23,7 @@ onMounted(async () => {
 
 const handleLogout = async () => {
   await supabase.auth.signOut()
-  router.replace("/auth/login")
+  router.replace('/auth/login')
 }
 </script>
 

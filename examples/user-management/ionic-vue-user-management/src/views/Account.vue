@@ -48,106 +48,111 @@
 </template>
 
 <script setup lang="ts">
-import { store } from '@/store';
-import { supabase } from '@/supabase';
 import {
+  IonButton,
   IonContent,
   IonHeader,
+  IonInput,
+  IonItem,
+  IonLabel,
   IonPage,
   IonTitle,
   IonToolbar,
-  toastController,
   loadingController,
-  IonInput,
-  IonItem,
-  IonButton,
-  IonLabel,
-} from '@ionic/vue';
-import { onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import Avatar from '../components/Avatar.vue';
+  toastController,
+} from '@ionic/vue'
+import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
-const router = useRouter();
+import Avatar from '../components/Avatar.vue'
+import { store } from '@/store'
+import { supabase } from '@/supabase'
+
+const router = useRouter()
 
 const profile = ref({
   username: '',
   website: '',
   avatar_url: '',
-});
+})
 
 async function getProfile() {
-  const loader = await loadingController.create({});
-  const toast = await toastController.create({ duration: 5000 });
-  await loader.present();
+  const loader = await loadingController.create({})
+  const toast = await toastController.create({ duration: 5000 })
+  await loader.present()
   try {
-    const { data: { claims } } = await supabase.auth.getClaims();
-    if (!claims) throw new Error('No user logged in');
+    const {
+      data: { claims },
+    } = await supabase.auth.getClaims()
+    if (!claims) throw new Error('No user logged in')
 
     const { data, error, status } = await supabase
       .from('profiles')
       .select(`username, website, avatar_url`)
       .eq('id', claims.sub)
-      .single();
+      .single()
 
-    if (error && status !== 406) throw error;
+    if (error && status !== 406) throw error
 
     if (data) {
       profile.value = {
         username: data.username,
         website: data.website,
         avatar_url: data.avatar_url,
-      };
+      }
     }
   } catch (error: any) {
-    toast.message = error.message;
-    await toast.present();
+    toast.message = error.message
+    await toast.present()
   } finally {
-    await loader.dismiss();
+    await loader.dismiss()
   }
 }
 
 const updateProfile = async () => {
-  const loader = await loadingController.create({});
-  const toast = await toastController.create({ duration: 5000 });
+  const loader = await loadingController.create({})
+  const toast = await toastController.create({ duration: 5000 })
   try {
-    await loader.present();
-    const { data: { claims } } = await supabase.auth.getClaims();
-    if (!claims) throw new Error('No user logged in');
+    await loader.present()
+    const {
+      data: { claims },
+    } = await supabase.auth.getClaims()
+    if (!claims) throw new Error('No user logged in')
 
     const updates = {
       id: claims.sub,
       ...profile.value,
       updated_at: new Date(),
-    };
+    }
 
-    const { error } = await supabase.from('profiles').upsert(updates);
+    const { error } = await supabase.from('profiles').upsert(updates)
 
-    if (error) throw error;
+    if (error) throw error
   } catch (error: any) {
-    toast.message = error.message;
-    await toast.present();
+    toast.message = error.message
+    await toast.present()
   } finally {
-    await loader.dismiss();
+    await loader.dismiss()
   }
-};
+}
 
 async function signOut() {
-  const loader = await loadingController.create({});
-  const toast = await toastController.create({ duration: 5000 });
-  await loader.present();
+  const loader = await loadingController.create({})
+  const toast = await toastController.create({ duration: 5000 })
+  await loader.present()
   try {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-    await router.push('/');
+    const { error } = await supabase.auth.signOut()
+    if (error) throw error
+    await router.push('/')
   } catch (error: any) {
-    toast.message = error.message;
-    await toast.present();
+    toast.message = error.message
+    await toast.present()
   } finally {
-    await loader.dismiss();
+    await loader.dismiss()
   }
 }
 
 onMounted(() => {
-  getProfile();
-});
+  getProfile()
+})
 </script>

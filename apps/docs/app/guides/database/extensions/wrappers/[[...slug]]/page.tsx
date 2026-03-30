@@ -1,15 +1,5 @@
-import matter from 'gray-matter'
-import Link from 'next/link'
-import { notFound } from 'next/navigation'
 import { readFile } from 'node:fs/promises'
 import { join, relative } from 'node:path'
-import rehypeSlug from 'rehype-slug'
-import emoji from 'remark-emoji'
-// End of third-party imports
-
-import { IS_PROD, isFeatureEnabled } from 'common'
-import { Button } from 'ui'
-import { Admonition } from 'ui-patterns'
 import {
   genGuideMeta,
   genGuidesStaticParams,
@@ -24,6 +14,16 @@ import { removeTitle } from '~/lib/mdx/plugins/remarkRemoveTitle'
 import remarkPyMdownTabs from '~/lib/mdx/plugins/remarkTabs'
 import { getGitHubFileContents, octokit } from '~/lib/octokit'
 import type { SerializeOptions } from '~/types/next-mdx-remote-serialize'
+// End of third-party imports
+
+import { IS_PROD, isFeatureEnabled } from 'common'
+import matter from 'gray-matter'
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import rehypeSlug from 'rehype-slug'
+import emoji from 'remark-emoji'
+import { Button } from 'ui'
+import { Admonition } from 'ui-patterns'
 
 // We fetch these docs at build time from an external repo
 const org = 'supabase'

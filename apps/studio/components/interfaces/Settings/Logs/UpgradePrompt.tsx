@@ -1,8 +1,8 @@
-import Link from 'next/link'
-
 import { useSelectedOrganizationQuery } from 'hooks/misc/useSelectedOrganization'
 import { IS_PLATFORM } from 'lib/constants'
+import Link from 'next/link'
 import { Button, Modal } from 'ui'
+
 import { TIER_QUERY_LIMITS } from './Logs.constants'
 
 interface Props {

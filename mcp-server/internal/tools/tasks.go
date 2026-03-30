@@ -187,7 +187,46 @@ func makeTaskCreate(dbClient *db.Client) mcp.ToolHandler {
 		if err != nil {
 			return mcp.ErrorResult("failed to create task: " + err.Error()), nil
 		}
-		return mcp.TextResult(string(result)), nil
+
+		// Parse the created task(s) to build markdown response.
+		items, parseErr := parseJSONArray(result)
+		if parseErr != nil || len(items) == 0 {
+			// Fallback to raw response if parse fails.
+			return mcp.TextResult(string(result)), nil
+		}
+		t := items[0]
+		id := jsonStr(t, "id")
+
+		return mdResult(MarkdownResponse{
+			Frontmatter: map[string]interface{}{
+				"id":     id,
+				"type":   "task",
+				"status": jsonStrOr(t, "status", "todo"),
+				"export": fmt.Sprintf("tasks/%s.md", id),
+			},
+			Body: fmt.Sprintf("# Task Created: %s\n\n"+
+				"| Field | Value |\n"+
+				"| --- | --- |\n"+
+				"| **ID** | `%s` |\n"+
+				"| **Type** | %s |\n"+
+				"| **Priority** | %s |\n"+
+				"| **Status** | %s |\n"+
+				"| **Estimate** | %s |\n"+
+				"| **Due Date** | %s |\n",
+				jsonStr(t, "title"),
+				id,
+				jsonStrOr(t, "type", "task"),
+				jsonStrOr(t, "priority", "medium"),
+				jsonStrOr(t, "status", "todo"),
+				jsonStrOr(t, "estimate", "-"),
+				jsonStrOr(t, "due_date", "-"),
+			),
+			NextSteps: []NextStep{
+				{Label: "Assign an agent", Command: fmt.Sprintf(`task_assign(id: "%s", agent_id: "AGENT_UUID")`, id)},
+				{Label: "Add a comment", Command: fmt.Sprintf(`task_comment_add(task_id: "%s", message: "...")`, id)},
+				{Label: "Block this task", Command: fmt.Sprintf(`task_block(id: "%s", reason: "...")`, id)},
+			},
+		}), nil
 	}
 }
 
@@ -216,7 +255,62 @@ func makeTaskGet(dbClient *db.Client) mcp.ToolHandler {
 		if err != nil {
 			return mcp.ErrorResult("failed to get task: " + err.Error()), nil
 		}
-		return mcp.TextResult(string(result)), nil
+
+		t, parseErr := parseJSONObject(result)
+		if parseErr != nil {
+			return mcp.TextResult(string(result)), nil
+		}
+		id := jsonStr(t, "id")
+
+		desc := jsonStr(t, "description")
+		if desc == "" {
+			desc = "_No description._"
+		}
+
+		labels := jsonArr(t, "labels")
+		if labels == "" {
+			labels = "-"
+		}
+
+		return mdResult(MarkdownResponse{
+			Frontmatter: map[string]interface{}{
+				"id":     id,
+				"type":   "task",
+				"status": jsonStrOr(t, "status", "unknown"),
+				"export": fmt.Sprintf("tasks/%s.md", id),
+			},
+			Body: fmt.Sprintf("# %s\n\n"+
+				"| Field | Value |\n"+
+				"| --- | --- |\n"+
+				"| **ID** | `%s` |\n"+
+				"| **Type** | %s |\n"+
+				"| **Priority** | %s |\n"+
+				"| **Status** | %s |\n"+
+				"| **Estimate** | %s |\n"+
+				"| **Due Date** | %s |\n"+
+				"| **Labels** | %s |\n"+
+				"| **Agent** | %s |\n"+
+				"| **Created** | %s |\n\n"+
+				"## Description\n\n%s\n",
+				jsonStrOr(t, "title", "Untitled Task"),
+				id,
+				jsonStrOr(t, "type", "task"),
+				jsonStrOr(t, "priority", "medium"),
+				jsonStrOr(t, "status", "unknown"),
+				jsonStrOr(t, "estimate", "-"),
+				jsonStrOr(t, "due_date", "-"),
+				labels,
+				jsonStrOr(t, "assigned_agent_id", "-"),
+				jsonStrOr(t, "created_at", "-"),
+				desc,
+			),
+			NextSteps: []NextStep{
+				{Label: "Update this task", Command: fmt.Sprintf(`task_update(id: "%s", ...)`, id)},
+				{Label: "Add a comment", Command: fmt.Sprintf(`task_comment_add(task_id: "%s", message: "...")`, id)},
+				{Label: "Complete this task", Command: fmt.Sprintf(`task_complete(id: "%s")`, id)},
+				{Label: "List comments", Command: fmt.Sprintf(`task_comment_list(task_id: "%s")`, id)},
+			},
+		}), nil
 	}
 }
 
@@ -285,7 +379,45 @@ func makeTaskList(dbClient *db.Client) mcp.ToolHandler {
 		if err != nil {
 			return mcp.ErrorResult("failed to list tasks: " + err.Error()), nil
 		}
-		return mcp.TextResult(string(result)), nil
+
+		items, parseErr := parseJSONArray(result)
+		if parseErr != nil {
+			return mcp.TextResult(string(result)), nil
+		}
+
+		rows := make([][]string, 0, len(items))
+		for _, t := range items {
+			labels := jsonArr(t, "labels")
+			if labels == "" {
+				labels = "-"
+			}
+			rows = append(rows, []string{
+				truncate(jsonStr(t, "title"), 50),
+				jsonStrOr(t, "status", "-"),
+				jsonStrOr(t, "priority", "-"),
+				jsonStrOr(t, "assigned_agent_id", "-"),
+				labels,
+				jsonStrOr(t, "id", "-"),
+			})
+		}
+
+		table := mdTable(
+			[]string{"Title", "Status", "Priority", "Agent", "Labels", "ID"},
+			rows,
+		)
+
+		return mdResult(MarkdownResponse{
+			Frontmatter: map[string]interface{}{
+				"type":  "task_list",
+				"count": len(items),
+			},
+			Body: fmt.Sprintf("# Tasks (%d)\n\n%s", len(items), table),
+			NextSteps: []NextStep{
+				{Label: "Create a task", Command: `task_create(title: "...")`},
+				{Label: "View task details", Command: `task_get(id: "TASK_UUID")`},
+				{Label: "Get next task", Command: `task_get_next()`},
+			},
+		}), nil
 	}
 }
 

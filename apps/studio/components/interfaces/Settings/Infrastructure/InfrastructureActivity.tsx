@@ -35,8 +35,8 @@ import { BarChart2, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
 import { Fragment, useMemo, useState } from 'react'
 import { useDatabaseSelectorStateSnapshot } from 'state/database-selector'
-import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 import { Admonition } from 'ui-patterns/admonition'
+import { ShimmeringLoader } from 'ui-patterns/ShimmeringLoader'
 
 import { INFRA_ACTIVITY_METRICS } from './Infrastructure.constants'
 

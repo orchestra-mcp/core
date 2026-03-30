@@ -1,6 +1,7 @@
 import dayjs from 'dayjs'
 import { guessLocalTimezone } from 'lib/dayjs'
 import type { TooltipProps } from 'recharts'
+
 import { formatDuration } from '../QueryInsightsTable/QueryInsightsTable.utils'
 import { isTimeMetric } from './QueryInsightsChart.utils'
 

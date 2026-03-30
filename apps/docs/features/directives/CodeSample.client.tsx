@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { useState, type PropsWithChildren } from 'react'
-
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from 'ui'
 import { Admonition } from 'ui-patterns/admonition'
 

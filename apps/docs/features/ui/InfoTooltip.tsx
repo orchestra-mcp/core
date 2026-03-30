@@ -1,16 +1,16 @@
 'use client'
 
+import { useBreakpoint } from 'common'
+import { InfoIcon, XIcon } from 'lucide-react'
 import React, {
-  type PropsWithChildren,
   useCallback,
   useEffect,
   useId,
   useRef,
   useState,
+  type PropsWithChildren,
 } from 'react'
-import { InfoIcon, XIcon } from 'lucide-react'
 import { ErrorBoundary } from 'react-error-boundary'
-import { useBreakpoint } from 'common'
 import {
   Button,
   cn,

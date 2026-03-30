@@ -1,5 +1,6 @@
 import { infiniteQueryOptions } from '@tanstack/react-query'
 import { components } from 'api-types'
+
 import { get } from './fetchWrappers'
 
 const DEFAULT_LIMIT = 10

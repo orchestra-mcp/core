@@ -1,5 +1,5 @@
 ---
-description: "Studio: project structure and where code lives"
+description: 'Studio: project structure and where code lives'
 globs:
   - apps/studio/**/*.{ts,tsx}
 alwaysApply: false
@@ -16,4 +16,3 @@ alwaysApply: false
   - Interface/page components: `apps/studio/components/interfaces` (e.g. `apps/studio/components/interfaces/Auth`)
 - Shared hooks: `apps/studio/hooks`
 - Shared helpers: `apps/studio/lib`
-

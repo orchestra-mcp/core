@@ -1,9 +1,8 @@
-import { NextApiRequest, NextApiResponse } from 'next'
-
 import { constructHeaders } from 'lib/api/apiHelpers'
 import apiWrapper from 'lib/api/apiWrapper'
 import { DEFAULT_EXPOSED_SCHEMAS } from 'lib/api/self-hosted/constants'
 import { getLints } from 'lib/api/self-hosted/lints'
+import { NextApiRequest, NextApiResponse } from 'next'
 
 export default (req: NextApiRequest, res: NextApiResponse) => apiWrapper(req, res, handler)
 

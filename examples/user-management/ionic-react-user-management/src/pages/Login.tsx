@@ -1,5 +1,3 @@
-import { useState } from 'react'
-import type React from 'react'
 import {
   IonButton,
   IonContent,
@@ -10,9 +8,12 @@ import {
   IonPage,
   IonTitle,
   IonToolbar,
-  useIonToast,
   useIonLoading,
+  useIonToast,
 } from '@ionic/react'
+import { useState } from 'react'
+import type React from 'react'
+
 import { supabase } from '../supabaseClient'
 
 export function LoginPage() {

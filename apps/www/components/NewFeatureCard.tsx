@@ -1,7 +1,7 @@
+import Panel from '~/components/Panel'
 import { Check } from 'lucide-react'
 import Link from 'next/link'
 import { Badge, Button, ButtonProps, Image } from 'ui'
-import Panel from '~/components/Panel'
 
 export interface CardProps {
   title: string

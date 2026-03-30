@@ -1,3 +1,4 @@
+import { ErrorCodeTooltip } from 'components/ui/ErrorCodeTooltip/ErrorCodeTooltip'
 import { Service } from 'data/graphql/graphql'
 import { useLogsUrlState } from 'hooks/analytics/useLogsUrlState'
 import { useEffect, useState } from 'react'
@@ -15,7 +16,6 @@ import {
 import { TimestampInfo } from 'ui-patterns'
 
 import { ErrorCodeDialog } from '../ErrorCodeDialog'
-import { ErrorCodeTooltip } from 'components/ui/ErrorCodeTooltip/ErrorCodeTooltip'
 import type { LogSearchCallback, PreviewLogData } from '../Logs.types'
 import { ResponseCodeFormatter } from '../LogsFormatters'
 

@@ -1,5 +1,5 @@
 ---
-applyTo: "apps/studio/**"
+applyTo: 'apps/studio/**'
 ---
 
 # React Composition Patterns Review Rules
@@ -66,8 +66,8 @@ function ForwardComposer() {
 // ForwardButton is a sibling and can't reach state
 
 // GOOD — provider at shared ancestor
-<ForwardMessageProvider>
-  <Composer />      {/* can access state */}
+;<ForwardMessageProvider>
+  <Composer /> {/* can access state */}
   <ForwardButton /> {/* can also access state */}
 </ForwardMessageProvider>
 ```
@@ -82,7 +82,9 @@ const Input = forwardRef((props, ref) => <input ref={ref} />)
 const value = useContext(MyContext)
 
 // GOOD
-function Input({ ref, ...props }) { return <input ref={ref} /> }
+function Input({ ref, ...props }) {
+  return <input ref={ref} />
+}
 const value = use(MyContext)
 ```
 

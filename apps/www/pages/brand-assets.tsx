@@ -1,17 +1,14 @@
-import Container from 'components/Container'
-
-import CTABanner from 'components/CTABanner/index'
-import { Button } from 'ui'
 import Layout from '~/components/Layouts/Default'
-
-import { useRouter } from 'next/router'
-
+import SectionContainer from '~/components/Layouts/SectionContainer'
 import * as supabaseLogoPreview from 'common/assets/images/logo-preview.jpg'
+import Container from 'components/Container'
+import CTABanner from 'components/CTABanner/index'
 import { Download } from 'lucide-react'
 import { NextSeo } from 'next-seo'
 import Image from 'next/image'
-import SectionContainer from '~/components/Layouts/SectionContainer'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
+import { Button } from 'ui'
 
 const Index = () => {
   // base path for images

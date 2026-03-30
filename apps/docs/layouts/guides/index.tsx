@@ -1,9 +1,9 @@
 import 'katex/dist/katex.min.css'
-import type { ReactNode, PropsWithChildren } from 'react'
 
 import { type NavMenuSection } from '~/components/Navigation/Navigation.types'
 import { LayoutMainContent } from '~/layouts/DefaultLayout'
 import { SidebarSkeleton } from '~/layouts/MainSkeleton'
+import type { PropsWithChildren, ReactNode } from 'react'
 
 const Layout = ({
   children,

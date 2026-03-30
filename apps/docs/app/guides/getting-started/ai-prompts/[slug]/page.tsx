@@ -1,6 +1,7 @@
+import { GuideTemplate, newEditLink } from '~/features/docs/GuidesMdx.template'
 import { source } from 'common-tags'
 import { notFound } from 'next/navigation'
-import { GuideTemplate, newEditLink } from '~/features/docs/GuidesMdx.template'
+
 import {
   generateAiPromptMetadata,
   generateAiPromptsStaticParams,

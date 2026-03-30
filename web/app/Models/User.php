@@ -54,6 +54,12 @@ class User extends Authenticatable
         'language',
         'notification_preferences',
         'connected_accounts',
+        'username',
+        'handle',
+        'bio',
+        'badges',
+        'is_public',
+        'cover_url',
     ];
 
     /**
@@ -79,6 +85,8 @@ class User extends Authenticatable
             'onboarding_completed' => 'boolean',
             'notification_preferences' => 'array',
             'connected_accounts' => 'array',
+            'badges' => 'array',
+            'is_public' => 'boolean',
         ];
     }
 

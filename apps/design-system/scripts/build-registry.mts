@@ -219,9 +219,7 @@ export const Index: Record<string, any> = {
           const basename = path.basename(file)
           return basename === 'index.tsx' || basename === 'index.ts'
         })
-        componentImportPath = isIndexFile
-          ? `@/${packagePath}`
-          : `@/${packagePath}/${item.name}`
+        componentImportPath = isIndexFile ? `@/${packagePath}` : `@/${packagePath}/${item.name}`
       }
       if (type === 'example') {
         packagePath = `registry/${style.name}/${type}`

@@ -1,8 +1,9 @@
-import { type PostgrestError } from '@supabase/supabase-js'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import util, { styleText } from 'node:util'
+import { type PostgrestError } from '@supabase/supabase-js'
 import { parse } from 'smol-toml'
+
 import { Service } from '../../__generated__/graphql'
 import { extractMessageFromAnyError, MultiError } from '../../app/api/utils'
 import { Result } from '../../features/helpers.fn'

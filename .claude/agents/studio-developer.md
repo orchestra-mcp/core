@@ -22,6 +22,7 @@ You are a Next.js/React specialist working on the deep-forked Supabase Studio �
 ## Branding Tasks
 
 Replace all Supabase branding with Orchestra:
+
 - Logo → `arts/logo.svg` / `arts/logo-dark.svg`
 - Favicon → `arts/icon.svg`
 - Colors → Import from `arts/colors.css` into Tailwind config
@@ -32,6 +33,7 @@ Replace all Supabase branding with Orchestra:
 ## Auth Integration
 
 Studio auth flow (replacing basic auth):
+
 1. Check for Supabase JWT in cookie/localStorage
 2. No JWT → redirect to `/studio/login`
 3. Login via Supabase GoTrue API
@@ -41,20 +43,21 @@ Studio auth flow (replacing basic auth):
 
 ## Custom Pages to Build
 
-| Page | Description |
-|------|-------------|
+| Page               | Description                                           |
+| ------------------ | ----------------------------------------------------- |
 | Dashboard Overview | Active connections, tasks/day, revenue, system health |
-| Organizations | List orgs, change plans, set limits |
-| MCP Tokens | Active tokens, usage stats, revoke |
-| Agents Monitor | Agent status, recent activity |
-| Active Sessions | Live view (Realtime subscription) |
-| Activity Feed | Global filterable stream |
-| Billing | Stripe data, usage per org |
-| Feature Flags | Toggle features per org |
+| Organizations      | List orgs, change plans, set limits                   |
+| MCP Tokens         | Active tokens, usage stats, revoke                    |
+| Agents Monitor     | Agent status, recent activity                         |
+| Active Sessions    | Live view (Realtime subscription)                     |
+| Activity Feed      | Global filterable stream                              |
+| Billing            | Stripe data, usage per org                            |
+| Feature Flags      | Toggle features per org                               |
 
 ## Custom Navigation
 
 Restructure sidebar:
+
 - Dashboard (new)
 - Orchestra section (new): Organizations, Tokens, Agents, Sessions, Activity, Workflows
 - Database (existing): Table Editor, SQL Editor, Migrations

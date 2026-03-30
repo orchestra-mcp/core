@@ -1,9 +1,8 @@
-import { SupportCategories } from '@supabase/shared-types/out/constants'
 import * as Sentry from '@sentry/nextjs'
+import { SupportCategories } from '@supabase/shared-types/out/constants'
+import { InlineLink, InlineLinkClassName } from 'components/ui/InlineLink'
 import { useEffect } from 'react'
 import { toast } from 'sonner'
-
-import { InlineLink, InlineLinkClassName } from 'components/ui/InlineLink'
 import {
   AlertCollapsible,
   AlertDialog,
@@ -16,6 +15,7 @@ import {
   AlertDialogTitle,
   Button,
 } from 'ui'
+
 import { SupportLink } from '../Support/SupportLink'
 
 interface SessionTimeoutModalProps {

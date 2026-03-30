@@ -2,9 +2,14 @@ package tools
 
 import (
 	"context"
+	"crypto/aes"
+	"crypto/cipher"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -118,8 +123,44 @@ func RegisterGitHubTools(registry *mcp.ToolRegistry, dbClient *db.Client) {
 // Helpers
 // ---------------------------------------------------------------------------
 
+// decryptToken decrypts an AES-256-GCM encrypted token.
+// The encrypted value is expected to be base64-encoded with the nonce (12 bytes)
+// prepended to the ciphertext: base64(nonce + ciphertext).
+func decryptToken(encrypted string, key string) (string, error) {
+	cipherData, err := base64.StdEncoding.DecodeString(encrypted)
+	if err != nil {
+		return "", fmt.Errorf("base64 decode: %w", err)
+	}
+
+	block, err := aes.NewCipher([]byte(key))
+	if err != nil {
+		return "", fmt.Errorf("create cipher: %w", err)
+	}
+
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return "", fmt.Errorf("create GCM: %w", err)
+	}
+
+	nonceSize := gcm.NonceSize() // 12 bytes for standard GCM
+	if len(cipherData) < nonceSize {
+		return "", fmt.Errorf("ciphertext too short (got %d bytes, need at least %d for nonce)", len(cipherData), nonceSize)
+	}
+
+	nonce := cipherData[:nonceSize]
+	ciphertext := cipherData[nonceSize:]
+
+	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
+	if err != nil {
+		return "", fmt.Errorf("decrypt: %w", err)
+	}
+
+	return string(plaintext), nil
+}
+
 // getGitHubClient fetches the user's GitHub access token from the github_connections
-// table and returns an authenticated GitHub API client.
+// table, decrypts it if GITHUB_ENCRYPTION_KEY is set, and returns an authenticated
+// GitHub API client.
 func getGitHubClient(ctx context.Context, dbClient *db.Client, userID string) (*github.Client, error) {
 	q := url.Values{}
 	q.Set("user_id", "eq."+userID)
@@ -141,7 +182,22 @@ func getGitHubClient(ctx context.Context, dbClient *db.Client, userID string) (*
 		return nil, fmt.Errorf("no GitHub connection found — please connect GitHub first")
 	}
 
-	return github.NewClient(rows[0].AccessTokenEncrypted), nil
+	token := rows[0].AccessTokenEncrypted
+
+	// Decrypt the token if GITHUB_ENCRYPTION_KEY is set.
+	// If not set, use the token as-is (for dev/testing with plaintext tokens).
+	encryptionKey := os.Getenv("GITHUB_ENCRYPTION_KEY")
+	if encryptionKey != "" {
+		decrypted, err := decryptToken(token, encryptionKey)
+		if err != nil {
+			return nil, fmt.Errorf("decrypt GitHub token: %w", err)
+		}
+		token = decrypted
+	} else {
+		slog.Warn("GITHUB_ENCRYPTION_KEY not set — using token as-is (plaintext mode)")
+	}
+
+	return github.NewClient(token), nil
 }
 
 // splitRepo splits "owner/repo" into owner and repo parts.

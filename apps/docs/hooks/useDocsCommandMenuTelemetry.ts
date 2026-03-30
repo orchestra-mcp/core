@@ -1,13 +1,13 @@
 'use client'
 
-import { useCallback } from 'react'
-
 import type {
   CommandMenuClosedEvent,
   CommandMenuCommandClickedEvent,
   CommandMenuOpenedEvent,
   CommandMenuSearchSubmittedEvent,
 } from 'common/telemetry-constants'
+import { useCallback } from 'react'
+
 import { useSendTelemetryEvent } from '@/lib/telemetry'
 
 export function useDocsCommandMenuTelemetry() {

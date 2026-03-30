@@ -3,9 +3,9 @@ import { StyleSheet } from 'react-native'
 
 import { HelloWave } from '@/components/hello-wave'
 import ParallaxScrollView from '@/components/parallax-scroll-view'
+import SignOutButton from '@/components/social-auth-buttons/sign-out-button'
 import { ThemedText } from '@/components/themed-text'
 import { ThemedView } from '@/components/themed-view'
-import SignOutButton from '@/components/social-auth-buttons/sign-out-button'
 import { useAuthContext } from '@/hooks/use-auth-context'
 
 export default function HomeScreen() {

@@ -1,8 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
-import { type Handle, redirect } from '@sveltejs/kit'
+import { redirect, type Handle } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
-
-import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_KEY } from '$env/static/public'
+import { PUBLIC_SUPABASE_PUBLISHABLE_KEY, PUBLIC_SUPABASE_URL } from '$env/static/public'
 
 const supabase: Handle = async ({ event, resolve }) => {
   /**

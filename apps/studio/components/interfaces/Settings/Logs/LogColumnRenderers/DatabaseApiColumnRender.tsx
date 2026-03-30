@@ -1,10 +1,11 @@
-import { Column } from 'react-data-grid'
+import { ErrorCodeTooltip } from 'components/ui/ErrorCodeTooltip/ErrorCodeTooltip'
 import { Service } from 'data/graphql/graphql'
+import { Column } from 'react-data-grid'
+import { TimestampInfo } from 'ui-patterns/TimestampInfo'
+
 import type { LogData } from '../Logs.types'
 import { ResponseCodeFormatter, RowLayout, TextFormatter } from '../LogsFormatters'
 import { defaultRenderCell } from './DefaultPreviewColumnRenderer'
-import { TimestampInfo } from 'ui-patterns/TimestampInfo'
-import { ErrorCodeTooltip } from 'components/ui/ErrorCodeTooltip/ErrorCodeTooltip'
 
 const columns: Column<LogData>[] = [
   {

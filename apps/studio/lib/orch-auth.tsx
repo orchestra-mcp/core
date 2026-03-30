@@ -13,15 +13,15 @@
  * When disabled (default), self-hosted mode uses alwaysLoggedIn (no auth).
  */
 
-import { createClient, type SupabaseClient, type Session, type User } from '@supabase/supabase-js'
+import { createClient, type Session, type SupabaseClient, type User } from '@supabase/supabase-js'
 import { useRouter } from 'next/router'
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
-  useState,
-  useCallback,
   useMemo,
+  useState,
   type PropsWithChildren,
 } from 'react'
 
@@ -64,20 +64,19 @@ export function getOrchSupabaseClient(): SupabaseClient {
 
 // ─── Admin Check ────────────────────────────────────────────────────────────
 
-export async function checkIsAdmin(
-  supabase: SupabaseClient,
-  userId: string
-): Promise<boolean> {
+export async function checkIsAdmin(supabase: SupabaseClient, userId: string): Promise<boolean> {
   try {
     // Use server-side API endpoint which has service key (bypasses RLS)
-    const { data: { session } } = await supabase.auth.getSession()
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
     if (!session?.access_token) return false
 
     const res = await fetch('/api/orch-auth/verify-admin', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
+        Authorization: `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({ userId }),
     })
@@ -153,27 +152,37 @@ export function OrchAuthProvider({ children }: PropsWithChildren) {
 
     const supabase = getOrchSupabaseClient()
 
+    // Timeout: if auth check takes too long, stop loading (show login)
+    const timeout = setTimeout(() => setIsLoading(false), 3000)
+
     // Check existing session from localStorage (only available on client)
-    supabase.auth.getSession().then(async ({ data: { session: existingSession } }) => {
-      if (existingSession?.user) {
-        setSession(existingSession)
-        // Use cache for instant load
-        const cachedAdmin = safeGetLocalStorage(ORCH_ADMIN_KEY)
-        if (cachedAdmin === 'true') {
-          setIsAdmin(true)
+    supabase.auth
+      .getSession()
+      .then(async ({ data: { session: existingSession } }) => {
+        clearTimeout(timeout)
+        if (existingSession?.user) {
+          setSession(existingSession)
+          // Use cache for instant load
+          const cachedAdmin = safeGetLocalStorage(ORCH_ADMIN_KEY)
+          if (cachedAdmin === 'true') {
+            setIsAdmin(true)
+            setIsLoading(false)
+          }
+          // Verify from server
+          setIsCheckingAdmin(true)
+          const adminStatus = await checkIsAdmin(supabase, existingSession.user.id)
+          setIsAdmin(adminStatus)
+          safeSetLocalStorage(ORCH_ADMIN_KEY, String(adminStatus))
+          setIsCheckingAdmin(false)
+          setIsLoading(false)
+        } else {
           setIsLoading(false)
         }
-        // Verify from server
-        setIsCheckingAdmin(true)
-        const adminStatus = await checkIsAdmin(supabase, existingSession.user.id)
-        setIsAdmin(adminStatus)
-        safeSetLocalStorage(ORCH_ADMIN_KEY, String(adminStatus))
-        setIsCheckingAdmin(false)
+      })
+      .catch(() => {
+        clearTimeout(timeout)
         setIsLoading(false)
-      } else {
-        setIsLoading(false)
-      }
-    })
+      })
 
     // Listen for auth changes
     const {
@@ -263,6 +272,35 @@ export function OrchAuthProvider({ children }: PropsWithChildren) {
     }),
     [isLoading, session, isAdmin, signIn, signOut]
   )
+
+  // Redirect to login when no session detected — runs only on client after mount
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+
+  useEffect(() => {
+    if (!ORCH_AUTH_ENABLED || !mounted || !isLoading) return
+
+    const currentPath = router.pathname
+    const isPublicPage = PUBLIC_PAGES.some((p) => currentPath.startsWith(p))
+    const hasCached = safeGetLocalStorage(ORCH_ADMIN_KEY) === 'true'
+
+    if (!hasCached && !isPublicPage) {
+      router.replace(`/orch-sign-in?returnTo=${encodeURIComponent(router.asPath)}`)
+    }
+  }, [mounted, isLoading, router.pathname])
+
+  // SSR and pre-mount: always render children (Next.js handles SSR, no mismatch)
+  // After mount + loading + not on public page: show empty screen while redirecting
+  if (mounted && ORCH_AUTH_ENABLED && isLoading) {
+    const isPublicPage = PUBLIC_PAGES.some((p) => router.pathname.startsWith(p))
+    if (!isPublicPage) {
+      return (
+        <OrchAuthContext.Provider value={value}>
+          <div style={{ height: '100vh', width: '100vw', background: '#1c1c1c' }} />
+        </OrchAuthContext.Provider>
+      )
+    }
+  }
 
   return <OrchAuthContext.Provider value={value}>{children}</OrchAuthContext.Provider>
 }

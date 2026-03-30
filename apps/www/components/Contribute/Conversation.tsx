@@ -1,9 +1,10 @@
+import { getThreadRepliesById } from '~/data/contribute'
+import type { ThreadRow } from '~/types/contribute'
 import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Badge, Card, CardContent, CardHeader, CardTitle } from 'ui'
-import { getThreadRepliesById } from '~/data/contribute'
-import type { ThreadRow } from '~/types/contribute'
+
 import { HelpOnPlatformButton } from './HelpOnPlatformButton'
 import { ChannelIcon } from './Icons'
 import { markdownComponents } from './markdownComponents'

@@ -1,9 +1,9 @@
-import { IS_PLATFORM } from 'common'
-import { unstable_cache } from 'next/cache'
 import { type NavMenuSection } from '~/components/Navigation/Navigation.types'
 import { REVALIDATION_TAGS } from '~/features/helpers.fetch'
 import Layout from '~/layouts/guides'
 import { supabaseMisc } from '~/lib/supabaseMisc'
+import { IS_PLATFORM } from 'common'
+import { unstable_cache } from 'next/cache'
 
 export default async function IntegrationsLayout({ children }: { children: React.ReactNode }) {
   const additionalNavItems = { integrations: await getPartners() }

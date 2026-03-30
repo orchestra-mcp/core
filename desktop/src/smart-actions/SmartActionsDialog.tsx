@@ -1,114 +1,115 @@
-import { useState, type FC, useEffect, useRef } from "react";
-import { invoke } from "@tauri-apps/api/core";
-import SmartActionsGrid, { type EntityType } from "./SmartActionsGrid";
+import { invoke } from '@tauri-apps/api/core'
+import { useEffect, useRef, useState, type FC } from 'react'
+
+import SmartActionsGrid, { type EntityType } from './SmartActionsGrid'
 
 interface SmartActionsDialogProps {
-  open: boolean;
-  onClose: () => void;
+  open: boolean
+  onClose: () => void
 }
 
 const SmartActionsDialog: FC<SmartActionsDialogProps> = ({ open, onClose }) => {
-  const [selected, setSelected] = useState<EntityType | null>(null);
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [creating, setCreating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const overlayRef = useRef<HTMLDivElement>(null);
+  const [selected, setSelected] = useState<EntityType | null>(null)
+  const [title, setTitle] = useState('')
+  const [content, setContent] = useState('')
+  const [creating, setCreating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const overlayRef = useRef<HTMLDivElement>(null)
 
   // Reset state when dialog opens/closes
   useEffect(() => {
     if (!open) {
-      setSelected(null);
-      setTitle("");
-      setContent("");
-      setError(null);
-      setCreating(false);
+      setSelected(null)
+      setTitle('')
+      setContent('')
+      setError(null)
+      setCreating(false)
     }
-  }, [open]);
+  }, [open])
 
   // Close on Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === 'Escape') {
         if (selected) {
-          setSelected(null);
-          setTitle("");
-          setContent("");
-          setError(null);
+          setSelected(null)
+          setTitle('')
+          setContent('')
+          setError(null)
         } else {
-          onClose();
+          onClose()
         }
       }
-    };
-    if (open) {
-      window.addEventListener("keydown", handleKeyDown);
-      return () => window.removeEventListener("keydown", handleKeyDown);
     }
-  }, [open, selected, onClose]);
+    if (open) {
+      window.addEventListener('keydown', handleKeyDown)
+      return () => window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [open, selected, onClose])
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === overlayRef.current) {
-      onClose();
+      onClose()
     }
-  };
+  }
 
   const handleCreate = async () => {
-    if (!selected || !title.trim()) return;
-    setCreating(true);
-    setError(null);
+    if (!selected || !title.trim()) return
+    setCreating(true)
+    setError(null)
     try {
-      await invoke("create_entity", {
+      await invoke('create_entity', {
         entityType: selected.id,
         title: title.trim(),
         content: content.trim(),
-      });
-      onClose();
+      })
+      onClose()
     } catch (err) {
-      setError(String(err));
+      setError(String(err))
     } finally {
-      setCreating(false);
+      setCreating(false)
     }
-  };
+  }
 
-  if (!open) return null;
+  if (!open) return null
 
   return (
     <div
       ref={overlayRef}
       onClick={handleOverlayClick}
       className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-      style={{ background: "hsla(0, 0%, 0%, 0.6)" }}
+      style={{ background: 'hsla(0, 0%, 0%, 0.6)' }}
     >
       <div
         className="w-full max-w-xl rounded-lg shadow-2xl"
         style={{
-          background: "var(--background-dialog)",
-          border: "1px solid var(--border-overlay)",
+          background: 'var(--background-dialog)',
+          border: '1px solid var(--border-overlay)',
         }}
       >
         {/* Header */}
         <div
           className="flex items-center justify-between px-6 py-4"
-          style={{ borderBottom: "1px solid var(--border-default)" }}
+          style={{ borderBottom: '1px solid var(--border-default)' }}
         >
           <div className="flex items-center gap-3">
             {selected && (
               <button
                 onClick={() => {
-                  setSelected(null);
-                  setTitle("");
-                  setContent("");
-                  setError(null);
+                  setSelected(null)
+                  setTitle('')
+                  setContent('')
+                  setError(null)
                 }}
                 className="rounded-md p-1 transition-colors"
-                style={{ color: "var(--foreground-lighter)" }}
+                style={{ color: 'var(--foreground-lighter)' }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "var(--background-surface-300)";
-                  e.currentTarget.style.color = "var(--foreground-default)";
+                  e.currentTarget.style.background = 'var(--background-surface-300)'
+                  e.currentTarget.style.color = 'var(--foreground-default)'
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "transparent";
-                  e.currentTarget.style.color = "var(--foreground-lighter)";
+                  e.currentTarget.style.background = 'transparent'
+                  e.currentTarget.style.color = 'var(--foreground-lighter)'
                 }}
               >
                 <svg
@@ -125,23 +126,21 @@ const SmartActionsDialog: FC<SmartActionsDialogProps> = ({ open, onClose }) => {
                 </svg>
               </button>
             )}
-            <h2 className="text-base font-semibold" style={{ color: "var(--foreground-default)" }}>
-              {selected
-                ? `Create ${selected.label}`
-                : "Smart Actions"}
+            <h2 className="text-base font-semibold" style={{ color: 'var(--foreground-default)' }}>
+              {selected ? `Create ${selected.label}` : 'Smart Actions'}
             </h2>
           </div>
           <button
             onClick={onClose}
             className="rounded-md p-1 transition-colors"
-            style={{ color: "var(--foreground-lighter)" }}
+            style={{ color: 'var(--foreground-lighter)' }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = "var(--background-surface-300)";
-              e.currentTarget.style.color = "var(--foreground-default)";
+              e.currentTarget.style.background = 'var(--background-surface-300)'
+              e.currentTarget.style.color = 'var(--foreground-default)'
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = "transparent";
-              e.currentTarget.style.color = "var(--foreground-lighter)";
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.color = 'var(--foreground-lighter)'
             }}
           >
             <svg
@@ -163,7 +162,7 @@ const SmartActionsDialog: FC<SmartActionsDialogProps> = ({ open, onClose }) => {
         <div className="p-6">
           {!selected ? (
             <>
-              <p className="mb-4 text-sm" style={{ color: "var(--foreground-lighter)" }}>
+              <p className="mb-4 text-sm" style={{ color: 'var(--foreground-lighter)' }}>
                 Select an entity type to create
               </p>
               <SmartActionsGrid onSelect={setSelected} />
@@ -173,7 +172,7 @@ const SmartActionsDialog: FC<SmartActionsDialogProps> = ({ open, onClose }) => {
               {/* Entity badge */}
               <div className="flex items-center gap-2">
                 <span className="text-lg">{selected.icon}</span>
-                <span className="text-sm font-medium" style={{ color: "var(--foreground-light)" }}>
+                <span className="text-sm font-medium" style={{ color: 'var(--foreground-light)' }}>
                   {selected.label}
                 </span>
               </div>
@@ -182,7 +181,7 @@ const SmartActionsDialog: FC<SmartActionsDialogProps> = ({ open, onClose }) => {
               <div>
                 <label
                   className="mb-1.5 block text-xs font-medium"
-                  style={{ color: "var(--foreground-lighter)" }}
+                  style={{ color: 'var(--foreground-lighter)' }}
                 >
                   Title
                 </label>
@@ -191,23 +190,23 @@ const SmartActionsDialog: FC<SmartActionsDialogProps> = ({ open, onClose }) => {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" && title.trim()) handleCreate();
+                    if (e.key === 'Enter' && title.trim()) handleCreate()
                   }}
                   placeholder={`Enter ${selected.label.toLowerCase()} title...`}
                   autoFocus
                   className="w-full rounded-md px-3 py-2 text-sm outline-none transition"
                   style={{
-                    background: "var(--background-control)",
-                    border: "1px solid var(--border-control)",
-                    color: "var(--foreground-default)",
+                    background: 'var(--background-control)',
+                    border: '1px solid var(--border-control)',
+                    color: 'var(--foreground-default)',
                   }}
                   onFocus={(e) => {
-                    e.currentTarget.style.borderColor = "var(--brand-default)";
-                    e.currentTarget.style.boxShadow = "0 0 0 1px hsla(153.1, 60.2%, 52.7%, 0.3)";
+                    e.currentTarget.style.borderColor = 'var(--brand-default)'
+                    e.currentTarget.style.boxShadow = '0 0 0 1px hsla(277, 100%, 50%, 0.3)'
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "var(--border-control)";
-                    e.currentTarget.style.boxShadow = "none";
+                    e.currentTarget.style.borderColor = 'var(--border-control)'
+                    e.currentTarget.style.boxShadow = 'none'
                   }}
                 />
               </div>
@@ -216,10 +215,10 @@ const SmartActionsDialog: FC<SmartActionsDialogProps> = ({ open, onClose }) => {
               <div>
                 <label
                   className="mb-1.5 block text-xs font-medium"
-                  style={{ color: "var(--foreground-lighter)" }}
+                  style={{ color: 'var(--foreground-lighter)' }}
                 >
-                  Content{" "}
-                  <span style={{ color: "var(--foreground-muted)" }}>(markdown supported)</span>
+                  Content{' '}
+                  <span style={{ color: 'var(--foreground-muted)' }}>(markdown supported)</span>
                 </label>
                 <textarea
                   value={content}
@@ -228,17 +227,17 @@ const SmartActionsDialog: FC<SmartActionsDialogProps> = ({ open, onClose }) => {
                   rows={6}
                   className="w-full resize-none rounded-md px-3 py-2 text-sm outline-none transition"
                   style={{
-                    background: "var(--background-control)",
-                    border: "1px solid var(--border-control)",
-                    color: "var(--foreground-default)",
+                    background: 'var(--background-control)',
+                    border: '1px solid var(--border-control)',
+                    color: 'var(--foreground-default)',
                   }}
                   onFocus={(e) => {
-                    e.currentTarget.style.borderColor = "var(--brand-default)";
-                    e.currentTarget.style.boxShadow = "0 0 0 1px hsla(153.1, 60.2%, 52.7%, 0.3)";
+                    e.currentTarget.style.borderColor = 'var(--brand-default)'
+                    e.currentTarget.style.boxShadow = '0 0 0 1px hsla(277, 100%, 50%, 0.3)'
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "var(--border-control)";
-                    e.currentTarget.style.boxShadow = "none";
+                    e.currentTarget.style.borderColor = 'var(--border-control)'
+                    e.currentTarget.style.boxShadow = 'none'
                   }}
                 />
               </div>
@@ -248,9 +247,9 @@ const SmartActionsDialog: FC<SmartActionsDialogProps> = ({ open, onClose }) => {
                 <p
                   className="rounded-md px-3 py-2 text-xs"
                   style={{
-                    background: "var(--destructive-200)",
-                    border: "1px solid hsla(10.2, 77.9%, 53.9%, 0.2)",
-                    color: "var(--destructive-600)",
+                    background: 'var(--destructive-200)',
+                    border: '1px solid hsla(10.2, 77.9%, 53.9%, 0.2)',
+                    color: 'var(--destructive-600)',
                   }}
                 >
                   {error}
@@ -261,21 +260,21 @@ const SmartActionsDialog: FC<SmartActionsDialogProps> = ({ open, onClose }) => {
               <div className="flex items-center justify-end gap-2 pt-2">
                 <button
                   onClick={() => {
-                    setSelected(null);
-                    setTitle("");
-                    setContent("");
-                    setError(null);
+                    setSelected(null)
+                    setTitle('')
+                    setContent('')
+                    setError(null)
                   }}
                   className="rounded-md px-4 py-2 text-sm font-medium transition-colors"
                   style={{
-                    border: "1px solid var(--border-strong)",
-                    color: "var(--foreground-light)",
+                    border: '1px solid var(--border-strong)',
+                    color: 'var(--foreground-light)',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "var(--background-surface-300)";
+                    e.currentTarget.style.background = 'var(--background-surface-300)'
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "transparent";
+                    e.currentTarget.style.background = 'transparent'
                   }}
                 >
                   Cancel
@@ -285,17 +284,17 @@ const SmartActionsDialog: FC<SmartActionsDialogProps> = ({ open, onClose }) => {
                   disabled={!title.trim() || creating}
                   className="rounded-md px-4 py-2 text-sm font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50"
                   style={{
-                    background: "var(--brand-default)",
-                    color: "var(--foreground-contrast)",
+                    background: 'var(--brand-default)',
+                    color: 'var(--foreground-contrast)',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "var(--brand-600)";
+                    e.currentTarget.style.background = 'var(--brand-600)'
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "var(--brand-default)";
+                    e.currentTarget.style.background = 'var(--brand-default)'
                   }}
                 >
-                  {creating ? "Creating..." : "Create"}
+                  {creating ? 'Creating...' : 'Create'}
                 </button>
               </div>
             </div>
@@ -303,7 +302,7 @@ const SmartActionsDialog: FC<SmartActionsDialogProps> = ({ open, onClose }) => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SmartActionsDialog;
+export default SmartActionsDialog

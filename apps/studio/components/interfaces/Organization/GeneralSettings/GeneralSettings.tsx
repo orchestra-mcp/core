@@ -7,9 +7,9 @@ import {
   PageSectionSummary,
   PageSectionTitle,
 } from 'ui-patterns/PageSection'
-import { OrganizationDeletePanel } from './OrganizationDeletePanel'
 
 import { DataPrivacyForm } from './DataPrivacyForm'
+import { OrganizationDeletePanel } from './OrganizationDeletePanel'
 import { OrganizationDetailsForm } from './OrganizationDetailsForm'
 
 export const GeneralSettings = () => {

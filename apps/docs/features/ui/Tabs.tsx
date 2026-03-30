@@ -1,9 +1,9 @@
 'use client'
 
+import { useTocRerenderTrigger } from '~/features/docs/GuidesMdx.state'
 import { useCallback, type ComponentPropsWithoutRef, type PropsWithChildren } from 'react'
 import { Tabs as TabsPrimitive, type TabsProps } from 'ui'
 import { withQueryParams, withSticky, type QueryParamsProps } from 'ui-patterns/ComplexTabs'
-import { useTocRerenderTrigger } from '~/features/docs/GuidesMdx.state'
 
 const TabsWithStickyAndQueryParams = withSticky<PropsWithChildren<TabsProps & QueryParamsProps>>(
   withQueryParams(TabsPrimitive)

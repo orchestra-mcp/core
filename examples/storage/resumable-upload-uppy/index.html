@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <meta charset="utf-8" />
@@ -39,15 +39,15 @@
 
     <script type="module">
       import {
-        Uppy,
         Dashboard,
         Tus,
+        Uppy,
       } from 'https://releases.transloadit.com/uppy/v3.6.1/uppy.min.mjs'
 
       const SUPABASE_ANON_KEY = 'replace-with-your-publishable-key'
       const SUPABASE_PROJECT_ID = 'replace-with-your-project-id'
       const STORAGE_BUCKET = 'replace-with-your-bucket-id'
-      const BEARER_TOKEN='replace-with-your-bearer-token'
+      const BEARER_TOKEN = 'replace-with-your-bearer-token'
 
       const folder = ''
       const supabaseStorageURL = `https://${SUPABASE_PROJECT_ID}.supabase.co/storage/v1/upload/resumable`

@@ -7,9 +7,5 @@ defineProps<{
 </script>
 
 <template>
-  <img
-    :src="src"
-    :alt="alt || ''"
-    :class="['aspect-square h-full w-full', $props.class]"
-  />
+  <img :src="src" :alt="alt || ''" :class="['aspect-square h-full w-full', $props.class]" />
 </template>

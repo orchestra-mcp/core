@@ -1,6 +1,5 @@
 'use client'
 
-import { Suspense } from 'react'
 import {
   AuthProvider,
   FeatureFlagProvider,
@@ -13,10 +12,11 @@ import {
 import { WwwCommandMenu } from 'components/CommandMenu'
 import { DevToolbar, DevToolbarProvider } from 'dev-tools'
 import { API_URL } from 'lib/constants'
-import { themes, TooltipProvider, SonnerToaster } from 'ui'
+import { NuqsAdapter } from 'nuqs/adapters/next/app'
+import { Suspense } from 'react'
+import { SonnerToaster, themes, TooltipProvider } from 'ui'
 import { CommandProvider } from 'ui-patterns/CommandMenu'
 import { useConsentToast } from 'ui-patterns/consent'
-import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
 function Providers({ children }: { children: React.ReactNode }) {
   useThemeSandbox()

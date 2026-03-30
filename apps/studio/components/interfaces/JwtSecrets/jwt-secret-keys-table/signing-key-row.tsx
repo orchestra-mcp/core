@@ -1,3 +1,7 @@
+import { components } from 'api-types'
+import { DropdownMenuItemTooltip } from 'components/ui/DropdownMenuItemTooltip'
+import { JWTSigningKey } from 'data/jwt-signing-keys/jwt-signing-keys-query'
+import dayjs from 'dayjs'
 import { motion } from 'framer-motion'
 import {
   CircleArrowDown,
@@ -9,11 +13,6 @@ import {
   Timer,
   Trash2,
 } from 'lucide-react'
-
-import { components } from 'api-types'
-import { DropdownMenuItemTooltip } from 'components/ui/DropdownMenuItemTooltip'
-import { JWTSigningKey } from 'data/jwt-signing-keys/jwt-signing-keys-query'
-import dayjs from 'dayjs'
 import {
   Badge,
   Button,
@@ -26,6 +25,7 @@ import {
   TableRow,
 } from 'ui'
 import { TimestampInfo } from 'ui-patterns'
+
 import { AlgorithmHoverCard } from '../algorithm-hover-card'
 import { statusColors, statusLabels } from '../jwt.constants'
 

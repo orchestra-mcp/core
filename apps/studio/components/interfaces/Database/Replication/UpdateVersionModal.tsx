@@ -1,5 +1,3 @@
-import { toast } from 'sonner'
-
 import { useParams } from 'common'
 import { useReplicationPipelineStatusQuery } from 'data/replication/pipeline-status-query'
 import { useReplicationPipelineVersionQuery } from 'data/replication/pipeline-version-query'
@@ -7,6 +5,7 @@ import { Pipeline } from 'data/replication/pipelines-query'
 import { useRestartPipelineHelper } from 'data/replication/restart-pipeline-helper'
 import { useUpdatePipelineVersionMutation } from 'data/replication/update-pipeline-version-mutation'
 import { ChevronDown } from 'lucide-react'
+import { toast } from 'sonner'
 import {
   PipelineStatusRequestStatus,
   usePipelineRequestStatus,
@@ -18,6 +17,7 @@ import {
   DialogSectionSeparator,
 } from 'ui'
 import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
+
 import { getStatusName } from './Pipeline.utils'
 import { PipelineStatusName, STATUS_REFRESH_FREQUENCY_MS } from './Replication.constants'
 

@@ -1,6 +1,6 @@
+import { OrchestraSettings } from 'components/interfaces/Settings/Orchestra/OrchestraSettings'
 import DefaultLayout from 'components/layouts/DefaultLayout'
 import SettingsLayout from 'components/layouts/ProjectSettingsLayout/SettingsLayout'
-import { OrchestraSettings } from 'components/interfaces/Settings/Orchestra/OrchestraSettings'
 import type { NextPageWithLayout } from 'types'
 import { PageContainer } from 'ui-patterns/PageContainer'
 import {
@@ -19,7 +19,8 @@ const OrchestraSettingsPage: NextPageWithLayout = () => {
           <PageHeaderSummary>
             <PageHeaderTitle>Orchestra Settings</PageHeaderTitle>
             <PageHeaderDescription>
-              Configure MCP server, authentication, OAuth providers, email, storage, and infrastructure
+              Configure MCP server, authentication, OAuth providers, email, storage, and
+              infrastructure
             </PageHeaderDescription>
           </PageHeaderSummary>
         </PageHeaderMeta>

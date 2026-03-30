@@ -1,13 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PermissionAction } from '@supabase/shared-types/out/constants'
-import dayjs from 'dayjs'
-import { PauseCircle } from 'lucide-react'
-import Link from 'next/link'
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { toast } from 'sonner'
-import { z } from 'zod'
-
 import { useFlag, useParams } from 'common'
 import {
   extractPostgresVersionDetails,
@@ -20,12 +12,18 @@ import { useFreeProjectLimitCheckQuery } from 'data/organizations/free-project-l
 import { useSetProjectStatus } from 'data/projects/project-detail-query'
 import { useProjectPauseStatusQuery } from 'data/projects/project-pause-status-query'
 import { useProjectRestoreMutation } from 'data/projects/project-restore-mutation'
+import dayjs from 'dayjs'
 import { useAsyncCheckPermissions } from 'hooks/misc/useCheckPermissions'
 import { useSelectedOrganizationQuery } from 'hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from 'hooks/misc/useSelectedProject'
 import { usePHFlag } from 'hooks/ui/useFlag'
 import { PROJECT_STATUS } from 'lib/constants'
+import { PauseCircle } from 'lucide-react'
+import Link from 'next/link'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { AWS_REGIONS, CloudProvider } from 'shared-data'
+import { toast } from 'sonner'
 import {
   Button,
   Card,
@@ -47,6 +45,8 @@ import {
 import { TimestampInfo } from 'ui-patterns'
 import ConfirmationModal from 'ui-patterns/Dialogs/ConfirmationModal'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
+import { z } from 'zod'
+
 import { PauseDisabledState } from './PauseDisabledState'
 
 export interface ProjectPausedStateProps {

@@ -1,9 +1,8 @@
-import React, { FC } from 'react'
-import type { LucideIcon } from 'lucide-react'
-
-import { cn, TextLink } from 'ui'
-import SectionContainer from '~/components/Layouts/SectionContainer'
 import CodeWindow from '~/components/CodeWindow'
+import SectionContainer from '~/components/Layouts/SectionContainer'
+import type { LucideIcon } from 'lucide-react'
+import React, { FC } from 'react'
+import { cn, TextLink } from 'ui'
 
 const codeSnippet = `
 select

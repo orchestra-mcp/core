@@ -1,10 +1,8 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-
-import { Button_Shadcn_ } from 'ui'
-
 import { auth } from '~/lib/userAuth'
+import { useRouter } from 'next/navigation'
+import { Button_Shadcn_ } from 'ui'
 
 export function DevSecretAuthForm() {
   const router = useRouter()

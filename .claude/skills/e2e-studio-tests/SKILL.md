@@ -70,17 +70,20 @@ test.describe.configure({ mode: 'serial' })
 ### Selector priority (best to worst)
 
 1. **`getByRole` with accessible name** - Most robust, tests accessibility
+
    ```typescript
    page.getByRole('button', { name: 'Save' })
    page.getByRole('button', { name: 'Configure API privileges' })
    ```
 
 2. **`getByTestId`** - Stable, explicit test hooks
+
    ```typescript
    page.getByTestId('table-editor-side-panel')
    ```
 
 3. **`getByText` with exact match** - Good for unique text
+
    ```typescript
    page.getByText('Data API Access', { exact: true })
    ```
@@ -93,12 +96,14 @@ test.describe.configure({ mode: 'serial' })
 ### Patterns to avoid
 
 - **XPath selectors** - Fragile to DOM changes
+
   ```typescript
   // BAD
   locator('xpath=ancestor::div[contains(@class, "space-y")]')
   ```
 
 - **Parent traversal with `locator('..')`** - Breaks when structure changes
+
   ```typescript
   // BAD
   element.locator('..').getByRole('button')
@@ -123,6 +128,7 @@ When a component lacks a good accessible name, add one in the source code:
 ```
 
 Then use it in tests:
+
 ```typescript
 page.getByRole('button', { name: 'Configure API privileges' })
 ```

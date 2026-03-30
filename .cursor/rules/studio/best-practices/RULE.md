@@ -1,5 +1,5 @@
 ---
-description: "Studio: React and TypeScript best practices for maintainable Studio code"
+description: 'Studio: React and TypeScript best practices for maintainable Studio code'
 globs:
   - apps/studio/**/*.{ts,tsx}
 alwaysApply: false

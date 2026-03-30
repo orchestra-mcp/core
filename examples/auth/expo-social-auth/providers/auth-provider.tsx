@@ -1,6 +1,7 @@
+import { PropsWithChildren, useEffect, useState } from 'react'
+
 import { AuthContext } from '@/hooks/use-auth-context'
 import { supabase } from '@/lib/supabase'
-import { PropsWithChildren, useEffect, useState } from 'react'
 
 export default function AuthProvider({ children }: PropsWithChildren) {
   const [claims, setClaims] = useState<Record<string, any> | undefined | null>()

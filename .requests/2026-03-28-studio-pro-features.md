@@ -5,7 +5,9 @@
 **Context**: Working on Phase 2 (Auth & Onboarding)
 
 ## User Request
+
 Enable all Supabase Pro/Platform features in self-hosted Orchestra Studio:
+
 - Multi-org management (projects, teams, billing, org settings)
 - Database backups (scheduled, PITR, restore)
 - Auth full configuration (all sub-pages)
@@ -15,6 +17,7 @@ Enable all Supabase Pro/Platform features in self-hosted Orchestra Studio:
 - Remove all "Upgrade to Pro" gates
 
 ## Notes
+
 - 504 IS_PLATFORM checks across 196 files
 - Most auth config pages already work — just need "Upgrade to Pro" text removed
 - Multi-org needs platform API stubs built

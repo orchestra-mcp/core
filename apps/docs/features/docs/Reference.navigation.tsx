@@ -1,16 +1,14 @@
-import { isFeatureEnabled } from 'common'
-import { type PropsWithChildren } from 'react'
-
-import { cn } from 'ui'
-
 import MenuIconPicker from '~/components/Navigation/NavigationMenu/MenuIconPicker'
 import RefVersionDropdown from '~/components/RefVersionDropdown'
 import { getReferenceSections } from '~/features/docs/Reference.generated.singleton'
 import {
-  RefLink,
   ReferenceNavigationScrollHandler,
+  RefLink,
 } from '~/features/docs/Reference.navigation.client'
 import { type AbbrevApiReferenceSection } from '~/features/docs/Reference.utils'
+import { isFeatureEnabled } from 'common'
+import { type PropsWithChildren } from 'react'
+import { cn } from 'ui'
 
 interface ReferenceNavigationProps {
   libraryId: string

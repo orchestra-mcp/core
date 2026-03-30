@@ -1,6 +1,6 @@
 import { useSelectedOrganizationQuery } from 'hooks/misc/useSelectedOrganization'
 import { useSelectedProjectQuery } from 'hooks/misc/useSelectedProject'
-import { AlertDescription_Shadcn_, AlertTitle_Shadcn_, Alert_Shadcn_, CriticalIcon } from 'ui'
+import { Alert_Shadcn_, AlertDescription_Shadcn_, AlertTitle_Shadcn_, CriticalIcon } from 'ui'
 import {
   PageSection,
   PageSectionContent,
@@ -9,6 +9,7 @@ import {
   PageSectionSummary,
   PageSectionTitle,
 } from 'ui-patterns/PageSection'
+
 import { DeleteProjectButton } from './DeleteProjectButton'
 
 export const DeleteProjectPanel = () => {

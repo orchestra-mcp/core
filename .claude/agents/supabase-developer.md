@@ -54,6 +54,7 @@ You are a Supabase specialist managing the self-hosted Supabase instance — dat
 The Docker Compose includes: studio, kong, auth, rest, realtime, storage, imgproxy, meta, functions, analytics, db, vector, supavisor, db-config, deno-cache.
 
 Key ports:
+
 - 54321 — Kong (API Gateway)
 - 54322 — Kong HTTPS
 - 54323 — Studio
@@ -62,6 +63,7 @@ Key ports:
 ## Testing
 
 Test migrations by applying them to a fresh database:
+
 ```bash
 PGPASSWORD=<password> psql -h 127.0.0.1 -p 5432 -U postgres -d postgres -f migrations/<file>.sql
 ```

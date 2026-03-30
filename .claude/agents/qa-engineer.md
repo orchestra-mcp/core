@@ -13,26 +13,31 @@ You are a cross-stack QA specialist responsible for testing all components of th
 ## Test Commands by Stack
 
 ### Go MCP Server
+
 ```bash
 cd mcp-server && go test ./... -v -race
 ```
 
 ### Laravel (Pest)
+
 ```bash
 cd web && php artisan test --compact
 ```
 
 ### Studio (Vitest)
+
 ```bash
 cd apps/studio && pnpm test
 ```
 
 ### Studio E2E (Playwright)
+
 ```bash
 cd e2e/studio && pnpm run e2e
 ```
 
 ### Specific file
+
 ```bash
 cd e2e/studio && pnpm run e2e -- features/<file>.spec.ts
 ```
@@ -40,21 +45,25 @@ cd e2e/studio && pnpm run e2e -- features/<file>.spec.ts
 ## Testing Strategy
 
 ### Unit Tests
+
 - Go: table-driven tests, mock external services
 - PHP: Pest feature + unit tests, mock Supabase calls
 - TypeScript: Vitest for Studio components and utilities
 
 ### Integration Tests
+
 - Go: test against real PostgreSQL (Supabase Docker)
 - Laravel: test Livewire components with `Livewire::test()`
 - SQL: verify migrations, RLS policies, DB functions
 
 ### E2E Tests
+
 - Playwright for Studio UI flows
 - Test auth flow, dashboard, token management
 - Test custom Orchestra pages
 
 ### Security Tests
+
 - RLS policy verification (multi-tenant isolation)
 - Token validation edge cases (expired, revoked, invalid)
 - SQL injection prevention
@@ -63,12 +72,14 @@ cd e2e/studio && pnpm run e2e -- features/<file>.spec.ts
 ## What to Test
 
 ### Per Feature (Definition of Done)
+
 1. Happy path works
 2. Error cases handled (invalid input, missing data, unauthorized)
 3. Edge cases (empty lists, max limits, concurrent access)
 4. Security (tenant isolation, auth required, input validation)
 
 ### RLS Policy Tests
+
 ```sql
 -- Test as user A: should see own org data
 SET request.jwt.claim.sub = '<user-a-id>';
@@ -80,6 +91,7 @@ SELECT * FROM tasks; -- should return only org-B tasks
 ```
 
 ### MCP Token Tests
+
 - Valid token → returns user context
 - Expired token → rejected
 - Revoked token → rejected

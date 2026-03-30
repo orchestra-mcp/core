@@ -2,11 +2,10 @@
 
 import 'katex/dist/katex.min.css'
 
-import { type PropsWithChildren } from 'react'
-
 import { type MenuId } from '~/components/Navigation/NavigationMenu/NavigationMenu'
 import { LayoutMainContent } from '~/layouts/DefaultLayout'
 import { SidebarSkeleton } from '~/layouts/MainSkeleton'
+import { type PropsWithChildren } from 'react'
 
 interface LayoutProps extends PropsWithChildren {
   menuId: MenuId

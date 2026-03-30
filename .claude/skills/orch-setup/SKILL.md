@@ -34,33 +34,37 @@ pnpm dev:studio
 
 ## Service Ports
 
-| Service | Port | URL |
-|---------|------|-----|
-| Studio | 8082 | http://localhost:8082 |
-| Kong (API Gateway) | 54321 | http://localhost:54321 |
-| Kong HTTPS | 54322 | https://localhost:54322 |
-| Studio (Docker) | 54323 | http://localhost:54323 |
-| PostgreSQL | 5432 | postgresql://postgres:password@localhost:5432/postgres |
-| GoTrue (Auth) | 9999 | (internal) |
-| PostgREST | 3000 | (internal) |
+| Service            | Port  | URL                                                    |
+| ------------------ | ----- | ------------------------------------------------------ |
+| Studio             | 8082  | http://localhost:8082                                  |
+| Kong (API Gateway) | 54321 | http://localhost:54321                                 |
+| Kong HTTPS         | 54322 | https://localhost:54322                                |
+| Studio (Docker)    | 54323 | http://localhost:54323                                 |
+| PostgreSQL         | 5432  | postgresql://postgres:password@localhost:5432/postgres |
+| GoTrue (Auth)      | 9999  | (internal)                                             |
+| PostgREST          | 3000  | (internal)                                             |
 
 ## Troubleshooting
 
 ### Docker "no space left on device"
+
 ```bash
 docker system prune -a --volumes -f
 ```
 
 ### Reset everything
+
 ```bash
 cd docker && ./reset.sh
 ```
 
 ### Check service health
+
 ```bash
 docker compose ps
 docker compose logs <service-name>
 ```
 
 ### Studio not connecting to Supabase
+
 Regenerate env: `pnpm setup:cli`

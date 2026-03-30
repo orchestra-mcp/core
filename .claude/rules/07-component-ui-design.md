@@ -1,6 +1,6 @@
 ---
-description: "All UI must use a component system design so changes reflect everywhere the component is used."
-globs: "*.blade.php,*.vue,*.tsx,*.jsx,*.dart"
+description: 'All UI must use a component system design so changes reflect everywhere the component is used.'
+globs: '*.blade.php,*.vue,*.tsx,*.jsx,*.dart'
 alwaysApply: true
 ---
 

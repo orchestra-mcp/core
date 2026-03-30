@@ -41,7 +41,9 @@ const OrchestraTokensPage: NextPageWithLayout = () => {
                 autoComplete="off"
                 icon={<Search size={12} />}
                 value={searchString}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchString(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setSearchString(e.target.value)
+                }
                 name="search"
                 id="search"
                 placeholder="Filter tokens"

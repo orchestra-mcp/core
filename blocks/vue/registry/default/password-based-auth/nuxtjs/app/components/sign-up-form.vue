@@ -1,20 +1,15 @@
 <script setup lang="ts">
-import { ref } from "vue"
-import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { ref } from 'vue'
 
-const email = ref("")
-const password = ref("")
-const repeatPassword = ref("")
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { createClient } from '@/lib/supabase/client'
+
+const email = ref('')
+const password = ref('')
+const repeatPassword = ref('')
 const error = ref<string | null>(null)
 const isLoading = ref(false)
 const success = ref(false)
@@ -24,7 +19,7 @@ const handleSignUp = async () => {
   error.value = null
 
   if (password.value !== repeatPassword.value) {
-    error.value = "Passwords do not match"
+    error.value = 'Passwords do not match'
     return
   }
 
@@ -37,7 +32,7 @@ const handleSignUp = async () => {
     if (supabaseError) throw supabaseError
     success.value = true
   } catch (err: unknown) {
-    error.value = err instanceof Error ? err.message : "An error occurred"
+    error.value = err instanceof Error ? err.message : 'An error occurred'
   } finally {
     isLoading.value = false
   }
@@ -70,13 +65,7 @@ const handleSignUp = async () => {
             <!-- Email -->
             <div class="grid gap-2">
               <Label for="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                required
-                v-model="email"
-              />
+              <Input id="email" type="email" placeholder="m@example.com" required v-model="email" />
             </div>
 
             <!-- Password -->
@@ -84,12 +73,7 @@ const handleSignUp = async () => {
               <div class="flex items-center">
                 <Label for="password">Password</Label>
               </div>
-              <Input
-                id="password"
-                type="password"
-                required
-                v-model="password"
-              />
+              <Input id="password" type="password" required v-model="password" />
             </div>
 
             <!-- Repeat Password -->
@@ -97,12 +81,7 @@ const handleSignUp = async () => {
               <div class="flex items-center">
                 <Label for="repeat-password">Repeat Password</Label>
               </div>
-              <Input
-                id="repeat-password"
-                type="password"
-                required
-                v-model="repeatPassword"
-              />
+              <Input id="repeat-password" type="password" required v-model="repeatPassword" />
             </div>
 
             <!-- Error -->
@@ -110,7 +89,7 @@ const handleSignUp = async () => {
 
             <!-- Submit -->
             <Button type="submit" class="w-full" :disabled="isLoading">
-              {{ isLoading ? "Creating an account..." : "Sign up" }}
+              {{ isLoading ? 'Creating an account...' : 'Sign up' }}
             </Button>
           </div>
 

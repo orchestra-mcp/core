@@ -1,9 +1,11 @@
 import 'react-native-url-polyfill/auto'
-import { useState, useEffect } from 'react'
-import { supabase } from './lib/supabase'
-import Auth from './components/Auth'
-import { View, Text } from 'react-native'
+
 import { JwtPayload } from '@supabase/supabase-js'
+import { useEffect, useState } from 'react'
+import { Text, View } from 'react-native'
+
+import Auth from './components/Auth'
+import { supabase } from './lib/supabase'
 
 export default function App() {
   const [claims, setClaims] = useState<JwtPayload | null>(null)

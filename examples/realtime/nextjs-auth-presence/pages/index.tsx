@@ -1,9 +1,10 @@
-import { useSupabaseClient, useUser } from '@/lib/supabase-context'
 import { createServerClient } from '@supabase/ssr'
-import { serialize } from 'cookie'
 import { RealtimePresenceState } from '@supabase/supabase-js'
+import { serialize } from 'cookie'
 import type { GetServerSidePropsContext, NextPage } from 'next'
 import { useEffect, useState } from 'react'
+
+import { useSupabaseClient, useUser } from '@/lib/supabase-context'
 
 const HomePage: NextPage = () => {
   const supabaseClient = useSupabaseClient()

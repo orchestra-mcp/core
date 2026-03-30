@@ -1,12 +1,11 @@
 'use client'
 
-import { Tabs } from 'ui'
+import * as data from '~/data/blog/PostgresFTSComparison'
 import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { Bar, BarChart, Legend, ResponsiveContainer, XAxis, YAxis } from 'recharts'
-import * as data from '~/data/blog/PostgresFTSComparison'
-
 import remarkGfm from 'remark-gfm'
+import { Tabs } from 'ui'
 
 const barColors = {
   pg: 'hsl(var(--brand-600))',

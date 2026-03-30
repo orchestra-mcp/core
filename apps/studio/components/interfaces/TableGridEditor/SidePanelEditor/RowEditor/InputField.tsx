@@ -1,6 +1,5 @@
 import { includes, noop } from 'lodash'
 import { Edit, Eye } from 'lucide-react'
-
 import {
   Button,
   DropdownMenu,
@@ -17,6 +16,7 @@ import {
   SelectValue_Shadcn_,
 } from 'ui'
 import { FormItemLayout } from 'ui-patterns/form/FormItemLayout/FormItemLayout'
+
 import { DATETIME_TYPES, JSON_TYPES, TEXT_TYPES } from '../SidePanelEditor.constants'
 import { DateTimeInput } from './DateTimeInput'
 import type { EditValue, RowField } from './RowEditor.types'

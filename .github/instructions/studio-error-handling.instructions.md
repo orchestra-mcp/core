@@ -1,5 +1,5 @@
 ---
-applyTo: "apps/studio/**"
+applyTo: 'apps/studio/**'
 ---
 
 # Studio Error Handling Review Rules
@@ -22,22 +22,20 @@ Errors flow: `handleError()` → throws typed subclass → React Query catches �
 ## Correct Usage
 
 ```tsx
-{isError && (
-  <ErrorMatcher
-    title="Failed to load tables"
-    error={error}
-    supportFormParams={{ projectRef }}
-  />
-)}
+{
+  isError && (
+    <ErrorMatcher title="Failed to load tables" error={error} supportFormParams={{ projectRef }} />
+  )
+}
 ```
 
 ## Key Files
 
-| File | Purpose |
-|------|---------|
+| File                     | Purpose                                            |
+| ------------------------ | -------------------------------------------------- |
 | `data/error-patterns.ts` | `{ pattern, ErrorClass }` array — regex lives here |
-| `types/api-errors.ts` | Error classes, `KnownErrorType` union |
-| `ErrorMatcher.tsx` | Reads `errorType`, looks up mapping, renders |
-| `error-mappings.tsx` | `Record<KnownErrorType, { id, Troubleshooting }>` |
+| `types/api-errors.ts`    | Error classes, `KnownErrorType` union              |
+| `ErrorMatcher.tsx`       | Reads `errorType`, looks up mapping, renders       |
+| `error-mappings.tsx`     | `Record<KnownErrorType, { id, Troubleshooting }>`  |
 
 Canonical standard: `.claude/skills/studio-error-handling/SKILL.md`

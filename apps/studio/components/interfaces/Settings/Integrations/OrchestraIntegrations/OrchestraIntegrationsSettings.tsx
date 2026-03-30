@@ -1,11 +1,11 @@
 import { useParams } from 'common'
-import { toast } from 'sonner'
-
 import {
-  useOrchestraIntegrationsQuery,
   OrchestraIntegrationsSettings as IntegrationsSettings,
+  useOrchestraIntegrationsQuery,
 } from 'data/integrations/orchestra-integrations-query'
 import { useUpdateOrchestraIntegrationsMutation } from 'data/integrations/orchestra-integrations-update-mutation'
+import { toast } from 'sonner'
+import { Card, CardContent } from 'ui'
 import {
   PageSection,
   PageSectionContent,
@@ -15,31 +15,26 @@ import {
   PageSectionTitle,
 } from 'ui-patterns/PageSection'
 import { GenericSkeletonLoader } from 'ui-patterns/ShimmeringLoader'
-import { Card, CardContent } from 'ui'
 
+import { DiscordIntegrationSection } from './sections/DiscordSection'
 import { GitHubIntegrationSection } from './sections/GitHubSection'
 import { SlackIntegrationSection } from './sections/SlackSection'
-import { DiscordIntegrationSection } from './sections/DiscordSection'
 import { TelegramIntegrationSection } from './sections/TelegramSection'
 import { WhatsAppIntegrationSection } from './sections/WhatsAppSection'
 
 export const OrchestraIntegrationsSettings = () => {
   const { ref } = useParams()
 
-  const {
-    data: settings,
-    isPending: isLoading,
-  } = useOrchestraIntegrationsQuery({ ref })
+  const { data: settings, isPending: isLoading } = useOrchestraIntegrationsQuery({ ref })
 
-  const { mutate: updateSettings, isPending: isSaving } =
-    useUpdateOrchestraIntegrationsMutation({
-      onSuccess: () => {
-        toast.success('Integration settings saved successfully')
-      },
-      onError: (error) => {
-        toast.error(`Failed to save integration settings: ${error.message}`)
-      },
-    })
+  const { mutate: updateSettings, isPending: isSaving } = useUpdateOrchestraIntegrationsMutation({
+    onSuccess: () => {
+      toast.success('Integration settings saved successfully')
+    },
+    onError: (error) => {
+      toast.error(`Failed to save integration settings: ${error.message}`)
+    },
+  })
 
   const handleSave = (section: keyof IntegrationsSettings, values: any) => {
     if (!ref) return

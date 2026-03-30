@@ -1,10 +1,10 @@
-import template from './templates/ConfigTemplate'
-import type { ConfigSpec } from './types/ConfigSpec'
-
 import * as fs from 'fs'
 import * as ejs from 'ejs'
 import * as yaml from 'js-yaml'
+
 import { writeToDisk } from './helpers'
+import template from './templates/ConfigTemplate'
+import type { ConfigSpec } from './types/ConfigSpec'
 
 type Section = {
   id: string

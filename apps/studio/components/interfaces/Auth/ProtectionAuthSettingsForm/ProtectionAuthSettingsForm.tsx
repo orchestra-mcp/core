@@ -1,12 +1,5 @@
 import { yupResolver } from '@hookform/resolvers/yup'
 import { PermissionAction } from '@supabase/shared-types/out/constants'
-import { Eye, EyeOff } from 'lucide-react'
-import Link from 'next/link'
-import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { toast } from 'sonner'
-import { boolean, number, object, string } from 'yup'
-
 import { useParams } from 'common'
 import AlertError from 'components/ui/AlertError'
 import { InlineLink } from 'components/ui/InlineLink'
@@ -15,22 +8,27 @@ import { useAuthConfigQuery } from 'data/auth/auth-config-query'
 import { useAuthConfigUpdateMutation } from 'data/auth/auth-config-update-mutation'
 import { useAsyncCheckPermissions } from 'hooks/misc/useCheckPermissions'
 import { DOCS_URL } from 'lib/constants'
+import { Eye, EyeOff } from 'lucide-react'
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import {
   Badge,
   Button,
   Card,
   CardContent,
   CardFooter,
+  Form_Shadcn_,
   FormControl_Shadcn_,
   FormField_Shadcn_,
-  Form_Shadcn_,
   Input_Shadcn_,
   PrePostTab,
+  Select_Shadcn_,
   SelectContent_Shadcn_,
   SelectItem_Shadcn_,
   SelectTrigger_Shadcn_,
   SelectValue_Shadcn_,
-  Select_Shadcn_,
   Switch,
 } from 'ui'
 import { GenericSkeletonLoader } from 'ui-patterns'
@@ -42,6 +40,8 @@ import {
   PageSectionSummary,
   PageSectionTitle,
 } from 'ui-patterns/PageSection'
+import { boolean, number, object, string } from 'yup'
+
 import { NO_REQUIRED_CHARACTERS } from '../Auth.constants'
 
 const CAPTCHA_PROVIDERS = [

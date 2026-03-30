@@ -1,10 +1,10 @@
+import { Bot, webhookCallback } from 'https://deno.land/x/grammy@v1.8.3/mod.ts'
+
 // Follow this setup guide to integrate the Deno language server with your editor:
 // https://deno.land/manual/getting_started/setup_your_environment
 // This enables autocomplete, go to definition, etc.
 
 console.log(`Function "telegram-bot" up and running!`)
-
-import { Bot, webhookCallback } from 'https://deno.land/x/grammy@v1.8.3/mod.ts'
 
 const bot = new Bot(Deno.env.get('TELEGRAM_BOT_TOKEN') || '')
 

@@ -1,8 +1,11 @@
-import { supabase } from '@/lib/supabase'
 import { appleAuthAndroid, AppleButton } from '@invertase/react-native-apple-authentication'
 import { SignInWithIdTokenCredentials } from '@supabase/supabase-js'
 import { Platform } from 'react-native'
+
+import { supabase } from '@/lib/supabase'
+
 import 'react-native-get-random-values'
+
 import { v4 as uuid } from 'uuid'
 
 async function onAppleButtonPress() {

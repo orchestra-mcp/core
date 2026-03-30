@@ -1,5 +1,5 @@
 ---
-description: "Docs: embeddings generation pipeline (apps/docs/scripts/search)"
+description: 'Docs: embeddings generation pipeline (apps/docs/scripts/search)'
 globs:
   - apps/docs/scripts/search/**/*.ts
 alwaysApply: false

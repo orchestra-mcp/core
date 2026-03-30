@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { BASE_PATH } from 'lib/constants'
 import { constructHeaders, fetchHandler } from 'data/fetchers'
+import { BASE_PATH } from 'lib/constants'
 import type { ResponseError, UseCustomQueryOptions } from 'types'
 
 export interface OrchestraIntegrationsSettings {
@@ -37,8 +37,7 @@ export interface OrchestraIntegrationsSettings {
 }
 
 export const orchestraIntegrationKeys = {
-  settings: (ref: string | undefined) =>
-    ['projects', ref, 'orchestra-integrations'] as const,
+  settings: (ref: string | undefined) => ['projects', ref, 'orchestra-integrations'] as const,
 }
 
 export async function getOrchestraIntegrations(

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import { useEffect, useState } from 'react'
 
 export const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,

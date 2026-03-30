@@ -1,32 +1,24 @@
 <script setup lang="ts">
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
 import { CheckCircle, File, Loader2, X } from 'lucide-vue-next'
+import { computed } from 'vue'
+
 import { formatBytes, useDropzoneContext } from './dropzone.vue'
-import { computed } from 'vue';
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 const props = defineProps<{ className?: string }>()
 
-const {
-  files,
-  setFiles,
-  onUpload,
-  loading,
-  successes,
-  errors,
-  maxFileSize,
-  maxFiles,
-  isSuccess,
-} = useDropzoneContext()
+const { files, setFiles, onUpload, loading, successes, errors, maxFileSize, maxFiles, isSuccess } =
+  useDropzoneContext()
 
 const exceedMaxFiles = computed(() => files.length > maxFiles)
 
-const fileErrorMessages = computed(() => new Map(errors.map(e => [e.name, e.message])))
+const fileErrorMessages = computed(() => new Map(errors.map((e) => [e.name, e.message])))
 
-function formatFileErrors(file: typeof files[number]) {
+function formatFileErrors(file: (typeof files)[number]) {
   if (!file.errors || file.errors.length === 0) return ''
   return file.errors
-    .map(e =>
+    .map((e) =>
       e.message.startsWith('File is larger than')
         ? `File is larger than ${formatBytes(maxFileSize)} (Size: ${formatBytes(file.size)})`
         : e.message
@@ -35,15 +27,20 @@ function formatFileErrors(file: typeof files[number]) {
 }
 
 function handleRemoveFile(filename: string) {
-  setFiles(files.filter(f => f.name !== filename))
+  setFiles(files.filter((f) => f.name !== filename))
 }
 </script>
 
 <template>
   <div :class="cn('flex flex-col', props.className)">
     <!-- Success State -->
-    <div v-if="isSuccess" class="flex flex-row items-center gap-x-2 justify-center" role="status" aria-live="polite">
-      <CheckCircle size="16" class="text-primary" aria-hidden="true"/>
+    <div
+      v-if="isSuccess"
+      class="flex flex-row items-center gap-x-2 justify-center"
+      role="status"
+      aria-live="polite"
+    >
+      <CheckCircle size="16" class="text-primary" aria-hidden="true" />
       <p class="text-primary text-sm">
         Successfully uploaded {{ files.length }} file{{ files.length > 1 ? 's' : '' }}
       </p>
@@ -56,8 +53,10 @@ function handleRemoveFile(filename: string) {
         :key="file?.name + '-' + file?.lastModified + '-' + file?.size || file?.name + '-' + idx"
         class="flex items-center gap-x-4 border-b py-2 first:mt-4 last:mb-4"
       >
-        <div v-if="file.type.startsWith('image/')"
-             class="h-10 w-10 rounded border overflow-hidden shrink-0 bg-muted flex items-center justify-center">
+        <div
+          v-if="file.type.startsWith('image/')"
+          class="h-10 w-10 rounded border overflow-hidden shrink-0 bg-muted flex items-center justify-center"
+        >
           <img :src="file.preview" :alt="file.name" class="object-cover" />
         </div>
 
@@ -119,7 +118,7 @@ function handleRemoveFile(filename: string) {
       <div v-if="files.length > 0 && !exceedMaxFiles" class="mt-2">
         <Button
           variant="outline"
-          :disabled="files.some(f => f.errors.length) || loading"
+          :disabled="files.some((f) => f.errors.length) || loading"
           @click="onUpload"
         >
           <Loader2 v-if="loading" class="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />

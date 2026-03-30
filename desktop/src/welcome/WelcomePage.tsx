@@ -1,0 +1,213 @@
+// Orchestra Desktop — Welcome Page
+//
+// Shows when no workspace is configured. Offers workspace selection,
+// recent workspaces, and brand-consistent dark UI.
+
+import { type FC } from 'react'
+
+import type { RecentWorkspace } from '../workspace/workspace-store'
+
+// ---------------------------------------------------------------------------
+// Props
+// ---------------------------------------------------------------------------
+
+interface WelcomePageProps {
+  recentWorkspaces: RecentWorkspace[]
+  onOpenWorkspace: (path: string) => void
+  onSelectFolder: () => void
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function formatDate(iso: string): string {
+  try {
+    const d = new Date(iso)
+    const now = new Date()
+    const diff = now.getTime() - d.getTime()
+    const mins = Math.floor(diff / 60000)
+    if (mins < 1) return 'just now'
+    if (mins < 60) return `${mins}m ago`
+    const hours = Math.floor(mins / 60)
+    if (hours < 24) return `${hours}h ago`
+    const days = Math.floor(hours / 24)
+    if (days < 7) return `${days}d ago`
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  } catch {
+    return ''
+  }
+}
+
+// ---------------------------------------------------------------------------
+// WelcomePage Component
+// ---------------------------------------------------------------------------
+
+export const WelcomePage: FC<WelcomePageProps> = ({
+  recentWorkspaces,
+  onOpenWorkspace,
+  onSelectFolder,
+}) => {
+  return (
+    <div
+      className="flex h-full w-full items-center justify-center"
+      style={{ background: 'var(--background-default)' }}
+    >
+      <div className="flex flex-col items-center gap-8 px-8" style={{ maxWidth: 520 }}>
+        {/* Orchestra Logo */}
+        <svg
+          className="h-20 w-20 shrink-0"
+          viewBox="0 0 725.06 724.82"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            <linearGradient
+              id="welcome-logo-grad"
+              x1="671.57"
+              y1="599.9"
+              x2="188.27"
+              y2="219.43"
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop offset="0" stopColor="#a900ff" />
+              <stop offset="1" stopColor="#00e5ff" />
+            </linearGradient>
+          </defs>
+          <path
+            fill="url(#welcome-logo-grad)"
+            d="M670.75,54.19c-8.34-8.34-21.81-8.54-30.39-.45L61.86,599.32c-6.59,6.22-11.12,14.18-13.08,23.03-3.36,15.13,1.17,30.71,12.14,41.68,8.58,8.58,19.99,13.22,31.8,13.22,3.28,0,6.59-.36,9.87-1.09,8.84-1.96,16.81-6.49,23.03-13.08L671.19,84.58c8.09-8.58,7.9-22.05-.45-30.39Z"
+          />
+          <path
+            fill="url(#welcome-logo-grad)"
+            d="M661.8,158.12l-54.6,57.88c25.67,42.78,40.44,92.88,40.44,146.41,0,157.51-127.72,285.23-285.23,285.23-47.55,0-92.41-11.64-131.84-32.28l-54.56,57.88c54.46,32.75,118.25,51.58,186.41,51.58,200.16,0,362.41-162.25,362.41-362.41,0-75.77-23.25-146.11-63.02-204.29ZM362.41,77.18c53.59,0,103.72,14.8,146.54,40.54l57.88-54.6C508.65,23.29,438.25,0,362.41,0,162.25,0,0,162.25,0,362.41c0,68.22,18.86,132.04,51.68,186.54l57.85-54.56c-20.67-39.46-32.35-84.36-32.35-131.98,0-157.51,127.72-285.23,285.23-285.23Z"
+          />
+          <path
+            fill="url(#welcome-logo-grad)"
+            d="M362.41,130.87c-127.88,0-231.54,103.66-231.54,231.54,0,33.22,6.98,64.8,19.6,93.35l58.82-55.47c-3.02-12.15-4.6-24.83-4.6-37.89,0-87.11,70.6-157.72,157.72-157.72,16.31,0,32.01,2.48,46.81,7.05l58.79-55.44c-31.64-16.27-67.55-25.44-105.6-25.44ZM568.58,256.94l-55.47,58.82c4.56,14.73,7.01,30.4,7.01,46.64,0,87.11-70.6,157.72-157.72,157.72-12.99,0-25.64-1.58-37.72-4.53l-55.5,58.82c28.52,12.55,60.03,19.53,93.22,19.53,127.88,0,231.54-103.66,231.54-231.54,0-37.99-9.16-73.86-25.37-105.47Z"
+          />
+        </svg>
+
+        {/* Title */}
+        <div className="text-center">
+          <h1 className="text-3xl font-bold" style={{ color: 'var(--foreground-default)' }}>
+            Welcome to Orchestra Desktop
+          </h1>
+          <p className="mt-2 text-sm" style={{ color: 'var(--foreground-lighter)' }}>
+            Open a workspace folder to get started. Orchestra will scan for markdown files, agents,
+            skills, rules, and specs.
+          </p>
+        </div>
+
+        {/* Open Workspace Button */}
+        <button
+          onClick={onSelectFolder}
+          className="flex items-center gap-3 rounded-lg px-8 py-3.5 text-sm font-semibold transition-all"
+          style={{
+            background: 'var(--brand-default)',
+            color: 'var(--foreground-contrast)',
+            boxShadow: '0 0 20px hsla(277, 100%, 50%, 0.25)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'var(--brand-600)'
+            e.currentTarget.style.boxShadow = '0 0 30px hsla(277, 100%, 50%, 0.4)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'var(--brand-default)'
+            e.currentTarget.style.boxShadow = '0 0 20px hsla(277, 100%, 50%, 0.25)'
+          }}
+        >
+          {/* Folder icon */}
+          <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M2 6V20C2 21.1 2.9 22 4 22H20C21.1 22 22 21.1 22 20V8C22 6.9 21.1 6 20 6H12L10 4H4C2.9 4 2 4.9 2 6Z"
+              fill="currentColor"
+            />
+          </svg>
+          Open Workspace
+        </button>
+
+        {/* Recent Workspaces */}
+        {recentWorkspaces.length > 0 && (
+          <div className="w-full">
+            <h2
+              className="mb-3 text-xs font-medium uppercase tracking-wider"
+              style={{ color: 'var(--foreground-muted)' }}
+            >
+              Recent Workspaces
+            </h2>
+            <div
+              className="rounded-lg"
+              style={{
+                background: 'var(--background-surface-100)',
+                border: '1px solid var(--border-default)',
+              }}
+            >
+              {recentWorkspaces.slice(0, 5).map((w, idx, arr) => (
+                <button
+                  key={w.path}
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors"
+                  style={
+                    idx < arr.length - 1
+                      ? { borderBottom: '1px solid var(--border-default)' }
+                      : undefined
+                  }
+                  onClick={() => onOpenWorkspace(w.path)}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'var(--background-surface-200)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent'
+                  }}
+                >
+                  {/* Folder icon */}
+                  <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M2 6V20C2 21.1 2.9 22 4 22H20C21.1 22 22 21.1 22 20V8C22 6.9 21.1 6 20 6H12L10 4H4C2.9 4 2 4.9 2 6Z"
+                      fill="#90a4ae"
+                    />
+                  </svg>
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className="truncate text-sm font-medium"
+                      style={{ color: 'var(--foreground-default)' }}
+                    >
+                      {w.name}
+                    </p>
+                    <p className="truncate text-xs" style={{ color: 'var(--foreground-muted)' }}>
+                      {w.path}
+                    </p>
+                  </div>
+                  <span
+                    className="shrink-0 text-xs"
+                    style={{ color: 'var(--foreground-muted)' }}
+                  >
+                    {formatDate(w.lastOpened)}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Keyboard shortcut hint */}
+        <p className="text-xs" style={{ color: 'var(--foreground-muted)' }}>
+          Tip: Press{' '}
+          <kbd
+            className="rounded px-1.5 py-0.5 font-mono text-[10px]"
+            style={{
+              background: 'var(--background-surface-300)',
+              border: '1px solid var(--border-strong)',
+              color: 'var(--foreground-lighter)',
+            }}
+          >
+            {navigator.platform?.includes('Mac') ? '\u2318K' : 'Ctrl+K'}
+          </kbd>{' '}
+          to open the command palette anytime.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+export default WelcomePage

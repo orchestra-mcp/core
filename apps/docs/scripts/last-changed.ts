@@ -11,19 +11,19 @@
  *  the last Git commit date.
  */
 
-import _configureDotEnv from './utils/dotenv.js'
-
-import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import matter from 'gray-matter'
 import { createHash } from 'node:crypto'
 import { readdirSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import path, { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import matter from 'gray-matter'
 import { SimpleGit, simpleGit } from 'simple-git'
 import { parse } from 'smol-toml'
+
 import { Section } from './helpers.mdx.js'
+import _configureDotEnv from './utils/dotenv.js'
 
 const _ = _configureDotEnv
 

@@ -2,6 +2,7 @@ import { createHash } from 'crypto'
 import { readFile } from 'fs/promises'
 import yaml from 'js-yaml'
 import type { OpenAPIV3 } from 'openapi-types'
+
 import type {
   ICommonItem,
   ICommonSection,

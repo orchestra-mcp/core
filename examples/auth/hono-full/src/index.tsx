@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+
 import { getSupabase, supabaseMiddleware } from './middleware/auth.middleware'
 
 const app = new Hono()

@@ -1,6 +1,6 @@
+import { type EditLink } from '~/features/helpers.edit-link'
 import { ExternalLink } from 'lucide-react'
 import { cn } from 'ui'
-import { type EditLink } from '~/features/helpers.edit-link'
 
 interface GuideFooterProps {
   className?: string

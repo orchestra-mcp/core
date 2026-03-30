@@ -7,6 +7,11 @@ import {
   Badge,
   Button,
   cn,
+  Select_Shadcn_,
+  SelectContent_Shadcn_,
+  SelectItem_Shadcn_,
+  SelectTrigger_Shadcn_,
+  SelectValue_Shadcn_,
   Skeleton,
   Table,
   TableBody,
@@ -17,17 +22,12 @@ import {
   Tabs_Shadcn_,
   TabsList_Shadcn_,
   TabsTrigger_Shadcn_,
-  Select_Shadcn_,
-  SelectContent_Shadcn_,
-  SelectItem_Shadcn_,
-  SelectTrigger_Shadcn_,
-  SelectValue_Shadcn_,
 } from 'ui'
 
 import {
+  useOrchestraServiceLogsQuery,
   type ServiceFilter,
   type ServiceLogEntry,
-  useOrchestraServiceLogsQuery,
 } from '@/data/orchestra/orchestra-service-logs-query'
 
 dayjs.extend(relativeTime)
@@ -105,10 +105,15 @@ function ExpandableContext({ context }: { context: string | null }) {
   )
 }
 
-export const OrchestraLogs = () => {
+interface OrchestraLogsProps {
+  /** When set, locks the service filter to this value and hides the service tabs */
+  serviceFilter?: ServiceFilter
+}
+
+export const OrchestraLogs = ({ serviceFilter }: OrchestraLogsProps = {}) => {
   const { ref } = useParams()
 
-  const [service, setService] = useState<ServiceFilter>('all')
+  const [service, setService] = useState<ServiceFilter>(serviceFilter ?? 'all')
   const [level, setLevel] = useState<string | undefined>(undefined)
   const [hours, setHours] = useState(24)
   const [autoRefresh, setAutoRefresh] = useState(true)
@@ -138,18 +143,17 @@ export const OrchestraLogs = () => {
     <div className="flex flex-col gap-4">
       {/* Filters */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-        {/* Service tabs */}
-        <Tabs_Shadcn_
-          value={service}
-          onValueChange={(v) => setService(v as ServiceFilter)}
-        >
-          <TabsList_Shadcn_ className="bg-transparent border-b border-default gap-2">
-            <TabsTrigger_Shadcn_ value="all">All</TabsTrigger_Shadcn_>
-            <TabsTrigger_Shadcn_ value="go_mcp">Go MCP</TabsTrigger_Shadcn_>
-            <TabsTrigger_Shadcn_ value="laravel">Laravel</TabsTrigger_Shadcn_>
-            <TabsTrigger_Shadcn_ value="orchestra">Orchestra</TabsTrigger_Shadcn_>
-          </TabsList_Shadcn_>
-        </Tabs_Shadcn_>
+        {/* Service tabs — hidden when locked to a specific service */}
+        {!serviceFilter && (
+          <Tabs_Shadcn_ value={service} onValueChange={(v) => setService(v as ServiceFilter)}>
+            <TabsList_Shadcn_ className="bg-transparent border-b border-default gap-2">
+              <TabsTrigger_Shadcn_ value="all">All</TabsTrigger_Shadcn_>
+              <TabsTrigger_Shadcn_ value="go_mcp">Go MCP</TabsTrigger_Shadcn_>
+              <TabsTrigger_Shadcn_ value="laravel">Laravel</TabsTrigger_Shadcn_>
+              <TabsTrigger_Shadcn_ value="orchestra">Orchestra</TabsTrigger_Shadcn_>
+            </TabsList_Shadcn_>
+          </Tabs_Shadcn_>
+        )}
 
         <div className="flex items-center gap-2 ml-auto">
           {/* Level filter */}
@@ -171,10 +175,7 @@ export const OrchestraLogs = () => {
           </Select_Shadcn_>
 
           {/* Time range */}
-          <Select_Shadcn_
-            value={String(hours)}
-            onValueChange={(v) => setHours(Number(v))}
-          >
+          <Select_Shadcn_ value={String(hours)} onValueChange={(v) => setHours(Number(v))}>
             <SelectTrigger_Shadcn_ className="w-[130px]">
               <SelectValue_Shadcn_ />
             </SelectTrigger_Shadcn_>
@@ -198,12 +199,7 @@ export const OrchestraLogs = () => {
           </Button>
 
           {/* Manual refresh */}
-          <Button
-            type="default"
-            size="tiny"
-            icon={<RefreshCw size={14} />}
-            onClick={handleRefresh}
-          >
+          <Button type="default" size="tiny" icon={<RefreshCw size={14} />} onClick={handleRefresh}>
             Refresh
           </Button>
         </div>

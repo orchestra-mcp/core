@@ -6,11 +6,11 @@ import { useStateTransition } from 'hooks/misc/useStateTransition'
 import { BASE_PATH, DOCS_URL } from 'lib/constants'
 import { Loader2, Wrench } from 'lucide-react'
 import Link from 'next/link'
-import { type Dispatch, type PropsWithChildren, useCallback, useReducer } from 'react'
+import { useCallback, useReducer, type Dispatch, type PropsWithChildren } from 'react'
 import type { UseFormReturn } from 'react-hook-form'
 import SVG from 'react-inlinesvg'
 import { toast } from 'sonner'
-import { Button, Tooltip, TooltipContent, TooltipTrigger, cn } from 'ui'
+import { Button, cn, Tooltip, TooltipContent, TooltipTrigger } from 'ui'
 import { Admonition } from 'ui-patterns/admonition'
 
 import { AIAssistantOption } from './AIAssistantOption'
@@ -20,10 +20,10 @@ import { Success } from './Success'
 import type { ExtendedSupportCategories } from './Support.constants'
 import type { SupportFormValues } from './SupportForm.schema'
 import {
-  type SupportFormActions,
-  type SupportFormState,
   createInitialSupportFormState,
   supportFormReducer,
+  type SupportFormActions,
+  type SupportFormState,
 } from './SupportForm.state'
 import { NO_PROJECT_MARKER } from './SupportForm.utils'
 import { SupportFormV2 } from './SupportFormV2'

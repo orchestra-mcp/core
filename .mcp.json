@@ -1,8 +1,12 @@
 {
   "mcpServers": {
-    "orchestra": {
+    "orchestra-desktop": {
       "type": "http",
-      "url": "http://localhost:3001/mcp?token=orch_3e00118c3513c734720bcc6b5e118a25"
+      "url": "http://localhost:9998/mcp?token=mcp_c6705f487e597af10f44816b6bba5c9812cac82d5882c3541f59524f83972e78"
+    },
+    "orchestra-mcp": {
+      "type": "http",
+      "url": "http://localhost:9999/mcp?token=orch_c36a9580ec42403b46b34ecb9f233324"
     }
   }
 }

@@ -1,7 +1,7 @@
 <div>
     {{-- Back link --}}
     <div class="mb-6">
-        <a href="{{ route('dashboard.agents') }}" class="inline-flex items-center gap-1.5 text-[13px] text-[#666666] hover:text-[#ededed] transition-colors">
+        <a href="{{ route('dashboard.agents') }}" wire:navigate class="inline-flex items-center gap-1.5 text-[13px] text-[#666666] hover:text-[#ededed] transition-colors">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7"/>
             </svg>
@@ -10,17 +10,17 @@
     </div>
 
     {{-- Profile header --}}
-    <div class="bg-[#252525] rounded-lg border border-[#333333] p-6 mb-6">
-        <div class="flex items-start gap-5">
+    <div class="bg-[#252525] rounded-lg border border-[#333333] p-4 sm:p-6 mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-5">
             {{-- Avatar --}}
-            <div class="w-16 h-16 rounded-full bg-gradient-to-br {{ $agent['avatar_color'] ?? 'from-cyan-500 to-purple-500' }} flex items-center justify-center text-white text-2xl font-bold shrink-0">
+            <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br {{ $agent['avatar_color'] ?? 'from-cyan-500 to-purple-500' }} flex items-center justify-center text-white text-xl sm:text-2xl font-bold shrink-0">
                 {{ $agent['initial'] }}
             </div>
 
             {{-- Info --}}
             <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-3 mb-1">
-                    <h1 class="text-xl font-semibold text-[#ededed]">{{ $agent['name'] }}</h1>
+                <div class="flex flex-wrap items-center gap-2 sm:gap-3 mb-1">
+                    <h1 class="text-lg sm:text-xl font-semibold text-[#ededed]">{{ $agent['name'] }}</h1>
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium {{ $agent['status_classes'] }}">
                         {{ $agent['status_label'] }}
                     </span>
@@ -28,7 +28,7 @@
                 @if ($agent['role'])
                     <p class="text-[13px] text-[#999999] mb-2">{{ $agent['role'] }}</p>
                 @endif
-                <div class="flex items-center gap-4 text-[12px] text-[#666666]">
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-[#666666]">
                     <span class="inline-flex items-center gap-1">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/>

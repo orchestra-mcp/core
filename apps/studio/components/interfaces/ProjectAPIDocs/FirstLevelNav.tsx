@@ -1,7 +1,3 @@
-import Link from 'next/link'
-import { Fragment, type ReactNode } from 'react'
-import SVG from 'react-inlinesvg'
-
 import { useParams } from 'common'
 import { InfiniteListDefault, type RowComponentBaseProps } from 'components/ui/InfiniteList'
 import { useEdgeFunctionsQuery } from 'data/edge-functions/edge-functions-query'
@@ -10,9 +6,13 @@ import { usePaginatedBucketsQuery, type Bucket } from 'data/storage/buckets-quer
 import { useIsFeatureEnabled } from 'hooks/misc/useIsFeatureEnabled'
 import { BASE_PATH, DOCS_URL } from 'lib/constants'
 import { Book, BookOpen } from 'lucide-react'
+import Link from 'next/link'
+import { Fragment, type ReactNode } from 'react'
+import SVG from 'react-inlinesvg'
 import { useAppStateSnapshot } from 'state/app-state'
 import { Button, cn } from 'ui'
 import { ShimmeringLoader } from 'ui-patterns'
+
 import { navigateToSection } from './Content/Content.utils'
 import { API_DOCS_CATEGORIES, DOCS_CONTENT, DOCS_MENU } from './ProjectAPIDocs.constants'
 

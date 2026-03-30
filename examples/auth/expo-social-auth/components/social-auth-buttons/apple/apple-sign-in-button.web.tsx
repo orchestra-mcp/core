@@ -1,8 +1,9 @@
-import { supabase } from '@/lib/supabase'
 import type { SignInWithIdTokenCredentials } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
 import AppleSignin, { type AppleAuthResponse } from 'react-apple-signin-auth'
 import { Platform } from 'react-native'
+
+import { supabase } from '@/lib/supabase'
 
 export default function AppleSignInButton() {
   const [nonce, setNonce] = useState('')

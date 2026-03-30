@@ -1,8 +1,9 @@
-import Link from 'next/link'
 import { headers } from 'next/headers'
-import { createClient } from '@/utils/supabase/server'
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
+
 import { SubmitButton } from '../../components/submit-button'
+import { createClient } from '@/utils/supabase/server'
 
 export default function Login({ searchParams }: { searchParams: { message: string } }) {
   const signIn = async (formData: FormData) => {

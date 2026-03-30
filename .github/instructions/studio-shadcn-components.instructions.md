@@ -1,5 +1,5 @@
 ---
-applyTo: "apps/studio/**"
+applyTo: 'apps/studio/**'
 ---
 
 # shadcn/Radix UI Component Review Rules
@@ -14,22 +14,22 @@ This project uses **shadcn/ui** components built on **Radix UI** primitives (fro
 
 The following components (imported from `ui`) already handle ARIA roles, keyboard navigation, focus management, and screen reader support automatically via Radix UI primitives:
 
-| Component | What Radix Handles |
-|-----------|-------------------|
-| `Dialog`, `AlertDialog` | `role="dialog"`, `aria-modal`, focus trapping, ESC to close |
-| `DropdownMenu`, `ContextMenu` | `role="menu"` / `role="menuitem"`, arrow key navigation |
-| `Select` | `role="combobox"`, `aria-expanded`, keyboard selection |
-| `Tabs` | `role="tablist"` / `role="tab"` / `role="tabpanel"`, `aria-selected`, arrow keys |
-| `Checkbox` | `role="checkbox"`, `aria-checked`, Space to toggle |
-| `RadioGroup` | `role="radio"`, `aria-checked`, arrow key navigation |
-| `Switch` | `role="switch"`, `aria-checked`, keyboard toggle |
-| `Tooltip` | Trigger/content association, show/hide timing |
-| `Accordion`, `Collapsible` | `aria-expanded`, Enter/Space to toggle |
-| `Popover`, `HoverCard` | Focus management, dismiss on ESC |
-| `Slider` | `role="slider"`, `aria-valuemin/max/now`, arrow keys |
-| `Toggle`, `ToggleGroup` | `aria-pressed`, keyboard support |
-| `ScrollArea` | Accessible scrollbar replacement |
-| `NavigationMenu` | `role="navigation"`, keyboard navigation |
+| Component                     | What Radix Handles                                                               |
+| ----------------------------- | -------------------------------------------------------------------------------- |
+| `Dialog`, `AlertDialog`       | `role="dialog"`, `aria-modal`, focus trapping, ESC to close                      |
+| `DropdownMenu`, `ContextMenu` | `role="menu"` / `role="menuitem"`, arrow key navigation                          |
+| `Select`                      | `role="combobox"`, `aria-expanded`, keyboard selection                           |
+| `Tabs`                        | `role="tablist"` / `role="tab"` / `role="tabpanel"`, `aria-selected`, arrow keys |
+| `Checkbox`                    | `role="checkbox"`, `aria-checked`, Space to toggle                               |
+| `RadioGroup`                  | `role="radio"`, `aria-checked`, arrow key navigation                             |
+| `Switch`                      | `role="switch"`, `aria-checked`, keyboard toggle                                 |
+| `Tooltip`                     | Trigger/content association, show/hide timing                                    |
+| `Accordion`, `Collapsible`    | `aria-expanded`, Enter/Space to toggle                                           |
+| `Popover`, `HoverCard`        | Focus management, dismiss on ESC                                                 |
+| `Slider`                      | `role="slider"`, `aria-valuemin/max/now`, arrow keys                             |
+| `Toggle`, `ToggleGroup`       | `aria-pressed`, keyboard support                                                 |
+| `ScrollArea`                  | Accessible scrollbar replacement                                                 |
+| `NavigationMenu`              | `role="navigation"`, keyboard navigation                                         |
 
 ### Specifically, Never Flag These
 

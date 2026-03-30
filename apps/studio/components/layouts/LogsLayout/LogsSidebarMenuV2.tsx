@@ -230,6 +230,24 @@ export function LogsSidebarMenuV2() {
       url: `/project/${ref}/logs/orchestra-logs`,
       items: [],
     },
+    {
+      name: 'Go MCP',
+      key: 'go-mcp-logs',
+      url: `/project/${ref}/logs/go-mcp-logs`,
+      items: [],
+    },
+    {
+      name: 'Laravel',
+      key: 'laravel-logs',
+      url: `/project/${ref}/logs/laravel-logs`,
+      items: [],
+    },
+    {
+      name: 'Activity',
+      key: 'orchestra-activity-logs',
+      url: `/project/${ref}/logs/orchestra-activity-logs`,
+      items: [],
+    },
   ]
 
   const filteredLogs = BASE_COLLECTIONS.filter((collection) => {

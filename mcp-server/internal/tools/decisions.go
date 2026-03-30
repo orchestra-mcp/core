@@ -29,6 +29,7 @@ func RegisterDecisionTools(registry *mcp.ToolRegistry, dbClient *db.Client, embe
 				"project_id":   map[string]string{"type": "string", "description": "Project ID this decision relates to"},
 				"task_id":      map[string]string{"type": "string", "description": "Task ID this decision relates to"},
 				"tags":         map[string]interface{}{"type": "array", "items": map[string]string{"type": "string"}, "description": "Tags for categorization"},
+				"meeting_id":   map[string]string{"type": "string", "description": "Meeting ID this decision was made in"},
 			},
 			"required": []string{"title", "decision"},
 		}),
@@ -80,6 +81,7 @@ func makeDecisionLog(dbClient *db.Client, embedder *embedding.Client) mcp.ToolHa
 			ProjectID    string   `json:"project_id,omitempty"`
 			TaskID       string   `json:"task_id,omitempty"`
 			Tags         []string `json:"tags,omitempty"`
+			MeetingID    string   `json:"meeting_id,omitempty"`
 		}
 		if err := json.Unmarshal(params, &p); err != nil {
 			return errorResult("invalid parameters: " + err.Error()), nil
@@ -111,6 +113,9 @@ func makeDecisionLog(dbClient *db.Client, embedder *embedding.Client) mcp.ToolHa
 		}
 		if p.TaskID != "" {
 			payload["task_id"] = p.TaskID
+		}
+		if p.MeetingID != "" {
+			payload["meeting_id"] = p.MeetingID
 		}
 		if len(p.Tags) > 0 {
 			payload["tags"] = p.Tags
@@ -163,7 +168,33 @@ func makeDecisionSearch(dbClient *db.Client, embedder *embedding.Client) mcp.Too
 			p.MatchCount = 5
 		}
 
-		// Use PostgreSQL text search instead of vector embeddings
+		// Attempt vector similarity search via pgvector.
+		vec, embErr := embedder.Embed(ctx, p.Query)
+		if embErr == nil {
+			// Build RPC params matching the search_decisions() function signature.
+			rpcParams := map[string]interface{}{
+				"query_embedding": floats32ToAny(vec),
+				"p_org_id":        userCtx.OrgID,
+				"match_count":     p.MatchCount,
+			}
+			if p.ProjectID != "" {
+				rpcParams["p_project_id"] = p.ProjectID
+			}
+
+			raw, err := dbClient.RPC(ctx, "search_decisions", rpcParams)
+			if err != nil {
+				slog.Warn("vector search RPC failed, falling back to text search", "error", err)
+			} else {
+				return jsonResult(map[string]interface{}{
+					"decisions":   json.RawMessage(raw),
+					"search_type": "vector",
+				})
+			}
+		} else {
+			slog.Warn("embedding generation failed, falling back to text search", "error", embErr)
+		}
+
+		// Fallback: PostgreSQL ILIKE text search.
 		searchQ := strings.ReplaceAll(p.Query, " ", "%20")
 		qstr := fmt.Sprintf("organization_id=eq.%s&order=created_at.desc&limit=%d&select=id,title,decision,context,alternatives,outcome,tags,created_at&or=(title.ilike.*%s*,decision.ilike.*%s*)", userCtx.OrgID, p.MatchCount, searchQ, searchQ)
 		if p.ProjectID != "" {
@@ -174,7 +205,10 @@ func makeDecisionSearch(dbClient *db.Client, embedder *embedding.Client) mcp.Too
 		if err != nil {
 			return errorResult("search failed: " + err.Error()), nil
 		}
-		return jsonResult(map[string]json.RawMessage{"decisions": raw})
+		return jsonResult(map[string]interface{}{
+			"decisions":   json.RawMessage(raw),
+			"search_type": "text",
+		})
 	}
 }
 

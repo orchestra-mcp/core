@@ -5,13 +5,16 @@
 **Priority**: Critical — Core differentiator
 
 ## Concept
+
 Replace the browser CDP tools with a full OS vision + control system, inspired by how remote desktop apps (AnyDesk, VNC, RDP) work. The AI gets:
+
 - **Continuous screen capture** (fast frame streaming, not per-request screenshots)
 - **Mouse control** (move, click, drag, scroll)
 - **Keyboard input** (type, shortcuts, hotkeys)
 - **Full OS visibility** (not just browser — can see IDE, terminal, Finder, any app)
 
 ## Why This is Better
+
 - CDP only controls Chrome tabs, and loses context between calls
 - Remote desktop approach gives the AI the same view as the human
 - Works with ANY application (not just browser)
@@ -21,6 +24,7 @@ Replace the browser CDP tools with a full OS vision + control system, inspired b
 ## Architecture Options
 
 ### Option 1: Native Screen Capture + Input Injection (Rust)
+
 - Rust binary using platform APIs:
   - macOS: CoreGraphics (CGDisplayCreateImage) + CGEvent for input
   - Linux: X11/Wayland screen grab + XTest for input
@@ -31,24 +35,28 @@ Replace the browser CDP tools with a full OS vision + control system, inspired b
   - Shared memory + semaphore
 
 ### Option 2: VNC Protocol
+
 - Run a VNC server on the user's machine
 - MCP server connects as VNC client
 - RFB protocol handles frame updates + input
 - Libraries: libvncclient (C), go-vnc
 
 ### Option 3: WebRTC Screen Share
+
 - User's machine runs a WebRTC peer
 - MCP server receives the video stream
 - DataChannel for input commands
 - Lowest latency, handles resolution changes
 
 ### Option 4: Hybrid (recommended?)
+
 - Rust binary for native screen capture (fastest)
 - Encode frames as JPEG/WebP (quality vs speed tradeoff)
 - Stream to Go MCP server via Unix socket
 - Go server exposes MCP tools: screen_capture, mouse_click, keyboard_type, etc.
 
-## MCP Tools (replacing browser_*)
+## MCP Tools (replacing browser\_\*)
+
 - `screen_capture` — capture current screen (or region) as image
 - `screen_stream_start` — start continuous frame capture
 - `screen_stream_stop` — stop streaming
@@ -62,11 +70,13 @@ Replace the browser CDP tools with a full OS vision + control system, inspired b
 - `screen_find` — find UI element by text/image template matching
 
 ## Performance Targets
+
 - Screen capture: <50ms per frame
 - Input injection: <10ms latency
 - Frame streaming: 10-30 FPS for continuous monitoring
 
 ## Questions for Discussion
+
 1. Which option for screen capture? (Native APIs vs VNC vs WebRTC)
 2. Rust binary or Go with CGo?
 3. How to handle multi-monitor setups?

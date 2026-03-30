@@ -1,8 +1,11 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
+
 import './index.css'
-import App from './App'
+
 import { Auth } from '@supabase/auth-ui-react'
+
+import App from './App'
 import { supabase } from './utils/supabaseClient'
 
 ReactDOM.render(

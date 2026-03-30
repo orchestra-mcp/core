@@ -1,7 +1,6 @@
 # Developing Supabase
 
 - [Developing Supabase](#developing-supabase)
-
   - [Getting started](#getting-started)
     - [Install dependencies](#install-dependencies)
   - [Local development](#local-development)
@@ -119,7 +118,6 @@ For example:
 
 1. `cd apps/studio`: move to the `studio` workspace.
 2. `pnpm add react`: installs `react` into `studio` workspace.
-
 
 ---
 

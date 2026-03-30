@@ -1,6 +1,6 @@
-import { Button } from 'ui'
 import { getChannelDisplayName } from '~/data/contribute'
 import type { ThreadSource } from '~/types/contribute'
+import { Button } from 'ui'
 
 interface HelpOnPlatformButtonProps {
   channel: ThreadSource

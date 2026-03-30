@@ -49,6 +49,9 @@ func newTestEnv(t *testing.T) *testEnv {
 	RegisterWorkflowTools(registry, dbClient)
 	RegisterProjectTools(registry, dbClient)
 	RegisterTaskTools(registry, dbClient)
+	RegisterAgentTools(registry, dbClient)
+	RegisterNoteTools(registry, dbClient)
+	RegisterSessionTools(registry, dbClient)
 
 	orgID := os.Getenv("TEST_ORG_ID")
 	if orgID == "" {

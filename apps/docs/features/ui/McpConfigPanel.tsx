@@ -1,5 +1,9 @@
 'use client'
 
+import { useDebounce } from '~/hooks/useDebounce'
+import { useIntersectionObserver } from '~/hooks/useIntersectionObserver'
+import { useProjectsInfiniteQuery } from '~/lib/fetch/projects-infinite'
+import { useSendTelemetryEvent } from '~/lib/telemetry'
 import { useIsLoggedIn, useIsUserLoading } from 'common'
 import { Check, ChevronDown } from 'lucide-react'
 import { useTheme } from 'next-themes'
@@ -25,10 +29,6 @@ import {
   type McpClient,
 } from 'ui-patterns/McpUrlBuilder'
 import ShimmeringLoader from 'ui-patterns/ShimmeringLoader'
-import { useDebounce } from '~/hooks/useDebounce'
-import { useIntersectionObserver } from '~/hooks/useIntersectionObserver'
-import { useProjectsInfiniteQuery } from '~/lib/fetch/projects-infinite'
-import { useSendTelemetryEvent } from '~/lib/telemetry'
 
 type PlatformType = (typeof PLATFORMS)[number]['value']
 

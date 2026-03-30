@@ -1,6 +1,7 @@
+import { useQuery, UseQueryOptions } from '@tanstack/react-query'
 import type { ResponseError } from '~/types/fetch'
+
 import { get } from './fetchWrappers'
-import { UseQueryOptions, useQuery } from '@tanstack/react-query'
 
 const branchKeys = {
   list: (projectRef: string | undefined) => ['projects', projectRef, 'branches'] as const,

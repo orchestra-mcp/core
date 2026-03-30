@@ -1,8 +1,8 @@
 import { useMutation, UseMutationOptions, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
-
 import { handleError, post } from 'data/fetchers'
+import { toast } from 'sonner'
 import type { ResponseError } from 'types'
+
 import { storageKeys } from './keys'
 
 type VectorBucketCreateVariables = {

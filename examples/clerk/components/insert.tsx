@@ -1,7 +1,8 @@
 'use client'
 
-import { useSupabaseClient } from '@/hooks/useSupabaseClient'
 import { useUser } from '@clerk/nextjs'
+
+import { useSupabaseClient } from '@/hooks/useSupabaseClient'
 
 export function InsertData() {
   const supabase = useSupabaseClient()
